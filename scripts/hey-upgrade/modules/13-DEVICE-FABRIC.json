@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "13-DEVICE-FABRIC",
+    "title":  "Trusted device identity, pairing, capability negotiation and handoff",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "12-COMPUTER-CONTROL"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/deviceGateway.js",
+                                    "--import",
+                                    "src/core/deviceFabric.js",
+                                    "--exists",
+                                    "src/core/deviceFabric.js",
+                                    "--exists",
+                                    "src/DeviceCenterPage.jsx",
+                                    "--test",
+                                    "tests/journeys.test.js",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Device registry exposes capabilities without allowing fake remote execution (unavailable+unverified when no real transport); fabric negotiates device identity and 6-char pair codes and reports handoff honestly. Covered by journeys + platform-capabilities tests."
+}

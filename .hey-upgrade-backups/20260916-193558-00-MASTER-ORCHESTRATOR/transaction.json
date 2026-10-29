@@ -1,0 +1,7 @@
+{
+  "transactionId": "20260916-193558-00-MASTER-ORCHESTRATOR",
+  "moduleId": "00-MASTER-ORCHESTRATOR",
+  "status": "failed",
+  "failedAt": "2026-09-16T19:36:52.7255262+03:00",
+  "error": "Command failed with exit code 1: npm.cmd\n"
+}

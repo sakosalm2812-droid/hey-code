@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "13-DEVICE-FABRIC",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:11.4259276+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/deviceGateway.js",
+                                 "--import",
+                                 "src/core/deviceFabric.js",
+                                 "--exists",
+                                 "src/core/deviceFabric.js",
+                                 "--exists",
+                                 "src/DeviceCenterPage.jsx",
+                                 "--test",
+                                 "tests/journeys.test.js",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

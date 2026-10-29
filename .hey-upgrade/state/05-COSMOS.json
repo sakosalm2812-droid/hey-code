@@ -1,0 +1,37 @@
+﻿{
+    "moduleId":  "05-COSMOS",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:25:52.2935705+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/memoryGraph.js",
+                                 "--import",
+                                 "src/core/memoryInbox.js",
+                                 "--import",
+                                 "src/core/contextManager.js",
+                                 "--import",
+                                 "src/core/cosmosMemory.js",
+                                 "--exists",
+                                 "src/core/memoryEngine.js",
+                                 "--exists",
+                                 "src/core/memoryGraphService.js",
+                                 "--exists",
+                                 "src/core/memoryRanking.js",
+                                 "--exists",
+                                 "src/lib/heyMemory.js",
+                                 "--exists",
+                                 "src/MemoryPage.jsx",
+                                 "--exists",
+                                 "src/CosmosPage.jsx",
+                                 "--test",
+                                 "tests/journeys.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

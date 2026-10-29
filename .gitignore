@@ -1,0 +1,10 @@
+﻿node_modules/
+.next/
+src-tauri/target/
+HEY-AUDIT.txt
+tmp/
+*.pdb
+*.rlib
+*.rmeta
+*.bin
+.env

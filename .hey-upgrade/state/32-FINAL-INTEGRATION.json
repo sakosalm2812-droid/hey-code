@@ -1,0 +1,88 @@
+﻿{
+    "moduleId":  "32-FINAL-INTEGRATION",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:28:23.9657141+03:00",
+    "details":  [
+                    {
+                        "file":  "node",
+                        "args":  [
+                                     "scripts/hey-upgrade/verify-module.mjs",
+                                     "--import",
+                                     "src/core/index.js",
+                                     "--import",
+                                     "src/core/executionController.js",
+                                     "--import",
+                                     "src/core/agentEngine.js",
+                                     "--exists",
+                                     "docs/upgrade/MASTER-STATUS.json",
+                                     "--exists",
+                                     "docs/upgrade/HEY-CAPABILITY-LEDGER.json",
+                                     "--exists",
+                                     "docs/upgrade/HEY-VERIFICATION-MATRIX.md",
+                                     "--exists",
+                                     "docs/upgrade/HEY-COMPLETE-IMPLEMENTATION-REPORT.md",
+                                     "--exists",
+                                     "docs/setup/API-SETUP.md",
+                                     "--exists",
+                                     "AGENTS.md",
+                                     "--exists",
+                                     ".opencode/commands/hey-finish.md",
+                                     "--test",
+                                     "tests/journeys.test.js",
+                                     "--test",
+                                     "tests/platform-capabilities.test.js",
+                                     "--test",
+                                     "tests/security-regressions.test.js",
+                                     "--test",
+                                     "tests/release-surfaces.test.js",
+                                     "--test",
+                                     "tests/runtime-integrity.test.js",
+                                     "--test",
+                                     "tests/infinityRuntime.test.js",
+                                     "--test",
+                                     "tests/mediaEditPlan.test.js",
+                                     "--test",
+                                     "tests/theme-studio.test.js",
+                                     "--test",
+                                     "tests/fix-pass.test.js",
+                                     "--test",
+                                     "tests/upgrade-orchestrator.test.js"
+                                 ],
+                        "exitCode":  0,
+                        "timedOut":  false,
+                        "log":  null
+                    },
+                    {
+                        "file":  "npm.cmd",
+                        "args":  [
+                                     "run",
+                                     "lint"
+                                 ],
+                        "exitCode":  0,
+                        "timedOut":  false,
+                        "log":  null
+                    },
+                    {
+                        "file":  "npm.cmd",
+                        "args":  [
+                                     "run",
+                                     "build"
+                                 ],
+                        "exitCode":  0,
+                        "timedOut":  false,
+                        "log":  null
+                    },
+                    {
+                        "file":  "cargo.exe",
+                        "args":  [
+                                     "check",
+                                     "--manifest-path",
+                                     "src-tauri/Cargo.toml"
+                                 ],
+                        "exitCode":  0,
+                        "timedOut":  false,
+                        "log":  null
+                    }
+                ]
+}

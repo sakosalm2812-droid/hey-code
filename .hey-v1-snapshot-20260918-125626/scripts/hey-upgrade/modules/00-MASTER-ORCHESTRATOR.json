@@ -1,0 +1,19 @@
+{
+  "moduleId": "00-MASTER-ORCHESTRATOR",
+  "version": "2026.09.16.1",
+  "files": [],
+  "dependencies": [],
+  "migrations": [],
+  "functions": [],
+  "backendDeployment": false,
+  "productionBackend": false,
+  "nativeBuild": false,
+  "androidBuild": false,
+  "verify": [
+    { "file": "npm.cmd", "args": ["test"] },
+    { "file": "npm.cmd", "args": ["run", "lint"] },
+    { "file": "npm.cmd", "args": ["run", "build"] },
+    { "file": "cargo.exe", "args": ["check", "--manifest-path", "src-tauri/Cargo.toml"] }
+  ]
+}
+

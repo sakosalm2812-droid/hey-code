@@ -1,0 +1,72 @@
+﻿{
+    "moduleId":  "30-TESTING-E2E",
+    "title":  "Comprehensive automated and manual evidence matrix",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "29-OBSERVABILITY-DEBUG"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--exists",
+                                    "tests/journeys.test.js",
+                                    "--exists",
+                                    "tests/platform-capabilities.test.js",
+                                    "--exists",
+                                    "tests/security-regressions.test.js",
+                                    "--exists",
+                                    "tests/release-surfaces.test.js",
+                                    "--exists",
+                                    "tests/runtime-integrity.test.js",
+                                    "--exists",
+                                    "tests/infinityRuntime.test.js",
+                                    "--exists",
+                                    "tests/mediaEditPlan.test.js",
+                                    "--exists",
+                                    "tests/theme-studio.test.js",
+                                    "--exists",
+                                    "tests/fix-pass.test.js",
+                                    "--exists",
+                                    "tests/upgrade-orchestrator.test.js",
+                                    "--exists",
+                                    "docs/upgrade/HEY-VERIFICATION-MATRIX.md",
+                                    "--test",
+                                    "tests/journeys.test.js",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js",
+                                    "--test",
+                                    "tests/security-regressions.test.js",
+                                    "--test",
+                                    "tests/release-surfaces.test.js",
+                                    "--test",
+                                    "tests/runtime-integrity.test.js",
+                                    "--test",
+                                    "tests/infinityRuntime.test.js",
+                                    "--test",
+                                    "tests/mediaEditPlan.test.js",
+                                    "--test",
+                                    "tests/theme-studio.test.js",
+                                    "--test",
+                                    "tests/fix-pass.test.js",
+                                    "--test",
+                                    "tests/upgrade-orchestrator.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Full automated matrix: 60 tests across 10 files (journeys, platform capabilities, security regressions, release surfaces, runtime integrity, Infinity runtime, media edit plan, theme studio, fix-pass, upgrade orchestrator). Manual/browser-only journeys are recorded in HEY-KNOWN-LIMITS.md and the verification matrix."
+}

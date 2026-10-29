@@ -1,0 +1,39 @@
+✔ a record carries every field the specification names plus the protocol fields (2.5782ms)
+✔ validateRecord refuses a record that cannot be audited (0.5401ms)
+✔ the vault exposes the ten operations the specification requires (0.2241ms)
+✔ only Sako or Amad may decide, object, resolve or revoke (0.7575ms)
+✔ either owner may approve alone, and both owners are notified (1.5547ms)
+✔ the second owner may confirm an existing approval without breaking it (0.5548ms)
+✔ an owner cannot approve a record that has not been proposed (0.3068ms)
+✔ silence is not consent: time alone never approves anything (0.2942ms)
+✔ an objection moves the record to HOLD and blocks both owners (0.6949ms)
+✔ an objection outside the 24h window is refused, and revoke remains available (0.672ms)
+✔ resolve clears the hold, restores the exact state and is recorded permanently (0.6562ms)
+✔ resolve needs a hold and a written note (0.4679ms)
+✔ keep-experimental is scoped to the requesting user and is access-checked (0.4396ms)
+✔ promotion requires an experimental keep, a Verified state, three uses and zero incidents (1.3261ms)
+✔ promotion succeeds only with every fact present, and then grants global access (0.5485ms)
+✔ promotion is refused when the record changed after approval (1.1062ms)
+✔ revoke is a global kill switch: every user loses access, evidence is kept (0.7724ms)
+✔ revocation refuses an unknown actor or an empty reason (0.4567ms)
+✔ a record without kill criteria cannot be approved (0.1711ms)
+✔ a record without a change plan cannot be proposed (0.1914ms)
+✔ a stale record is demoted one step and can no longer be promoted (0.3985ms)
+✔ delete keeps the audit evidence and closes the record (0.3388ms)
+✔ keep-with-changes names the changes and does not approve (0.2375ms)
+✔ keep-with-changes cannot be applied to an already approved record (0.2251ms)
+✔ the audit trail is append-only and returns a frozen copy (0.857ms)
+✔ a duplicate dedupe key is refused while the first record is live (0.1454ms)
+✔ a rejected record releases its key, and the replacement records what it replaced (0.3191ms)
+✔ the vault serialises and restores without inventing or losing a record (0.8469ms)
+✔ module-level helpers read a vault without being able to change it (0.5222ms)
+✔ the approval subject excludes state, usage and notifications by design (0.2003ms)
+✔ objection, resolve, promote, revoke and decide all reject a vault where a record belongs (0.1709ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105.7194

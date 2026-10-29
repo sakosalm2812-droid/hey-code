@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: hey-postgres
+    environment:
+      POSTGRES_USER: hey
+      POSTGRES_PASSWORD: hey_password
+      POSTGRES_DB: hey
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hey -d hey"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hey-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: hey-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hey-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hey-app
+    environment:
+      DATABASE_URL: postgresql://hey:hey_password@postgres:5432/hey?schema=public
+      REDIS_URL: redis://redis:6379
+      NODE_ENV: development
+      AUTH_SECRET: your-super-secret-key-min-32-chars-change-in-production
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      EMAIL_SERVER_HOST: ${EMAIL_SERVER_HOST}
+      EMAIL_SERVER_PORT: ${EMAIL_SERVER_PORT}
+      EMAIL_SERVER_USER: ${EMAIL_SERVER_USER}
+      EMAIL_SERVER_PASSWORD: ${EMAIL_SERVER_PASSWORD}
+      EMAIL_FROM: ${EMAIL_FROM}
+      SENTRY_DSN: ${SENTRY_DSN}
+      NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - hey-network
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+            - .git/
+        - action: rebuild
+          path: package.json
+
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hey-prisma-studio
+    command: npx prisma studio --port 5555 --hostname 0.0.0.0
+    environment:
+      DATABASE_URL: postgresql://hey:hey_password@postgres:5432/hey?schema=public
+    ports:
+      - "5555:5555"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - hey-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  hey-network:
+    driver: bridge

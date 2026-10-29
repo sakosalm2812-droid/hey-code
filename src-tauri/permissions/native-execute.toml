@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-native-execute"
+description = "Enables validated native actions and requests for native, action-bound execution approval. Sensitive actions require a native confirmation dialog and a single-use approval receipt."
+commands = { allow = ["native_execute", "native_request_execution_approval", "native_request_gesture_control_lease", "native_revoke_gesture_control_lease"] }

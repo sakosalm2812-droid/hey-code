@@ -1,0 +1,87 @@
+﻿[
+    {
+        "relativePath":  "tests/voice-experience.test.js",
+        "existed":  false,
+        "originalSha256":  null
+    },
+    {
+        "relativePath":  "src/components/ui/MotionVoiceVisualizer.jsx",
+        "existed":  true,
+        "originalSha256":  "FC5DFFD12D7B531D2A3046BBB03F644B0D8A80A0422054E91ACCD218933103AA"
+    },
+    {
+        "relativePath":  "src/components/layout/AppLayout.jsx",
+        "existed":  true,
+        "originalSha256":  "DD8F797F0AC33B05C83C2F07A630F55B6C51CF265AB4CB1174A4D4570F006E6D"
+    },
+    {
+        "relativePath":  "src/lib/authLifecycle.js",
+        "existed":  true,
+        "originalSha256":  "C1E385B1135509FB938DB77F6D9F6682AFBD66796B2A4721965E1B0752206D23"
+    },
+    {
+        "relativePath":  "src/core/voiceText.js",
+        "existed":  false,
+        "originalSha256":  null
+    },
+    {
+        "relativePath":  "src/core/voiceState.js",
+        "existed":  true,
+        "originalSha256":  "94A5016565FD994CEA5270069127F0EABD328EC87FA2E16D1EE132906934E7A9"
+    },
+    {
+        "relativePath":  "tests/voice-runtime.test.js",
+        "existed":  false,
+        "originalSha256":  null
+    },
+    {
+        "relativePath":  "src/lib/heyAI.js",
+        "existed":  true,
+        "originalSha256":  "93E815AD02A47540ECDE270F39CD5A2DB0437E1BF16223983302D701076F52C7"
+    },
+    {
+        "relativePath":  "src/components/layout/Sidebar.css",
+        "existed":  true,
+        "originalSha256":  "C2621C8AF97C51C90BB10AE5FD6DD531A34098B2970E9EE097E7429C2881B9B7"
+    },
+    {
+        "relativePath":  "supabase/migrations/20260916174500_backfill_account_profiles.sql",
+        "existed":  false,
+        "originalSha256":  null
+    },
+    {
+        "relativePath":  "supabase/functions/hey/index.ts",
+        "existed":  true,
+        "originalSha256":  "F00D4BDB96E3145E674B2D3A597864B9D1ED16A0C621C14C33BA2A95789BA0E3"
+    },
+    {
+        "relativePath":  "src/components/layout/AppLayout.css",
+        "existed":  true,
+        "originalSha256":  "0BC74C45D5858827742049683ECB229A2C499F0030287DF3E81CEB346E246153"
+    },
+    {
+        "relativePath":  "src/ChatPage.jsx",
+        "existed":  true,
+        "originalSha256":  "F432D981D3092AAD8CCE2BFCFEEFB3D5200BAF276CC5A9BE566942051C81040E"
+    },
+    {
+        "relativePath":  "public/sw.js",
+        "existed":  true,
+        "originalSha256":  "B3E12AFE49E9E4E694E523A5C992A76003CC2E68F18AB32DDC088A405653409C"
+    },
+    {
+        "relativePath":  "src/lib/voiceProviders.js",
+        "existed":  true,
+        "originalSha256":  "560DD0DE9089933599EDC16AE7E9FE0CA0A2E6CF58C05E35C01972667400F1CE"
+    },
+    {
+        "relativePath":  "index.html",
+        "existed":  true,
+        "originalSha256":  "E1B5034366CF08738D2E62554B9CCBFFF83EDBB77736CAB525538EC8DF9FDE7B"
+    },
+    {
+        "relativePath":  "src/styles/chat.css",
+        "existed":  true,
+        "originalSha256":  "3B5830C64EBBD7F3F0326EFFF7B6FE6556B14BA28532C4EFE5507A8C9DB7BE44"
+    }
+]

@@ -1,0 +1,31 @@
+﻿{
+    "moduleId":  "12-COMPUTER-CONTROL",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:07.9548249+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/osAdapter.js",
+                                 "--import",
+                                 "src/core/toolRegistry.js",
+                                 "--import",
+                                 "src/core/permissionManager.js",
+                                 "--exists",
+                                 "src/core/computerControl.js",
+                                 "--exists",
+                                 "src/core/computerControlEngine.js",
+                                 "--exists",
+                                 "src/core/computerTools.js",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js",
+                                 "--test",
+                                 "tests/security-regressions.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

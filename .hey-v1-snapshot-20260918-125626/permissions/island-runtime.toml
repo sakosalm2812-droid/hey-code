@@ -1,0 +1,4 @@
+[[permission]]
+identifier = "allow-island-runtime"
+description = "Allows HEY's main and Island windows to synchronize Island state, resize the Island, show or hide it, and restore the main HEY window."
+commands = { allow = ["island_publish", "island_request_snapshot", "island_monitor_bounds", "island_set_visible", "island_resize", "main_window_show", "app_exit"] }

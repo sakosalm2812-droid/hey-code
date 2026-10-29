@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "08-WORKFLOWS-AUTOMATIONS",
+    "title":  "Durable workflows, schedules, triggers, retries and approvals",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/automationEngine.js",
+                                    "--import",
+                                    "src/core/executionLoop.js",
+                                    "--exists",
+                                    "src/core/workflowEngine.js",
+                                    "--exists",
+                                    "src/core/actionEngine.js",
+                                    "--test",
+                                    "tests/release-surfaces.test.js",
+                                    "--test",
+                                    "tests/security-regressions.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Verified workflows stop on reported failure, respect cancellation and maxAttempts; automation execution fails closed without a real provider; queued actions require identity+permission+confirmation+verified results. Covered by security-regressions + release-surfaces tests."
+}

@@ -1,0 +1,29 @@
+﻿{
+    "moduleId":  "29-OBSERVABILITY-DEBUG",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:49.7947555+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/heyLogger.js",
+                                 "--import",
+                                 "src/core/errorTaxonomy.js",
+                                 "--exists",
+                                 "src/core/diagnosticsEngine.js",
+                                 "--exists",
+                                 "src/core/healthEngine.js",
+                                 "--exists",
+                                 "src/DebugPage.jsx",
+                                 "--exists",
+                                 "scripts/hey-upgrade/HeyUpgrade.psm1",
+                                 "--test",
+                                 "tests/upgrade-orchestrator.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

@@ -1,0 +1,25 @@
+﻿{
+    "moduleId":  "28-ACCESSIBILITY",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:43.1785266+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/lib/themeTokens.js",
+                                 "--exists",
+                                 "src/styles/compliance.css",
+                                 "--exists",
+                                 "src/components/IdleScreensaver.jsx",
+                                 "--exists",
+                                 "src/styles/states.css",
+                                 "--test",
+                                 "tests/theme-studio.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

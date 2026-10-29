@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "14-DYNAMIC-ISLAND",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:14.4390948+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/dynamicIsland.js",
+                                 "--exists",
+                                 "src/core/desktopIslandBridge.js",
+                                 "--exists",
+                                 "src/components/desktop/DesktopIslandSurface.jsx",
+                                 "--exists",
+                                 "src/styles/desktopIsland.css",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js",
+                                 "--test",
+                                 "tests/runtime-integrity.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

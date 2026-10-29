@@ -1,0 +1,44 @@
+﻿{
+    "moduleId":  "21-PLANS-ENTITLEMENTS",
+    "title":  "Future-proof Free/Pro/Elite entitlements with launch-free operation",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "20-AUTH-SECURITY"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/lib/accountRecords.js",
+                                    "--import",
+                                    "src/lib/permissionPolicy.js",
+                                    "--import",
+                                    "src/core/ownerEntitlements.js",
+                                    "--exists",
+                                    "src/core/planCatalog.js",
+                                    "--exists",
+                                    "src/core/accountsBillingEngine.js",
+                                    "--exists",
+                                    "src/pages/Pricing.jsx",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Tier resolution from explicit plan/entitlements (unknown -\u003e free); permission policy enforces tier boundaries; server-enforced via admin-entitlements edge function and RLS; launch works entirely on the free tier. Client plan/entitlement overrides are ignored at the execution boundary."
+}

@@ -1,0 +1,50 @@
+﻿{
+    "moduleId":  "31-DEPLOYMENT-LAUNCH",
+    "title":  "Free-first release pipeline, backend migrations, rollback, launch truthfulness",
+    "version":  "2026.09.18.2",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "30-TESTING-E2E"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/platformMatrix.js",
+                                    "--exists",
+                                    "supabase/functions/hey",
+                                    "--exists",
+                                    "supabase/functions/hey-studio",
+                                    "--exists",
+                                    "supabase/functions/admin-entitlements",
+                                    "--exists",
+                                    "supabase/functions/hey-push",
+                                    "--exists",
+                                    "supabase/migrations",
+                                    "--exists",
+                                    "public/sw.js",
+                                    "--exists",
+                                    ".gitleaks.toml",
+                                    "--exists",
+                                    "DEPLOYMENT.md",
+                                    "--test",
+                                    "tests/release-surfaces.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Four edge functions + 15 migrations; gitleaks secret-scan config; rollback and known-limits docs. hey-studio now ships a no-key free image path (Pollinations fallback when OPENAI_API_KEY is absent); video still requires LUMA_API_KEY and reports an honest unavailable state without it. Live deployment to the hosted Supabase project and VAPID-key provisioning are EXTERNAL (operator must run; recorded in docs/setup/API-SETUP.md)."
+}

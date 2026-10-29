@@ -1,0 +1,25 @@
+﻿{
+    "moduleId":  "24-ANDROID",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:36.3173535+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/platformMatrix.js",
+                                 "--exists",
+                                 "src-tauri/gen",
+                                 "--exists",
+                                 "src-tauri/tauri.conf.json",
+                                 "--exists",
+                                 "src-tauri/capabilities/default.json",
+                                 "--test",
+                                 "tests/release-surfaces.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

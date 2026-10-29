@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "11-MEDIA-STUDIO",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:05.4030957+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/mediaAiPlanner.js",
+                                 "--import",
+                                 "src/core/mediaEditEngine.js",
+                                 "--import",
+                                 "src/lib/generationProviders.js",
+                                 "--exists",
+                                 "src/pages/MediaStudio.jsx",
+                                 "--exists",
+                                 "src/core/mediaEditEngine.js",
+                                 "--test",
+                                 "tests/mediaEditPlan.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

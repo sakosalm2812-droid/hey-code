@@ -1,0 +1,46 @@
+﻿{
+    "moduleId":  "12-COMPUTER-CONTROL",
+    "title":  "Native verified computer control with scoped permissions and receipts",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/osAdapter.js",
+                                    "--import",
+                                    "src/core/toolRegistry.js",
+                                    "--import",
+                                    "src/core/permissionManager.js",
+                                    "--exists",
+                                    "src/core/computerControl.js",
+                                    "--exists",
+                                    "src/core/computerControlEngine.js",
+                                    "--exists",
+                                    "src/core/computerTools.js",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js",
+                                    "--test",
+                                    "tests/security-regressions.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Adapters expose only declared executable capabilities; natural commands reach permission gates instead of self-approving; execution-time authorization re-checks plan/permission/risk/confirmation and ignores forged client overrides. Credentialed/screen-native control requires the Tauri native side (Module 23)."
+}

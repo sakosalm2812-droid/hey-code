@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"HEY desktop capability set for the main app and native Dynamic Island. Native commands remain permission-scoped and execution actions are validated by HEY before invocation.","local":true,"windows":["main","island"],"permissions":["core:default","allow-native-execute","allow-native-capabilities","allow-island-runtime"]}}

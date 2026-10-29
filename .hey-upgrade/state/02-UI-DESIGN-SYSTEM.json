@@ -1,0 +1,35 @@
+﻿{
+    "moduleId":  "02-UI-DESIGN-SYSTEM",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:25:43.7941310+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/lib/themes.js",
+                                 "--import",
+                                 "src/lib/themeTokens.js",
+                                 "--exists",
+                                 "src/lib/designTokens.js",
+                                 "--exists",
+                                 "src/styles/variables.css",
+                                 "--exists",
+                                 "src/styles/theme.css",
+                                 "--exists",
+                                 "src/components/Buttons.jsx",
+                                 "--exists",
+                                 "src/pages/Landing.module.css",
+                                 "--exists",
+                                 "src/theme",
+                                 "--exists",
+                                 "src/styles/utilities.css",
+                                 "--test",
+                                 "tests/theme-studio.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

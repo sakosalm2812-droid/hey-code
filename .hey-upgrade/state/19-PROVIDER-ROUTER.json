@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "19-PROVIDER-ROUTER",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:23.8679036+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/infinity/providerRouter.js",
+                                 "--import",
+                                 "src/core/infinity/qualityGate.js",
+                                 "--import",
+                                 "src/core/infinity/infinityManifest.js",
+                                 "--exists",
+                                 "src/core/providerRouter.js",
+                                 "--exists",
+                                 "src/core/providerRegistry.js",
+                                 "--test",
+                                 "tests/infinityRuntime.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

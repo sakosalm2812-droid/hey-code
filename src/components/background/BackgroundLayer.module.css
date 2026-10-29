@@ -1,0 +1,80 @@
+/* BackgroundLayer.module.css — The single background layer */
+
+/* Default CSS custom properties for the background layer */
+:root {
+  --hey-bg-blur: 48px;
+  --hey-bg-brightness: 33%;
+  --hey-bg-saturate: 70%;
+  --hey-bg-scrim-alpha: 0.45;
+  --hey-bg-image: none;
+  --hey-bg-parallax-x: 0;
+  --hey-bg-parallax-y: 0;
+}
+
+.heyBgLayer {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background-image: var(--hey-bg-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(var(--hey-bg-blur))
+    brightness(var(--hey-bg-brightness))
+    saturate(var(--hey-bg-saturate));
+  will-change: filter, transform, opacity;
+  pointer-events: none;
+  transition: filter 240ms ease, opacity 240ms ease, transform 240ms ease;
+  transform: translate(var(--hey-bg-parallax-x), var(--hey-bg-parallax-y));
+}
+
+.heyBgScrim {
+  position: fixed;
+  inset: 0;
+  z-index: -9;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, calc(var(--hey-bg-scrim-alpha) * 1.2)) 0%,
+    rgba(0, 0, 0, var(--hey-bg-scrim-alpha)) 50%,
+    rgba(0, 0, 0, calc(var(--hey-bg-scrim-alpha) * 1.1)) 100%
+  );
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+
+.heyBgAmbient {
+  position: fixed;
+  inset: 0;
+  z-index: -8;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Reduced motion: disable transitions on the background layer */
+@media (prefers-reduced-motion: reduce) {
+  .heyBgLayer,
+  .heyBgScrim {
+    transition: none !important;
+  }
+}
+
+/* High contrast: increase scrim, reduce saturation */
+@media (prefers-contrast: more) {
+  :root {
+    --hey-bg-scrim-alpha: 0.6;
+    --hey-bg-saturate: 60%;
+  }
+}
+
+/* Print: hide the background layer entirely */
+@media print {
+  .heyBgLayer,
+  .heyBgScrim,
+  .heyBgAmbient {
+    display: none !important;
+  }
+  html, body {
+    background: white !important;
+    color: black !important;
+  }
+}

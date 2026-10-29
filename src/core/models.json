@@ -1,0 +1,42 @@
+[
+  {
+    "provider": "local_onnx",
+    "model": "qwen2.5-0.5b",
+    "endpoint": "local://onnx-runtime",
+    "task_strengths": { "chat": 0.6, "summarize": 0.7, "fast": 0.95 },
+    "cost_per_1k_in": 0.0,
+    "cost_per_1k_out": 0.0,
+    "latency_ms": 80,
+    "privacy_class": 3
+  },
+  {
+    "provider": "groq",
+    "model": "llama-3.3-70b-versatile",
+    "endpoint": "https://api.groq.com/openai/v1",
+    "task_strengths": { "chat": 0.9, "code": 0.85, "reasoning": 0.8 },
+    "cost_per_1k_in": 0.0005,
+    "cost_per_1k_out": 0.0008,
+    "latency_ms": 120,
+    "privacy_class": 1
+  },
+  {
+    "provider": "deepseek",
+    "model": "deepseek-chat",
+    "endpoint": "https://api.deepseek.com/v1",
+    "task_strengths": { "code": 0.92, "reasoning": 0.9, "chat": 0.88 },
+    "cost_per_1k_in": 0.00014,
+    "cost_per_1k_out": 0.00028,
+    "latency_ms": 350,
+    "privacy_class": 1
+  },
+  {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "endpoint": "https://api.openai.com/v1",
+    "task_strengths": { "code": 0.98, "reasoning": 0.99, "chat": 0.98 },
+    "cost_per_1k_in": 0.0025,
+    "cost_per_1k_out": 0.01,
+    "latency_ms": 600,
+    "privacy_class": 2
+  }
+]

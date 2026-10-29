@@ -1,0 +1,40 @@
+﻿{
+    "moduleId":  "27-PERFORMANCE-OFFLINE",
+    "title":  "Performance budgets, workers, caching, offline/recovery and resource governance",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/heyLogger.js",
+                                    "--exists",
+                                    "src/core/offlineEngine.js",
+                                    "--exists",
+                                    "src/core/backgroundRuntimeKeepAlive.js",
+                                    "--exists",
+                                    "public/sw.js",
+                                    "--exists",
+                                    "src/core/healthEngine.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Offline engine + background keep-alive + service worker caching exist; health engine reports system state. Vite build emits only pre-existing chunk-size warnings (INEFFECTIVE_DYNAMIC_IMPORT) with no errors. No automated performance budget test yet -\u003e NOT TESTED for byte-budget."
+}

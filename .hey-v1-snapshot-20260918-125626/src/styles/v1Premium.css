@@ -1,0 +1,17 @@
+/* HEY V1 premium interaction layer — intentionally original, not a clone of another product. */
+:root{
+  --hey-v1-control-radius:18px;
+  --hey-v1-card-radius:30px;
+  --hey-v1-shell-radius:36px;
+}
+.hey-app-shell button,.hey-app-shell input,.hey-app-shell select,.hey-app-shell textarea{font-family:"Inter",sans-serif}
+.hey-sidebar{border-right:1px solid rgba(255,255,255,.065)!important;background:rgba(5,8,10,.78)!important;backdrop-filter:blur(34px) saturate(130%)!important}
+.hey-topbar{background:rgba(5,8,10,.58)!important;border-bottom:1px solid rgba(255,255,255,.055)!important;backdrop-filter:blur(34px) saturate(135%)!important}
+.hey-sidebar__link,.hey-topbar__search,.hey-topbar__icon-btn,.hey-sidebar__settings{border-radius:18px!important}
+.hey-sidebar__link--active{background:rgba(255,255,255,.085)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07)!important}
+.hey-btn-primary,.hey-btn-ghost,.hey-input,.glass-card{border-radius:var(--hey-v1-control-radius)!important}
+.glass-card{border-radius:var(--hey-v1-card-radius)!important;border-color:rgba(255,255,255,.075)!important;background:linear-gradient(145deg,rgba(255,255,255,.052),rgba(255,255,255,.018))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 22px 65px rgba(0,0,0,.16)!important;backdrop-filter:blur(28px)!important}
+button{transition:transform .18s ease,background .18s ease,border-color .18s ease,opacity .18s ease}
+button:active{transform:scale(.975)}
+::selection{background:rgba(177,198,144,.28)}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

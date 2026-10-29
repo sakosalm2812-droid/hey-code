@@ -1,0 +1,44 @@
+﻿{
+    "moduleId":  "18-MODES",
+    "title":  "Coherent HEY modes/workbenches without fragmenting the assistant",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/surfaceModes.js",
+                                    "--import",
+                                    "src/core/modeRegistry.js",
+                                    "--exists",
+                                    "src/core/modeEngine.js",
+                                    "--exists",
+                                    "src/pages/ModesPage.jsx",
+                                    "--exists",
+                                    "src/styles/modes.css",
+                                    "--exists",
+                                    "src/CrisisMode.jsx",
+                                    "--exists",
+                                    "src/MorningMode.jsx"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Surface modes + mode registry produce coherent workbenches on top of one assistant; mode engine, Crisis and Morning modes and the Modes page exist. No dedicated mode transition test yet; covered structurally by the app shell and catalog (source-implemented, NOT TESTED for mode transitions)."
+}

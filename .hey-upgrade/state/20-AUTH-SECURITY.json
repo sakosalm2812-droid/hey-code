@@ -1,0 +1,39 @@
+﻿{
+    "moduleId":  "20-AUTH-SECURITY",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:26.6514846+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/permissionManager.js",
+                                 "--import",
+                                 "src/core/auditLog.js",
+                                 "--import",
+                                 "src/lib/authLifecycle.js",
+                                 "--import",
+                                 "src/lib/permissionPolicy.js",
+                                 "--exists",
+                                 "src/core/trustCenterEngine.js",
+                                 "--exists",
+                                 "src/core/ownerEntitlements.js",
+                                 "--exists",
+                                 "src/AuthContext.jsx",
+                                 "--exists",
+                                 "src/ProtectedRoute.jsx",
+                                 "--exists",
+                                 "src/PermissionsPage.jsx",
+                                 "--exists",
+                                 "supabase/migrations",
+                                 "--test",
+                                 "tests/security-regressions.test.js",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

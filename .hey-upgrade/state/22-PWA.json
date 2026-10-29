@@ -1,0 +1,37 @@
+﻿{
+    "moduleId":  "22-PWA",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:31.7564532+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/platformMatrix.js",
+                                 "--import",
+                                 "src/lib/badgeSync.js",
+                                 "--import",
+                                 "src/lib/windowControlsOverlayAdapter.js",
+                                 "--exists",
+                                 "public/sw.js",
+                                 "--exists",
+                                 "public/site.webmanifest",
+                                 "--exists",
+                                 "public/favicon.svg",
+                                 "--exists",
+                                 "index.html",
+                                 "--exists",
+                                 "src/styles/pwa.css",
+                                 "--exists",
+                                 "src/components/PWAInstallButton.jsx",
+                                 "--test",
+                                 "tests/release-surfaces.test.js",
+                                 "--test",
+                                 "tests/runtime-integrity.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

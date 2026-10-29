@@ -1,0 +1,36 @@
+﻿{
+    "moduleId":  "07-FORGE",
+    "title":  "Safe builder for agents, teams, workflows, skills, commands, automations, widgets and capabilities",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/forgeEngine.js",
+                                    "--exists",
+                                    "src/ForgePage.jsx",
+                                    "--test",
+                                    "tests/release-surfaces.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Forge validates capabilities and never self-authorizes; generated artifacts run through the same permission/verification gates. Fail-closed tested in release-surfaces.test.js (forgeRunner returns success=false without real runner)."
+}

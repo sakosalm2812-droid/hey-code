@@ -1,0 +1,25 @@
+{
+  "_label": "SYNTHETIC",
+  "_warning": "Not real provider output. No provider was called and no API key exists. This file records a plausible wire shape so the evaluator can be tested offline.",
+  "provider": "deepseek",
+  "model": "deepseek-flash",
+  "endpoint": "POST /v1/chat/completions (shape only)",
+  "request": {
+    "messages": [{ "role": "user", "content": "Return JSON with answer and confidence. Question: capital of France?" }],
+    "max_tokens": 64
+  },
+  "response": {
+    "id": "chatcmpl-synthetic-deepseek-0001",
+    "object": "chat.completion",
+    "created": 0,
+    "model": "deepseek-flash",
+    "choices": [
+      {
+        "index": 0,
+        "message": { "role": "assistant", "content": "{\"answer\":\"Paris\",\"confidence\":0.95}" },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": { "prompt_tokens": 35, "completion_tokens": 12, "total_tokens": 47 }
+  }
+}

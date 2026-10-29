@@ -1,0 +1,176 @@
+.hey-mode-switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.hey-mode-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--hey-glass-card-fill, rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(var(--hey-glass-card-blur, 28px));
+  border: 1px solid var(--hey-glass-card-border, rgba(255, 255, 255, 0.075));
+  border-radius: 999px;
+  color: var(--hey-text-primary, #e8e8e8);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hey-mode-indicator:hover {
+  background: var(--hey-glass-card-fill, rgba(255, 255, 255, 0.05));
+  border-color: var(--hey-border, rgba(255, 255, 255, 0.1));
+}
+
+.hey-mode-indicator:focus-visible {
+  outline: 2px solid var(--hey-focus, #d4a843);
+  outline-offset: 2px;
+}
+
+.hey-mode-indicator-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--hey-accent, #d4a843);
+}
+
+.hey-mode-indicator-label {
+  white-space: nowrap;
+}
+
+.hey-mode-indicator-chevron {
+  font-size: 10px;
+  color: var(--hey-text-tertiary, #888);
+  transition: transform 0.15s ease;
+}
+
+.hey-mode-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--hey-glass-elevated-fill, rgba(10, 13, 17, 0.92));
+  backdrop-filter: blur(var(--hey-glass-elevated-blur, 40px));
+  border: 1px solid var(--hey-glass-elevated-border, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  box-shadow: var(--hey-glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.3));
+  padding: 8px;
+  z-index: 100;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hey-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--hey-text-primary, #e8e8e8);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.hey-mode-option:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+}
+
+.hey-mode-option.active {
+  background: var(--hey-accent, #d4a843);
+  color: var(--hey-accent-text, #0a0d11);
+}
+
+.hey-mode-option.active:hover {
+  background: var(--hey-accent, #d4a843);
+}
+
+.hey-mode-option:focus-visible {
+  outline: 2px solid var(--hey-focus, #d4a843);
+  outline-offset: -2px;
+}
+
+.hey-mode-option-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.03));
+  color: var(--hey-accent, #d4a843);
+}
+
+.hey-mode-option.active .hey-mode-option-icon {
+  background: var(--hey-accent-text, #0a0d11);
+  color: var(--hey-accent, #d4a843);
+}
+
+.hey-mode-option-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hey-mode-option-content strong {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.hey-mode-option-content small {
+  font-size: 11px;
+  opacity: 0.7;
+  line-height: 1.2;
+}
+
+.hey-mode-option-check {
+  flex-shrink: 0;
+  color: var(--hey-accent, #d4a843);
+  font-weight: bold;
+}
+
+.hey-mode-option.active .hey-mode-option-check {
+  color: var(--hey-accent-text, #0a0d11);
+}
+
+.hey-mode-hint {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+  font-size: 11px;
+  color: var(--hey-text-tertiary, #888);
+}
+
+.hey-mode-hint kbd {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.03));
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hey-mode-popover {
+    animation: none;
+  }
+  .hey-mode-indicator,
+  .hey-mode-option {
+    transition: none;
+  }
+}

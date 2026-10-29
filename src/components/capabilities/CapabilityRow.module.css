@@ -1,0 +1,287 @@
+.capabilityRow {
+  --row-gap: 12px;
+  --badge-size: 28px;
+  --chip-height: 24px;
+
+  display: grid;
+  grid-template-columns: var(--badge-size) 1fr auto auto;
+  grid-template-rows: auto auto;
+  gap: 8px 12px;
+  align-items: start;
+  padding: 12px 16px;
+  background: var(--hey-surface, rgba(255,255,255,0.03));
+  border: 1px solid var(--hey-border, rgba(255,255,255,0.06));
+  border-radius: 12px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.capabilityRow:hover {
+  background: var(--hey-surface-2, rgba(255,255,255,0.05));
+  border-color: var(--hey-border-strong, rgba(255,255,255,0.1));
+}
+
+.capabilityRow[data-state="available"] {
+  border-left: 3px solid var(--hey-success, #10b981);
+}
+
+.capabilityRow[data-state="permission_required"] {
+  border-left: 3px solid var(--hey-warning, #f59e0b);
+}
+
+.capabilityRow[data-state="restricted"] {
+  border-left: 3px solid var(--hey-accent, #8b5cf6);
+}
+
+.capabilityRow[data-state="unsupported"] {
+  border-left: 3px solid var(--hey-text-tertiary, rgba(255,255,255,0.3));
+  opacity: 0.7;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--badge-size);
+  height: var(--badge-size);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.badge.native {
+  background: var(--hey-success, #10b981);
+  color: var(--hey-success-text, #000);
+  box-shadow: 0 0 0 2px var(--hey-success, #10b981), 0 0 8px var(--hey-success, #10b981);
+}
+
+.badge.bridged {
+  background: var(--hey-warning, #f59e0b);
+  color: var(--hey-warning-text, #000);
+  box-shadow: 0 0 0 2px var(--hey-warning, #f59e0b), 0 0 8px var(--hey-warning, #f59e0b);
+}
+
+.badge.relay-required {
+  background: var(--hey-accent, #8b5cf6);
+  color: var(--hey-accent-text, #fff);
+  box-shadow: 0 0 0 2px var(--hey-accent, #8b5cf6), 0 0 8px var(--hey-accent, #8b5cf6);
+}
+
+.badge.unavailable {
+  background: var(--hey-text-tertiary, rgba(255,255,255,0.3));
+  color: var(--hey-text-primary, #fff);
+}
+
+.name {
+  grid-column: 2;
+  grid-row: 1;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--hey-text-primary, #fff);
+  line-height: 1.4;
+}
+
+.permissionChip {
+  grid-column: 3;
+  grid-row: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--chip-height);
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.permissionChip.microphone {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: var(--hey-success, #10b981);
+}
+
+.permissionChip.camera {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: var(--hey-warning, #f59e0b);
+}
+
+.permissionChip.system {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: var(--hey-accent, #8b5cf6);
+}
+
+.permissionChip.files {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--hey-info, #3b82f6);
+}
+
+.permissionChip.bluetooth {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: var(--hey-purple, #6366f1);
+}
+
+.permissionChip:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.permissionChip:active {
+  transform: translateY(0);
+}
+
+.statusLine {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--hey-text-secondary, rgba(255,255,255,0.7));
+  line-height: 1.5;
+  padding-top: 2px;
+}
+
+.auditDetails {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hey-border, rgba(255,255,255,0.06));
+}
+
+.auditSummary {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--hey-text-tertiary, rgba(255,255,255,0.5));
+  cursor: pointer;
+}
+
+.auditPre {
+  margin: 8px 0 0;
+  padding: 8px;
+  font-size: 10px;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  overflow-x: auto;
+  color: var(--hey-text-secondary, rgba(255,255,255,0.7));
+}
+
+.expandBtn {
+  grid-column: 4;
+  grid-row: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--hey-text-tertiary, rgba(255,255,255,0.5));
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  font-size: 10px;
+}
+
+.expandBtn:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--hey-text-primary, #fff);
+}
+
+.expanded {
+  grid-column: 1 / -1;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hey-border, rgba(255,255,255,0.06));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expandedField {
+  font-size: 12px;
+  color: var(--hey-text-secondary, rgba(255,255,255,0.7));
+}
+
+.expandedField strong {
+  color: var(--hey-text-primary, #fff);
+  min-width: 160px;
+  display: inline-block;
+}
+
+.expandedField code {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px;
+  background: rgba(255,255,255,0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--hey-accent, #8b5cf6);
+}
+
+.copyBtn {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--hey-border, rgba(255,255,255,0.1));
+  background: transparent;
+  color: var(--hey-text-secondary, rgba(255,255,255,0.7));
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.copyBtn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--hey-accent, #8b5cf6);
+  color: var(--hey-accent, #8b5cf6);
+}
+
+@media (max-width: 640px) {
+  .capabilityRow {
+    grid-template-columns: var(--badge-size) 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .name {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .permissionChip {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+
+  .statusLine {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  .expandBtn {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .expanded {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .capabilityRow,
+  .permissionChip,
+  .expandBtn,
+  .copyBtn {
+    transition: none;
+  }
+}

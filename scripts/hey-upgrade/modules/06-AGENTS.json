@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "06-AGENTS",
+    "title":  "229 built-in specialists + custom executable agents and teams",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/agentEngine.js",
+                                    "--exists",
+                                    "src/core/agentRouter.js",
+                                    "--exists",
+                                    "src/core/agentToolMap.js",
+                                    "--exists",
+                                    "src/core/capabilityExpansionEngine.js",
+                                    "--exists",
+                                    "src/AgentsPage.jsx",
+                                    "--test",
+                                    "tests/release-surfaces.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "229 canonical agents (IDs 843-1071). Agent execution fails closed without a verified provider; unverified outputs rejected; verified outputs accepted. Covered by release-surfaces.test.js."
+}

@@ -1,0 +1,31 @@
+﻿{
+    "moduleId":  "33-EXTERNAL-CONTROL",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:56:04.5706706+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/externalControlBridge.js",
+                                 "--exists",
+                                 "src/core/externalControlBridge.js",
+                                 "--exists",
+                                 "native/external-control/README.md",
+                                 "--exists",
+                                 "native/external-control/android/ExternalHeyAccessibilityService.kt",
+                                 "--exists",
+                                 "native/external-control/windows/daemon-design.md",
+                                 "--exists",
+                                 "native/external-control/ios/APPLE-CONTROL-POLICY.md",
+                                 "--exists",
+                                 "src/core/gestureEngine.js",
+                                 "--test",
+                                 "tests/external-control.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

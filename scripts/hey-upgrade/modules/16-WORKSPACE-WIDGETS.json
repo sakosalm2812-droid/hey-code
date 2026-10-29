@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "16-WORKSPACE-WIDGETS",
+    "title":  "Persistent spatial workspace + widget runtime",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/eventBus.js",
+                                    "--import",
+                                    "src/core/artifactEngine.js",
+                                    "--exists",
+                                    "src/core/workspaceEngine.js",
+                                    "--exists",
+                                    "src/core/workspaceManager.js",
+                                    "--exists",
+                                    "src/core/infinity/actionTimeline.js",
+                                    "--exists",
+                                    "src/Dashboard.jsx"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Workspace engine + manager (persistent spatial workspace) and an Infinity action/evidence timeline exist; widget runtime is exercised through event bus + artifact persistence paths. Two workspace abstractions are candidate consolidation targets tracked in Module 32."
+}

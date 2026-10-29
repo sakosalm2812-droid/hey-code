@@ -1,0 +1,92 @@
+﻿{
+    "moduleId":  "32-FINAL-INTEGRATION",
+    "title":  "Cross-module consolidation, cleanup, evidence and release candidate",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "31-DEPLOYMENT-LAUNCH"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/index.js",
+                                    "--import",
+                                    "src/core/executionController.js",
+                                    "--import",
+                                    "src/core/agentEngine.js",
+                                    "--exists",
+                                    "docs/upgrade/MASTER-STATUS.json",
+                                    "--exists",
+                                    "docs/upgrade/HEY-CAPABILITY-LEDGER.json",
+                                    "--exists",
+                                    "docs/upgrade/HEY-VERIFICATION-MATRIX.md",
+                                    "--exists",
+                                    "docs/upgrade/HEY-COMPLETE-IMPLEMENTATION-REPORT.md",
+                                    "--exists",
+                                    "docs/setup/API-SETUP.md",
+                                    "--exists",
+                                    "AGENTS.md",
+                                    "--exists",
+                                    ".opencode/commands/hey-finish.md",
+                                    "--test",
+                                    "tests/journeys.test.js",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js",
+                                    "--test",
+                                    "tests/security-regressions.test.js",
+                                    "--test",
+                                    "tests/release-surfaces.test.js",
+                                    "--test",
+                                    "tests/runtime-integrity.test.js",
+                                    "--test",
+                                    "tests/infinityRuntime.test.js",
+                                    "--test",
+                                    "tests/mediaEditPlan.test.js",
+                                    "--test",
+                                    "tests/theme-studio.test.js",
+                                    "--test",
+                                    "tests/fix-pass.test.js",
+                                    "--test",
+                                    "tests/upgrade-orchestrator.test.js"
+                                ],
+                       "file":  "node"
+                   },
+                   {
+                       "args":  [
+                                    "run",
+                                    "lint"
+                                ],
+                       "file":  "npm.cmd"
+                   },
+                   {
+                       "args":  [
+                                    "run",
+                                    "build"
+                                ],
+                       "file":  "npm.cmd"
+                   },
+                   {
+                       "args":  [
+                                    "check",
+                                    "--manifest-path",
+                                    "src-tauri/Cargo.toml"
+                                ],
+                       "file":  "cargo.exe"
+                   }
+               ],
+    "notes":  "Final integration: durable status file, capability ledger (2039 entries), verification matrix, implementation report, setup doc, AGENTS.md + hey-finish command, and the full automated test matrix. Candidate consolidations (memory abstractions, providerRouter x2, computerControl x2, workspaceEngine x2, voice files) are documented in reports with migration plans; none are removed without replacement tests."
+}

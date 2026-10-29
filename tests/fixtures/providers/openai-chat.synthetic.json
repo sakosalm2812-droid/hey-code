@@ -1,0 +1,29 @@
+{
+  "_label": "SYNTHETIC",
+  "_warning": "Not real provider output. No provider was called and no API key exists. This file records a plausible wire shape so the evaluator can be tested offline.",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "endpoint": "POST /v1/chat/completions (shape only)",
+  "request": {
+    "messages": [
+      { "role": "system", "content": "Answer in one short sentence." },
+      { "role": "user", "content": "What is the capital of France?" }
+    ],
+    "max_tokens": 64,
+    "temperature": 0.7
+  },
+  "response": {
+    "id": "chatcmpl-synthetic-0001",
+    "object": "chat.completion",
+    "created": 0,
+    "model": "gpt-4o-mini",
+    "choices": [
+      {
+        "index": 0,
+        "message": { "role": "assistant", "content": "The capital of France is Paris." },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": { "prompt_tokens": 31, "completion_tokens": 8, "total_tokens": 39 }
+  }
+}

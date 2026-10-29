@@ -1,0 +1,23 @@
+﻿{
+    "moduleId":  "10-VISION",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:03.0822166+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/visionEngine.js",
+                                 "--import",
+                                 "src/lib/heyVision.js",
+                                 "--exists",
+                                 "src/core/visionEngine.js",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

@@ -1,0 +1,29 @@
+﻿{
+    "moduleId":  "21-PLANS-ENTITLEMENTS",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:29.1280377+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/lib/accountRecords.js",
+                                 "--import",
+                                 "src/lib/permissionPolicy.js",
+                                 "--import",
+                                 "src/core/ownerEntitlements.js",
+                                 "--exists",
+                                 "src/core/planCatalog.js",
+                                 "--exists",
+                                 "src/core/accountsBillingEngine.js",
+                                 "--exists",
+                                 "src/pages/Pricing.jsx",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

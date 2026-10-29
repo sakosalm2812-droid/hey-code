@@ -1,0 +1,50 @@
+﻿{
+    "moduleId":  "01-CORE",
+    "title":  "Canonical HEY core contracts and execution architecture",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "00-MASTER-ORCHESTRATOR"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/index.js",
+                                    "--import",
+                                    "src/core/executionController.js",
+                                    "--import",
+                                    "src/core/capabilityRegistry.js",
+                                    "--import",
+                                    "src/core/eventBus.js",
+                                    "--import",
+                                    "src/core/errorTaxonomy.js",
+                                    "--import",
+                                    "src/core/artifactEngine.js",
+                                    "--exists",
+                                    "src/core/executionEngine.js",
+                                    "--exists",
+                                    "src/core/executionLoop.js",
+                                    "--test",
+                                    "tests/journeys.test.js",
+                                    "--test",
+                                    "tests/security-regressions.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Shared contract layer: RequestContext, capability registry, execution controller, HEYError taxonomy, EventEnvelope, artifact engine. Verified execution results only; audit receipts; cancellation/progress support. Covered by journeys + security-regressions suites."
+}

@@ -1,0 +1,21 @@
+{
+  "_label": "SYNTHETIC",
+  "_warning": "Not real provider output. No provider was called and no API key exists. This file records a plausible wire shape so the evaluator can be tested offline.",
+  "provider": "anthropic",
+  "model": "claude-3-haiku-20240307",
+  "endpoint": "POST /v1/messages (shape only)",
+  "request": {
+    "system": "Answer in one short sentence.",
+    "messages": [{ "role": "user", "content": "What is the capital of France?" }],
+    "max_tokens": 64
+  },
+  "response": {
+    "id": "msg_synthetic_0001",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-3-haiku-20240307",
+    "content": [{ "type": "text", "text": "Paris is the capital of France." }],
+    "stop_reason": "end_turn",
+    "usage": { "input_tokens": 29, "output_tokens": 7 }
+  }
+}

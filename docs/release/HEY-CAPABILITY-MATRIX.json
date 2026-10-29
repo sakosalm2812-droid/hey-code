@@ -1,0 +1,177 @@
+{
+  "release": "HEY master 100% build — release candidate",
+  "generatedAt": "2026-09-18",
+  "schema": "capability-family -> { evidence, platform, notes }",
+  "evidenceVocabulary": [
+    "VERIFIED WORKING",
+    "AUTOMATED TESTED",
+    "SOURCE IMPLEMENTED",
+    "NOT TESTED",
+    "PARTIAL",
+    "PLATFORM-LIMITED",
+    "BLOCKED",
+    "EXTERNAL_SETUP_REQUIRED"
+  ],
+  "families": {
+    "orchestration_upgrades": {
+      "evidence": "VERIFIED WORKING",
+      "platform": "node + powershell",
+      "notes": "HEY-UPGRADE.ps1 transactional apply/verify/rollback; -Module ALL; 8-assertion regression test"
+    },
+    "core_contracts": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web/native shared",
+      "notes": "RequestContext-less registry + execution controller; verified-results-only; 60-test matrix"
+    },
+    "ui_design_system": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web",
+      "notes": "27 themes all contrast >= 4.5; invalid accents rejected; reduced-motion styles"
+    },
+    "chat_persistence": {
+      "evidence": "VERIFIED WORKING",
+      "platform": "web + supabase",
+      "notes": "live round-trip to hey function; RLS-enforced writes; completionRuntime browser-only"
+    },
+    "voice": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web (browser-only runtime)",
+      "notes": "free-first providers, honest states, wake-word boundaries; mic/TTS not headless-testable"
+    },
+    "cosmos_memory": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web + supabase",
+      "notes": "approval inbox + receipts; two abstractions are consolidation candidates"
+    },
+    "agents": {
+      "evidence": "VERIFIED WORKING",
+      "platform": "web",
+      "notes": "229 canonical agents (ids 843-1071); fail-closed execution"
+    },
+    "forge": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web",
+      "notes": "safe builder; never self-authorizes"
+    },
+    "workflows_automations": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web",
+      "notes": "durable steps, cancellation, maxAttempts; queued actions need 4-part authz"
+    },
+    "research": {
+      "evidence": "SOURCE IMPLEMENTED",
+      "platform": "web",
+      "notes": "typed workflow steps, URL validation, prompt-injection resistance"
+    },
+    "vision": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web + provider keys",
+      "notes": "rejects unverified observations; provider missing -> VISION_PROVIDER_UNAVAILABLE"
+    },
+    "media_studio": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web (local-first)",
+      "notes": "FFmpeg WASM; unapproved AI ops stripped; image gen free-first (OpenAI or no-key Pollinations fallback), video via Luma"
+    },
+    "computer_control": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web; native via tauri",
+      "notes": "scoped permissions + receipts; native side = module 23, external build"
+    },
+    "device_fabric": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web",
+      "notes": "identity + pairing + capability negotiation; no fake remote execution"
+    },
+    "dynamic_island": {
+      "evidence": "PARTIAL",
+      "platform": "web in-app; OS surface external",
+      "notes": "in-app pill + notifications center built; OS live status requires signed native build"
+    },
+    "gestures": {
+      "evidence": "PARTIAL",
+      "platform": "web (camera, browser-only)",
+      "notes": "runtime + calibration present; wake-word boundaries unit-tested"
+    },
+    "workspace_widgets": {
+      "evidence": "SOURCE IMPLEMENTED",
+      "platform": "web",
+      "notes": "persistent spatial workspace + widget runtime; two abstractions candidate consolidation"
+    },
+    "tasks_planner": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web",
+      "notes": "tasks/calendar/habits/reminders; streak + solar math covered"
+    },
+    "modes": {
+      "evidence": "SOURCE IMPLEMENTED",
+      "platform": "web",
+      "notes": "mode registry + crisis/morning modes; transitions not dedicated-tested"
+    },
+    "provider_router": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web",
+      "notes": "free-first fail-closed routing; quality gate; localOnly"
+    },
+    "auth_security": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web + supabase",
+      "notes": "4-part execution authz; RLS; audit receipts; service secrets server-side"
+    },
+    "plans_entitlements": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web + supabase",
+      "notes": "free/pro/elite; launch-free; client override rejected"
+    },
+    "pwa": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "chromium pwa",
+      "notes": "sw + manifest + badge + WCO; push sending blocked on VAPID"
+    },
+    "windows": {
+      "evidence": "SOURCE IMPLEMENTED",
+      "platform": "tauri v2",
+      "notes": "cargo check passes; signed installer external"
+    },
+    "android": {
+      "evidence": "EXTERNAL_SETUP_REQUIRED",
+      "platform": "android",
+      "notes": "toolchain (java/sdk/adb) not installed; no apk/aab"
+    },
+    "ios": {
+      "evidence": "EXTERNAL_SETUP_REQUIRED",
+      "platform": "ios",
+      "notes": "requires macos+xcode+signing"
+    },
+    "dream_world": {
+      "evidence": "SOURCE IMPLEMENTED",
+      "platform": "web",
+      "notes": "local-first theme engine built; ai generation external (provider keys)"
+    },
+    "performance_offline": {
+      "evidence": "SOURCE IMPLEMENTED",
+      "platform": "web",
+      "notes": "offline engine + keep-alive + sw caching; byte budget not tested"
+    },
+    "accessibility": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web (contrast); AT manual",
+      "notes": "27-theme contrast + reduced-motion automated; sr/keyboard E2E manual"
+    },
+    "observability": {
+      "evidence": "SOURCE IMPLEMENTED",
+      "platform": "web",
+      "notes": "structured logs + health + redacted upgrade logs; server tracing external"
+    },
+    "release_governance": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "repo",
+      "notes": "ledger + verification matrix + release evidence; gitleaks config"
+    },
+    "external_control": {
+      "evidence": "AUTOMATED TESTED",
+      "platform": "web (bridge); native ladder external",
+      "notes": "action envelopes, allowlist, risk gates (13 tests); Windows daemon cargo-checked, Android scaffold, iOS barred by Apple policy"
+    }
+  }
+}

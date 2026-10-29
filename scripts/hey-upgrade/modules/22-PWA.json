@@ -1,0 +1,52 @@
+﻿{
+    "moduleId":  "22-PWA",
+    "title":  "Installable resilient mobile-first PWA with truthful platform limits",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/platformMatrix.js",
+                                    "--import",
+                                    "src/lib/badgeSync.js",
+                                    "--import",
+                                    "src/lib/windowControlsOverlayAdapter.js",
+                                    "--exists",
+                                    "public/sw.js",
+                                    "--exists",
+                                    "public/site.webmanifest",
+                                    "--exists",
+                                    "public/favicon.svg",
+                                    "--exists",
+                                    "index.html",
+                                    "--exists",
+                                    "src/styles/pwa.css",
+                                    "--exists",
+                                    "src/components/PWAInstallButton.jsx",
+                                    "--test",
+                                    "tests/release-surfaces.test.js",
+                                    "--test",
+                                    "tests/runtime-integrity.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Service worker (install, notificationclick -\u003e HEY_NOTIFICATION_OPEN) + manifest + install button; release matrix lists every HEY target without claiming unbuilt native releases. App badge sync and WCO adapter present with runtime-integrity coverage."
+}

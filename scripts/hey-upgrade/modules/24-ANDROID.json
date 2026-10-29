@@ -1,0 +1,40 @@
+﻿{
+    "moduleId":  "24-ANDROID",
+    "title":  "Android native/mobile integration with shared HEY core",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "23-WINDOWS"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/platformMatrix.js",
+                                    "--exists",
+                                    "src-tauri/gen",
+                                    "--exists",
+                                    "src-tauri/tauri.conf.json",
+                                    "--exists",
+                                    "src-tauri/capabilities/default.json",
+                                    "--test",
+                                    "tests/release-surfaces.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Adaptive mobile surfaces + shared core; platform matrix marks Android honestly. Building an APK/AAB requires Java/Android SDK/ADB which are not installed on this host -\u003e EXTERNAL_SETUP_REQUIRED (toolchain)."
+}

@@ -1,0 +1,35 @@
+✔ the lifecycle is exactly ten forward states plus six terminal outcomes plus two Vault overlays (1.3236ms)
+✔ every pair in the transition table is the table, and canTransition agrees with it (0.1869ms)
+✔ canTransition answers false for unknown states instead of throwing (0.094ms)
+✔ requiredEvidenceFor names the gate for every gated destination and nothing for ungated ones (0.139ms)
+✔ the full ten-state ladder is accepted end to end (2.5886ms)
+✔ terminal and parked states accept only their listed successors (0.2562ms)
+✔ re-entering from a parked state re-runs every gate (0.2214ms)
+✔ illegal transitions are refused with a reason, one test per mistake (0.3148ms)
+✔ an unknown destination state throws instead of silently succeeding (0.382ms)
+✔ a proposal in an unknown state is refused, not coerced (0.2199ms)
+✔ each evidence gate refuses when its evidence is absent (1.0234ms)
+✔ a failing test cannot reach Tested (0.3333ms)
+✔ shadow can be skipped only with an explicit owner waiver that carries a reason (0.2575ms)
+✔ approval by anyone other than Sako or Amad is refused (0.2745ms)
+✔ a verifier equal to the implementer is refused, in both directions (0.1889ms)
+✔ Rejected, Blocked and RolledBack each demand a written reason (0.3199ms)
+✔ no transition happens without an actor (0.105ms)
+✔ a frozen proposal cannot be mutated, at the top level or nested (0.2112ms)
+✔ transition never mutates its input (0.1304ms)
+✔ staleness is measured from the freshest traceable date (0.113ms)
+✔ a stale proposal is demoted one step with a recorded decay event (0.2304ms)
+✔ a fresh proposal is not demoted, and a released one has no demotion path (0.0896ms)
+✔ history is append-only across a full run (0.4307ms)
+✔ a held record may only be resolved back to the state it was held from (0.1343ms)
+✔ revocation is reachable from every live state and is final (0.1432ms)
+✔ validateProposal reports structural breakage instead of guessing (0.397ms)
+✔ a binding is stable across key order and a fingerprint changes when content changes (0.2725ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 97.9927

@@ -1,0 +1,14 @@
+{
+  "stage": "01-foundation-voice-adaptive-shell",
+  "version": "2026.09.16.1",
+  "moves": [],
+  "delete": [],
+  "deploy": {
+    "migrations": [
+      "supabase/migrations/20260916174500_backfill_account_profiles.sql"
+    ],
+    "functions": [
+      "hey"
+    ]
+  }
+}

@@ -1,0 +1,338 @@
+.hey-notification-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.hey-notification-drawer {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--hey-glass-elevated-fill, rgba(10, 13, 17, 0.92));
+  backdrop-filter: blur(var(--hey-glass-elevated-blur, 40px));
+  border-left: 1px solid var(--hey-glass-elevated-border, rgba(255, 255, 255, 0.1));
+  box-shadow:
+    -4px 0 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    var(--hey-glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.3));
+  overflow: hidden;
+}
+
+.hey-notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+  flex-shrink: 0;
+}
+
+.hey-notification-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hey-notification-title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-notification-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--hey-accent, #d4a843);
+  color: var(--hey-accent-text, #0a0d11);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hey-notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hey-notification-filter {
+  padding: 6px 12px;
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+  border-radius: 8px;
+  color: var(--hey-text-primary, #e8e8e8);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.hey-notification-filter:focus-visible {
+  outline: 2px solid var(--hey-focus, #d4a843);
+  outline-offset: 2px;
+}
+
+.hey-notification-mark-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+  border-radius: 8px;
+  color: var(--hey-text-secondary, #aaa);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-mark-all:hover {
+  background: var(--hey-accent, #d4a843);
+  color: var(--hey-accent-text, #0a0d11);
+  border-color: transparent;
+}
+
+.hey-notification-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--hey-text-tertiary, #888);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-close:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-notification-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.hey-notification-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--hey-text-tertiary, #888);
+  text-align: center;
+  padding: 32px;
+}
+
+.hey-notification-empty p {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.hey-notification-empty small {
+  font-size: 13px;
+}
+
+.hey-notification-day {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hey-notification-day-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hey-text-tertiary, #888);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+}
+
+.hey-notification-item {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 12px;
+  padding: 12px;
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--hey-border, rgba(255, 255, 255, 0.04));
+  border-radius: 10px;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-item.unread {
+  background: var(--hey-accent, #d4a843);
+  background: linear-gradient(90deg, var(--hey-accent, #d4a843) 0%, transparent 100%);
+  border-color: var(--hey-accent, #d4a843);
+}
+
+.hey-notification-item:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+}
+
+.hey-notification-item.unread:hover {
+  background: linear-gradient(90deg, var(--hey-accent, #d4a843) 0%, transparent 100%);
+}
+
+.hey-notification-item-icon {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.hey-notification-item-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hey-notification-item-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hey-notification-item-header strong {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-notification-item-header time {
+  font-size: 11px;
+  color: var(--hey-text-tertiary, #888);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.hey-notification-item-body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--hey-text-secondary, #aaa);
+}
+
+.hey-notification-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.hey-notification-action {
+  padding: 6px 12px;
+  background: var(--hey-glass-card-fill, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--hey-border, rgba(255, 255, 255, 0.08));
+  border-radius: 6px;
+  color: var(--hey-text-primary, #e8e8e8);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-action:hover {
+  background: var(--hey-accent, #d4a843);
+  color: var(--hey-accent-text, #0a0d11);
+  border-color: transparent;
+}
+
+.hey-notification-action-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--hey-text-tertiary, #888);
+  cursor: pointer;
+}
+
+.hey-notification-action-more:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-notification-item-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.hey-notification-mark-read,
+.hey-notification-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--hey-text-tertiary, #888);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-mark-read:hover {
+  background: var(--hey-success, #4caf50);
+  color: white;
+}
+
+.hey-notification-dismiss:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hey-notification-drawer {
+    animation: none;
+  }
+  .hey-notification-overlay {
+    animation: none;
+  }
+  .hey-notification-item {
+    transition: none;
+  }
+}
+
+/* Focus visible */
+.hey-notification-filter:focus-visible,
+.hey-notification-mark-all:focus-visible,
+.hey-notification-close:focus-visible,
+.hey-notification-action:focus-visible,
+.hey-notification-mark-read:focus-visible,
+.hey-notification-dismiss:focus-visible {
+  outline: 2px solid var(--hey-focus, #d4a843);
+  outline-offset: 2px;
+}

@@ -1,0 +1,35 @@
+﻿{
+    "moduleId":  "01-CORE",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:25:41.8494180+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/index.js",
+                                 "--import",
+                                 "src/core/executionController.js",
+                                 "--import",
+                                 "src/core/capabilityRegistry.js",
+                                 "--import",
+                                 "src/core/eventBus.js",
+                                 "--import",
+                                 "src/core/errorTaxonomy.js",
+                                 "--import",
+                                 "src/core/artifactEngine.js",
+                                 "--exists",
+                                 "src/core/executionEngine.js",
+                                 "--exists",
+                                 "src/core/executionLoop.js",
+                                 "--test",
+                                 "tests/journeys.test.js",
+                                 "--test",
+                                 "tests/security-regressions.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

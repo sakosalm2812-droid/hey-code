@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "03-CHAT",
+    "title":  "Persistent multimodal conversation surface",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/chatTransport.js",
+                                    "--import",
+                                    "src/core/messageRouter.js",
+                                    "--exists",
+                                    "src/core/completionRuntime.js",
+                                    "--exists",
+                                    "src/ChatPage.jsx",
+                                    "--exists",
+                                    "src/styles/chat.css",
+                                    "--test",
+                                    "tests/journeys.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Persistent conversations via chatTransport; message routing; completion runtime forwards OS notifications into the notification center. Conversation persistence + HEY.remember journey covered by tests/journeys.test.js. completionRuntime is browser-only (window at import) so it is verified by presence + the notify path tests."
+}

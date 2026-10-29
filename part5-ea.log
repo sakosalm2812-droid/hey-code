@@ -1,0 +1,21 @@
+✔ there are exactly three evolution agents, each with a distinct id (1.3058ms)
+✔ all three contracts validate and declare every required field (0.4692ms)
+✔ a contract without mayNotDo is rejected (0.2127ms)
+✔ a contract with an empty scope is rejected (0.1355ms)
+✔ a contract with an unknown cadence or budget is rejected (0.1654ms)
+✔ an action outside the declared scope is refused (0.6908ms)
+✔ the Model Evolution agent can never claim HEY trained weights (0.1659ms)
+✔ the Capability Evolution agent can never modify production or self-approve (0.902ms)
+✔ the Agent Evolution agent can never widen its own authority (0.233ms)
+✔ an unnamed action is refused, and an invalid contract authorises nothing (0.1879ms)
+✔ the contracts are deeply frozen and immutable (0.3617ms)
+✔ agents are looked up by id and nothing else resolves (0.09ms)
+✔ each agent declares a cadence and a budget, so nothing runs unbounded (0.0935ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 76.733

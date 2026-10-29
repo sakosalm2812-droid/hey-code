@@ -1,0 +1,13 @@
+{
+  "command": "cargo.exe",
+  "arguments": [
+    "check",
+    "--manifest-path",
+    "src-tauri/Cargo.toml"
+  ],
+  "startedAt": "2026-09-16T19:39:57.2099546+03:00",
+  "exitCode": 0,
+  "timedOut": false,
+  "stdout": "",
+  "stderr": "    Checking hey v0.0.0 (E:\\hey\\src-tauri)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 43.63s\n"
+}

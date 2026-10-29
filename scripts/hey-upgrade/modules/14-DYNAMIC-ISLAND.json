@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "14-DYNAMIC-ISLAND",
+    "title":  "Platform-native live status surface, not a fake universal overlay",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "13-DEVICE-FABRIC"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/dynamicIsland.js",
+                                    "--exists",
+                                    "src/core/desktopIslandBridge.js",
+                                    "--exists",
+                                    "src/components/desktop/DesktopIslandSurface.jsx",
+                                    "--exists",
+                                    "src/styles/desktopIsland.css",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js",
+                                    "--test",
+                                    "tests/runtime-integrity.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Desktop island bridge + surface page exist; Tauri bridge stays inactive in a normal web runtime (no fake native). The true OS live-status surface requires the Windows/Tauri host (Module 23), which is EXTERNAL until a signed native build exists."
+}

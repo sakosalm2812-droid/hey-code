@@ -1,0 +1,48 @@
+﻿{
+    "moduleId":  "23-WINDOWS",
+    "title":  "Windows/Tauri native product integration",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "12-COMPUTER-CONTROL"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/lib/tauriAdapter.js",
+                                    "--import",
+                                    "src/core/osAdapter.js",
+                                    "--exists",
+                                    "src-tauri/src/main.rs",
+                                    "--exists",
+                                    "src-tauri/tauri.conf.json",
+                                    "--exists",
+                                    "src-tauri/capabilities/default.json",
+                                    "--exists",
+                                    "src-tauri/build.rs",
+                                    "--exists",
+                                    "src-tauri/Cargo.toml",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js",
+                                    "--test",
+                                    "tests/runtime-integrity.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Tauri adapter stays inactive in a normal web runtime; WCO geometry adapters present. cargo check passes on the native adapter. Building a signed Windows installer is EXTERNAL (requires the Tauri CLI bundle step + signing); release status nativeBuildRequired."
+}

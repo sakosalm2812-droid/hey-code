@@ -1,0 +1,551 @@
+/**
+ * Teacher Cockpit Styles
+ */
+
+.teacher-cockpit {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  background: var(--hey-bg, #05080a);
+  color: var(--hey-text-primary, #e8e8e8);
+  font-family: var(--hey-font-sans, Inter, system-ui, sans-serif);
+  overscroll-behavior: none;
+}
+
+.cockpit-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 40%, transparent 60%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cockpit-zone {
+  position: relative;
+  z-index: 2;
+}
+
+.cockpit-zone--now {
+  flex-shrink: 0;
+}
+
+.cockpit-zone--next {
+  flex-shrink: 0;
+}
+
+.cockpit-zone--running {
+  flex: 1;
+  min-height: 0;
+}
+
+.cockpit-zone--actions {
+  flex-shrink: 0;
+}
+
+.cockpit-now-content {
+  flex: 1;
+}
+
+.cockpit-lesson-title {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+.cockpit-lesson-meta {
+  font-size: clamp(14px, 2vw, 16px);
+  color: var(--hey-text-secondary, #aaa);
+  margin-bottom: 16px;
+}
+
+.cockpit-timer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+.cockpit-timer-label {
+  font-size: 13px;
+  color: var(--hey-text-tertiary, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cockpit-timer-value {
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--hey-font-mono, 'JetBrains Mono', monospace);
+}
+
+.cockpit-timer-remaining {
+  font-size: clamp(14px, 2vw, 16px);
+  color: var(--hey-text-secondary, #aaa);
+}
+
+.cockpit-timer-progress {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.cockpit-timer-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--hey-accent, #00d4aa), var(--hey-accent-light, #00ffcc));
+  border-radius: 2px;
+  transition: width 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cockpit-clock {
+  font-size: clamp(36px, 6vw, 56px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--hey-font-mono, 'JetBrains Mono', monospace);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cockpit-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hey-text-tertiary, #888);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.cockpit-next-step {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cockpit-next-title {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.cockpit-next-description {
+  font-size: clamp(14px, 2vw, 16px);
+  color: var(--hey-text-secondary, #aaa);
+  line-height: 1.5;
+}
+
+.cockpit-next-meta {
+  font-size: 13px;
+  color: var(--hey-text-tertiary, #888);
+}
+
+.cockpit-btn-open {
+  align-self: flex-start;
+  margin-top: 8px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 48px;
+  min-width: 100px;
+  background: var(--hey-accent, #00d4aa);
+  color: var(--hey-accent-text, #05080a);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 80ms ease, filter 120ms ease;
+}
+
+.cockpit-btn-open:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.cockpit-btn-open:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cockpit-btn-open:focus-visible {
+  outline: 2px solid var(--hey-focus, #00d4aa);
+  outline-offset: 2px;
+}
+
+.cockpit-next-empty {
+  font-size: clamp(18px, 3vw, 22px);
+  color: var(--hey-text-tertiary, #888);
+  text-align: center;
+  padding: 24px;
+}
+
+.cockpit-missions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cockpit-mission-card {
+  padding: 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+}
+
+.cockpit-mission-title {
+  font-size: clamp(16px, 2.5vw, 18px);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cockpit-mission-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.cockpit-status-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cockpit-status-badge--awaiting_permission {
+  background: rgba(255,184,0,0.2);
+  color: var(--hey-warning, #ffb800);
+  border: 1px solid rgba(255,184,0,0.3);
+}
+
+.cockpit-status-badge--running {
+  background: rgba(0,212,170,0.2);
+  color: var(--hey-accent, #00d4aa);
+  border: 1px solid rgba(0,212,170,0.3);
+}
+
+.cockpit-status-badge--verifying {
+  background: rgba(168,85,247,0.2);
+  color: var(--hey-info, #a855f7);
+  border: 1px solid rgba(168,85,247,0.3);
+}
+
+.cockpit-mission-progress {
+  color: var(--hey-text-tertiary, #888);
+  font-variant-numeric: tabular-nums;
+}
+
+.cockpit-approval-card {
+  padding: 16px;
+  background: rgba(255,184,0,0.08);
+  border: 1px solid rgba(255,184,0,0.3);
+  border-radius: 12px;
+}
+
+.cockpit-approval-action {
+  font-size: clamp(16px, 2.5vw, 18px);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cockpit-approval-risk {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cockpit-risk-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(220,38,38,0.2);
+  color: var(--hey-danger, #dc2626);
+  border: 1px solid rgba(220,38,38,0.3);
+}
+
+.cockpit-approval-reason {
+  font-size: 13px;
+  color: var(--hey-text-secondary, #aaa);
+}
+
+.cockpit-approval-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cockpit-btn-approve {
+  flex: 1;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 48px;
+  background: var(--hey-success, #00d47e);
+  color: #05080a;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 80ms ease;
+}
+
+.cockpit-btn-approve:hover {
+  filter: brightness(1.1);
+}
+
+.cockpit-btn-approve:active {
+  transform: scale(0.98);
+}
+
+.cockpit-btn-approve:focus-visible {
+  outline: 2px solid var(--hey-focus, #00d4aa);
+  outline-offset: 2px;
+}
+
+.cockpit-btn-deny {
+  flex: 1;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 48px;
+  background: rgba(220,38,38,0.2);
+  color: var(--hey-danger, #dc2626);
+  border: 1px solid rgba(220,38,38,0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 120ms ease, transform 80ms ease;
+}
+
+.cockpit-btn-deny:hover {
+  background: rgba(220,38,38,0.3);
+}
+
+.cockpit-btn-deny:active {
+  transform: scale(0.98);
+}
+
+.cockpit-btn-deny:focus-visible {
+  outline: 2px solid var(--hey-focus, #00d4aa);
+  outline-offset: 2px;
+}
+
+.cockpit-running-empty {
+  font-size: clamp(18px, 3vw, 22px);
+  color: var(--hey-text-tertiary, #888);
+  text-align: center;
+  padding: 40px;
+}
+
+.cockpit-three-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cockpit-btn-primary {
+  flex: 1 1 200px;
+  max-width: 280px;
+  padding: 18px 32px;
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  min-height: 64px;
+  background: var(--hey-accent, #00d4aa);
+  color: var(--hey-accent-text, #05080a);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 80ms ease, filter 120ms ease;
+}
+
+.cockpit-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.cockpit-btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.cockpit-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cockpit-btn-primary:focus-visible {
+  outline: 2px solid var(--hey-focus, #00d4aa);
+  outline-offset: 2px;
+}
+
+.cockpit-btn-secondary {
+  flex: 1 1 180px;
+  max-width: 220px;
+  padding: 18px 32px;
+  font-size: clamp(18px, 3vw, 22px);
+  font-weight: 600;
+  min-height: 64px;
+  background: rgba(255,255,255,0.06);
+  color: var(--hey-text-primary, #e8e8e8);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 120ms ease, transform 80ms ease;
+}
+
+.cockpit-btn-secondary:hover {
+  background: rgba(255,255,255,0.12);
+  transform: translateY(-1px);
+}
+
+.cockpit-btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cockpit-btn-secondary:focus-visible {
+  outline: 2px solid var(--hey-focus, #00d4aa);
+  outline-offset: 2px;
+}
+
+.cockpit-btn-icon {
+  font-size: clamp(20px, 3vw, 24px);
+  line-height: 1;
+}
+
+.cockpit-speech-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255,184,0,0.1);
+  border: 1px solid rgba(255,184,0,0.3);
+  border-radius: 12px;
+  color: var(--hey-warning, #ffb800);
+  font-size: clamp(14px, 2vw, 16px);
+  font-weight: 500;
+}
+
+.cockpit-speech-fallback-text {
+  flex: 1;
+  text-align: center;
+}
+
+.cockpit-btn-dismiss {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--hey-warning, #ffb800);
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 120ms ease;
+}
+
+.cockpit-btn-dismiss:hover {
+  background: rgba(255,184,0,0.1);
+}
+
+.cockpit-hints {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--hey-text-tertiary, #888);
+}
+
+.cockpit-hints kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  font-family: var(--hey-font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px;
+  margin: 0 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cockpit-timer-bar,
+  .cockpit-btn-open,
+  .cockpit-btn-primary,
+  .cockpit-btn-secondary,
+  .cockpit-btn-approve,
+  .cockpit-btn-deny {
+    transition: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .cockpit-three-buttons {
+    flex-direction: column;
+  }
+
+  .cockpit-btn-primary,
+  .cockpit-btn-secondary {
+    max-width: none;
+    width: 100%;
+  }
+
+  .cockpit-approval-actions {
+    flex-direction: column;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: more) {
+  .teacher-cockpit {
+    background: #000;
+    color: #fff;
+  }
+
+  .cockpit-scrim {
+    background: #000;
+  }
+
+  .cockpit-btn-primary {
+    background: #fff;
+    color: #000;
+    border: 2px solid #fff;
+  }
+
+  .cockpit-btn-secondary {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+  }
+
+  .cockpit-btn-approve {
+    background: #0f0;
+    color: #000;
+    border: 2px solid #0f0;
+  }
+
+  .cockpit-btn-deny {
+    background: transparent;
+    color: #f00;
+    border: 2px solid #f00;
+  }
+
+  .cockpit-status-badge--awaiting_permission {
+    background: #ff0;
+    color: #000;
+    border: 2px solid #ff0;
+  }
+
+  .cockpit-status-badge--running {
+    background: #0ff;
+    color: #000;
+    border: 2px solid #0ff;
+  }
+}

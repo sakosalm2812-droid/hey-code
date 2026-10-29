@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "09-RESEARCH-WEB-FILES",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:00.5952268+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/commandParser.js",
+                                 "--import",
+                                 "src/core/infinity/missionEngine.js",
+                                 "--exists",
+                                 "src/core/filesEngine.js",
+                                 "--exists",
+                                 "src/core/workspaceEngine.js",
+                                 "--exists",
+                                 "src/ProjectsPage.jsx",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

@@ -1,0 +1,17 @@
+# HEY Robots.txt
+User-agent: *
+Allow: /
+
+# Disallow private/admin routes
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /auth/
+Disallow: /settings/
+Disallow: /_next/
+Disallow: /*.json$
+
+# Sitemap
+Sitemap: https://hey.ai/sitemap.xml
+
+# Host
+Host: https://hey.ai

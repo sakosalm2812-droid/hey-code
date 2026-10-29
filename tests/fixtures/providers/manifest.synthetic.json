@@ -1,0 +1,14 @@
+{
+  "_label": "SYNTHETIC",
+  "purpose": "Index of recorded provider shapes used by tests/model-evaluator.test.js.",
+  "warning": "Every file listed here is SYNTHETIC. No live provider call produced any of them. Model quality is therefore UNVERIFIED.",
+  "fixtures": [
+    "openai-chat.synthetic.json",
+    "anthropic-chat.synthetic.json",
+    "openrouter-chat.synthetic.json",
+    "groq-chat.synthetic.json",
+    "gemini-chat.synthetic.json",
+    "deepseek-chat.synthetic.json",
+    "openai-refusal.synthetic.json"
+  ]
+}

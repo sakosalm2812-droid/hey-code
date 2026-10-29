@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "19-PROVIDER-ROUTER",
+    "title":  "Free-first multi-provider/model routing, health, fallback and future paid adapters",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/infinity/providerRouter.js",
+                                    "--import",
+                                    "src/core/infinity/qualityGate.js",
+                                    "--import",
+                                    "src/core/infinity/infinityManifest.js",
+                                    "--exists",
+                                    "src/core/providerRouter.js",
+                                    "--exists",
+                                    "src/core/providerRegistry.js",
+                                    "--test",
+                                    "tests/infinityRuntime.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Provider router prefers compatible healthy higher-quality provider and honors localOnly; quality gate refuses empty output; provider descriptors carry cost/privacy/local fields so paid adapters can stay disabled by default. Covered by infinityRuntime.test.js."
+}

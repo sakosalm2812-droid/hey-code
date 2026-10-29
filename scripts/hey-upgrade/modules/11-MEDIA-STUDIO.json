@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "11-MEDIA-STUDIO",
+    "title":  "Real local-first media editing + pluggable AI generation",
+    "version":  "2026.09.18.2",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/mediaAiPlanner.js",
+                                    "--import",
+                                    "src/core/mediaEditEngine.js",
+                                    "--import",
+                                    "src/lib/generationProviders.js",
+                                    "--exists",
+                                    "src/pages/MediaStudio.jsx",
+                                    "--exists",
+                                    "src/core/mediaEditEngine.js",
+                                    "--test",
+                                    "tests/mediaEditPlan.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Local editing plan parser (trim/crop/resize/speed/compress); semantic requests separated from exact local transforms; AI-proposed plans strip unapproved operations (execute_shell removed). FFmpeg WASM is the local-first engine. Verified by mediaEditPlan.test.js. Server-side hey-studio image generation is free-first: OpenAI when OPENAI_API_KEY is set, otherwise a no-key Pollinations fallback (see module 31)."
+}

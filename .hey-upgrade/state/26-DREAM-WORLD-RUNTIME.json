@@ -1,0 +1,25 @@
+﻿{
+    "moduleId":  "26-DREAM-WORLD-RUNTIME",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:40.0029482+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/generationEngine.js",
+                                 "--exists",
+                                 "src/pages/WorldStudio.jsx",
+                                 "--exists",
+                                 "src/core/infinity/worldStyleEngine.js",
+                                 "--exists",
+                                 "src/pages/WorldStudio.module.css",
+                                 "--test",
+                                 "tests/theme-studio.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

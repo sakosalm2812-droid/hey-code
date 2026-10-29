@@ -1,0 +1,35 @@
+﻿{
+    "moduleId":  "31-DEPLOYMENT-LAUNCH",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:27:03.0609789+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/platformMatrix.js",
+                                 "--exists",
+                                 "supabase/functions/hey",
+                                 "--exists",
+                                 "supabase/functions/hey-studio",
+                                 "--exists",
+                                 "supabase/functions/admin-entitlements",
+                                 "--exists",
+                                 "supabase/functions/hey-push",
+                                 "--exists",
+                                 "supabase/migrations",
+                                 "--exists",
+                                 "public/sw.js",
+                                 "--exists",
+                                 ".gitleaks.toml",
+                                 "--exists",
+                                 "DEPLOYMENT.md",
+                                 "--test",
+                                 "tests/release-surfaces.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

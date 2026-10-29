@@ -1,0 +1,47 @@
+﻿{
+    "moduleId":  "33-EXTERNAL-CONTROL",
+    "title":  "OS-level control bridge and native ladder (Windows daemon, Android accessibility, iOS facts)",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "15-GESTURES",
+                         "23-WINDOWS"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/externalControlBridge.js",
+                                    "--exists",
+                                    "src/core/externalControlBridge.js",
+                                    "--exists",
+                                    "native/external-control/README.md",
+                                    "--exists",
+                                    "native/external-control/android/ExternalHeyAccessibilityService.kt",
+                                    "--exists",
+                                    "native/external-control/windows/daemon-design.md",
+                                    "--exists",
+                                    "native/external-control/ios/APPLE-CONTROL-POLICY.md",
+                                    "--exists",
+                                    "src/core/gestureEngine.js",
+                                    "--test",
+                                    "tests/external-control.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Honest external-control contract: action envelopes, allowlisted commands, risk gates, and confirmation requirements live in externalControlBridge (13/13 tests). Gesture bindings with the external. prefix route through the bridge and fail closed (nativeTransportUnavailable) in a plain web runtime. Windows Tauri daemon: cargo check passes, signed installer EXTERNAL. Android accessibility service: source scaffold only, needs Android SDK (EXTERNAL_SETUP_REQUIRED). iOS: third-party control barred by Apple policy; Live Activity/widgets only."
+}

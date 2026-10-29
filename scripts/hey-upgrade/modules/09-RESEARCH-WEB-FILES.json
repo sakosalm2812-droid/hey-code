@@ -1,0 +1,42 @@
+﻿{
+    "moduleId":  "09-RESEARCH-WEB-FILES",
+    "title":  "Grounded research, web/source provenance, file intelligence and prompt-injection resistance",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/commandParser.js",
+                                    "--import",
+                                    "src/core/infinity/missionEngine.js",
+                                    "--exists",
+                                    "src/core/filesEngine.js",
+                                    "--exists",
+                                    "src/core/workspaceEngine.js",
+                                    "--exists",
+                                    "src/ProjectsPage.jsx",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Natural command parsing produces typed workflow steps with validated URLs (YouTube example asserted); research missions require a real output before completion. File intelligence surfaces exist (filesEngine) with permission gating."
+}

@@ -1,0 +1,35 @@
+﻿{
+    "moduleId":  "17-TASKS-PLANNER",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:20.6215099+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/taskEngine.js",
+                                 "--import",
+                                 "src/core/tasksCalendarEngine.js",
+                                 "--import",
+                                 "src/lib/habitStreak.js",
+                                 "--exists",
+                                 "src/core/planner.js",
+                                 "--exists",
+                                 "src/core/briefingEngine.js",
+                                 "--exists",
+                                 "src/core/prayerTimes.js",
+                                 "--exists",
+                                 "src/core/proactiveEngine.js",
+                                 "--exists",
+                                 "src/TasksPage.jsx",
+                                 "--exists",
+                                 "src/CalendarPage.jsx",
+                                 "--test",
+                                 "tests/fix-pass.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

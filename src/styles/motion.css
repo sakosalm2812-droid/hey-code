@@ -1,0 +1,90 @@
+/**
+ * HEY Motion Tokens — CSS Custom Properties
+ * 
+ * Single source of truth for motion durations and easings.
+ * Used by MotionContext, Motion*.jsx wrappers, and all animated components.
+ * 
+ * @layer motion.tokens
+ */
+
+@layer motion.tokens {
+  :root {
+    /* Duration tokens (milliseconds) */
+    --hey-motion-instant: 0ms;
+    --hey-motion-fast: 120ms;
+    --hey-motion-base: 200ms;
+    --hey-motion-slow: 320ms;
+    --hey-motion-ambient: 1200ms;
+    
+    /* Easing tokens */
+    --hey-easing-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --hey-easing-enter: cubic-bezier(0.0, 0.9, 0.2, 1);
+    --hey-easing-exit: cubic-bezier(0.4, 0.0, 1.0, 1.0);
+    --hey-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1.0);
+    --hey-easing-linear: linear;
+    --hey-easing-press: cubic-bezier(0.4, 0.0, 0.2, 1.0);
+    
+    /* Reduced motion overrides (applied via media query) */
+    --hey-motion-reduced-instant: 0ms;
+    --hey-motion-reduced-fast: 80ms;
+    --hey-motion-reduced-base: 80ms;
+    --hey-motion-reduced-slow: 80ms;
+    --hey-motion-reduced-ambient: 0ms;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --hey-motion-fast: var(--hey-motion-reduced-fast);
+      --hey-motion-base: var(--hey-motion-reduced-base);
+      --hey-motion-slow: var(--hey-motion-reduced-slow);
+      --hey-motion-ambient: var(--hey-motion-reduced-ambient);
+    }
+  }
+}
+
+/**
+ * Utility classes for common motion patterns
+ * @layer motion.utilities
+ */
+@layer motion.utilities {
+  .hey-motion-fade {
+    transition: opacity var(--hey-motion-fast) var(--hey-easing-standard);
+  }
+  
+  .hey-motion-slide-up {
+    transition: transform var(--hey-motion-base) var(--hey-easing-enter), 
+                opacity var(--hey-motion-base) var(--hey-easing-enter);
+  }
+  
+  .hey-motion-slide-down {
+    transition: transform var(--hey-motion-base) var(--hey-easing-exit), 
+                opacity var(--hey-motion-base) var(--hey-easing-exit);
+  }
+  
+  .hey-motion-scale {
+    transition: transform var(--hey-motion-fast) var(--hey-easing-standard);
+  }
+  
+  .hey-motion-panel {
+    transition: transform var(--hey-motion-base) var(--hey-easing-standard),
+                opacity var(--hey-motion-base) var(--hey-easing-standard),
+                box-shadow var(--hey-motion-base) var(--hey-easing-standard);
+  }
+  
+  .hey-motion-drawer {
+    transition: transform var(--hey-motion-slow) var(--hey-easing-standard);
+  }
+  
+  .hey-motion-toast {
+    transition: transform var(--hey-motion-fast) var(--hey-easing-standard),
+                opacity var(--hey-motion-fast) var(--hey-easing-standard);
+  }
+  
+  .hey-motion-button-press {
+    transition: transform var(--hey-motion-instant) var(--hey-easing-press);
+  }
+  
+  .hey-motion-button-press:active:not(:focus-visible) {
+    transform: scale(0.98);
+  }
+}

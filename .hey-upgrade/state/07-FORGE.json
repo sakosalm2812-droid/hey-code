@@ -1,0 +1,21 @@
+﻿{
+    "moduleId":  "07-FORGE",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:25:56.1207506+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/forgeEngine.js",
+                                 "--exists",
+                                 "src/ForgePage.jsx",
+                                 "--test",
+                                 "tests/release-surfaces.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

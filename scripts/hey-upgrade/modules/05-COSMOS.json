@@ -1,0 +1,52 @@
+﻿{
+    "moduleId":  "05-COSMOS",
+    "title":  "Private timeline + semantic memory graph + retrieval intelligence",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/memoryGraph.js",
+                                    "--import",
+                                    "src/core/memoryInbox.js",
+                                    "--import",
+                                    "src/core/contextManager.js",
+                                    "--import",
+                                    "src/core/cosmosMemory.js",
+                                    "--exists",
+                                    "src/core/memoryEngine.js",
+                                    "--exists",
+                                    "src/core/memoryGraphService.js",
+                                    "--exists",
+                                    "src/core/memoryRanking.js",
+                                    "--exists",
+                                    "src/lib/heyMemory.js",
+                                    "--exists",
+                                    "src/MemoryPage.jsx",
+                                    "--exists",
+                                    "src/CosmosPage.jsx",
+                                    "--test",
+                                    "tests/journeys.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Automatic memories gate in an approval inbox; approved memories persist into a searchable memory graph; rejection writes a decision receipt. Multiple abstractions exist (memoryGraph, memoryEngine, memoryGraphService...); consolidation is tracked as a candidate in Module 32 and requires a migration plan before removal."
+}

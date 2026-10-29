@@ -1,0 +1,50 @@
+﻿{
+    "moduleId":  "17-TASKS-PLANNER",
+    "title":  "Tasks, planner, calendar, reminders and time-aware intelligence",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/taskEngine.js",
+                                    "--import",
+                                    "src/core/tasksCalendarEngine.js",
+                                    "--import",
+                                    "src/lib/habitStreak.js",
+                                    "--exists",
+                                    "src/core/planner.js",
+                                    "--exists",
+                                    "src/core/briefingEngine.js",
+                                    "--exists",
+                                    "src/core/prayerTimes.js",
+                                    "--exists",
+                                    "src/core/proactiveEngine.js",
+                                    "--exists",
+                                    "src/TasksPage.jsx",
+                                    "--exists",
+                                    "src/CalendarPage.jsx",
+                                    "--test",
+                                    "tests/fix-pass.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Tasks + calendar engine with time-aware intelligence; habit streaks computed on local calendar days with pending-today semantics; proactive engine surfaces overdue-task signals. Covered by fix-pass.test.js. tasksCalendarEngine logs a localStorage availability warning in Node but the module still loads and the pure helpers are unit-tested."
+}

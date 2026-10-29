@@ -1,0 +1,44 @@
+﻿{
+    "moduleId":  "29-OBSERVABILITY-DEBUG",
+    "title":  "Local/free structured logs, traces, health and diagnostics",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/heyLogger.js",
+                                    "--import",
+                                    "src/core/errorTaxonomy.js",
+                                    "--exists",
+                                    "src/core/diagnosticsEngine.js",
+                                    "--exists",
+                                    "src/core/healthEngine.js",
+                                    "--exists",
+                                    "src/DebugPage.jsx",
+                                    "--exists",
+                                    "scripts/hey-upgrade/HeyUpgrade.psm1",
+                                    "--test",
+                                    "tests/upgrade-orchestrator.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Logger, diagnostics engine, health engine and error taxonomy exist; upgrade orchestrator captures redacted, timed command logs with exit codes. Structured server-side tracing is a backend-deploy item (EXTERNAL)."
+}

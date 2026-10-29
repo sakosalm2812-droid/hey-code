@@ -1,0 +1,28 @@
+✔ a dedupe key is stable across URL case, fragment, trailing slash and query order (3.5515ms)
+✔ different artifacts, versions or content produce different keys (0.1882ms)
+✔ an artifact with no URL and no content hash is refused rather than keyed on nothing (2.4576ms)
+✔ canonicalArtifactUrl keeps the path and drops the fragment (0.7349ms)
+✔ enqueue refuses a second identical key and never mutates the queue (8.145ms)
+✔ enqueue derives the key when none is supplied and refuses a record with no identity (0.4124ms)
+✔ a duplicate key is deferred before any spend is planned (1.4285ms)
+✔ the WIP limit is never exceeded, and running jobs consume slots (0.5569ms)
+✔ a job whose cost exceeds the remaining budget is never planned (0.7447ms)
+✔ money already spent by running jobs reduces the available budget (0.2424ms)
+✔ maintenance work goes to its own lane with a deadline, never into the proposal queue (0.2484ms)
+✔ an unknown cadence or an invalid limit refuses the whole cycle instead of guessing (0.1937ms)
+✔ planning is deterministic, respects priority, and never mutates its input (0.2513ms)
+✔ only the two declared lanes are accepted (0.1229ms)
+✔ all eight stopping rules stop and each carries a reason (0.3276ms)
+✔ the first active rule in precedence order wins (0.1217ms)
+✔ an unrecognised condition is treated as stop, never as permission to continue (0.0854ms)
+✔ no-change is a first-class counted outcome, and a zero-proposal cycle is a success (0.3181ms)
+✔ an unknown outcome is refused and a job cannot record two outcomes (0.0882ms)
+✔ cycle arithmetic is exact, including deferred spend of zero (0.1652ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 95.1686

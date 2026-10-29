@@ -1,0 +1,40 @@
+﻿{
+    "moduleId":  "15-GESTURES",
+    "title":  "Camera hand-gesture control with calibration, debouncing and safe action mapping",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "10-VISION"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/lib/wakeWordDetector.js",
+                                    "--exists",
+                                    "src/core/gestureEngine.js",
+                                    "--exists",
+                                    "src/core/systemGestureRuntime.js",
+                                    "--exists",
+                                    "src/lib/gestureControl.js",
+                                    "--test",
+                                    "tests/fix-pass.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Gesture control surface + system gesture runtime exist; wake-word boundary detection is unit-tested. gestureControl reads import.meta.env at load (browser-only), so it is verified by presence. Camera gesture loops are browser-only and cannot run headless in Node; safe action mapping requires explicit permission gates."
+}

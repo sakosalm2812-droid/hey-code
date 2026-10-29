@@ -1,0 +1,34 @@
+﻿{
+    "moduleId":  "25-IOS",
+    "title":  "iOS native integration using legitimate platform capabilities",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "23-WINDOWS"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/platformMatrix.js",
+                                    "--test",
+                                    "tests/release-surfaces.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Release matrix marks iOS as nativeProjectRequired and isReleaseVerified=false. iOS builds require macOS + Xcode + Apple signing which are unavailable on this Windows host -\u003e EXTERNAL_SETUP_REQUIRED (hardware/signing). No fake iOS automation claims are made."
+}

@@ -1,0 +1,54 @@
+﻿{
+    "moduleId":  "20-AUTH-SECURITY",
+    "title":  "Auth lifecycle, profiles, RLS, rate limiting, trust center and security hardening",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/permissionManager.js",
+                                    "--import",
+                                    "src/core/auditLog.js",
+                                    "--import",
+                                    "src/lib/authLifecycle.js",
+                                    "--import",
+                                    "src/lib/permissionPolicy.js",
+                                    "--exists",
+                                    "src/core/trustCenterEngine.js",
+                                    "--exists",
+                                    "src/core/ownerEntitlements.js",
+                                    "--exists",
+                                    "src/AuthContext.jsx",
+                                    "--exists",
+                                    "src/ProtectedRoute.jsx",
+                                    "--exists",
+                                    "src/PermissionsPage.jsx",
+                                    "--exists",
+                                    "supabase/migrations",
+                                    "--test",
+                                    "tests/security-regressions.test.js",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Execution-time authorization enforces user identity, plan, permission, consent and forged-client defenses; hydrated permissions cannot cross account boundaries; audit receipts on every decision. Auth lifecycle + RLS migrations exist server-side. Service-role secrets live server-side only."
+}

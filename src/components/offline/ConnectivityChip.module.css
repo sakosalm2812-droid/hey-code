@@ -1,0 +1,144 @@
+.connectivityChip {
+  --chip-height: 28px;
+  --dot-size: 8px;
+  --gap: 6px;
+  --padding-x: 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap);
+  height: var(--chip-height);
+  padding: 0 var(--padding-x);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--hey-text-primary, #fff);
+  cursor: default;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.connectivityChip.interactive {
+  cursor: pointer;
+}
+
+.connectivityChip.interactive:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.connectivityChip.interactive:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--hey-focus, #8b5cf6), 0 0 0 4px var(--hey-surface, rgba(10,13,17,0.9));
+}
+
+.connectivityChip.online {
+  color: var(--hey-success, #10b981);
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.connectivityChip.offline {
+  color: var(--hey-danger, #ef4444);
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.connectivityChip.degraded {
+  color: var(--hey-warning, #f59e0b);
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.connectivityChip.unknown {
+  color: var(--hey-text-tertiary, rgba(255,255,255,0.4));
+  background: rgba(255,255,255,0.04);
+  border-color: var(--hey-border, rgba(255,255,255,0.06));
+}
+
+.dot {
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.connectivityChip.online .dot {
+  box-shadow: 0 0 6px currentColor;
+}
+
+.connectivityChip.degraded .dot {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.connectivityChip.offline .dot {
+  animation: none;
+}
+
+.chevron {
+  font-size: 8px;
+  opacity: 0.6;
+  margin-left: 2px;
+  transition: transform 0.15s ease;
+}
+
+.connectivityChip.interactive:hover .chevron {
+  opacity: 1;
+}
+
+.label {
+  line-height: 1;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+  .connectivityChip {
+    transition: none;
+  }
+  .chevron {
+    transition: none;
+  }
+}
+
+/* Reserved width for layout stability — chip never changes width between states */
+.connectivityChip::before {
+  content: "Degraded";
+  visibility: hidden;
+  position: absolute;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .connectivityChip {
+    --padding-x: 8px;
+    --gap: 4px;
+    font-size: 11px;
+  }
+
+  .label {
+    display: none;
+  }
+
+  .connectivityChip::before {
+    content: "";
+  }
+}

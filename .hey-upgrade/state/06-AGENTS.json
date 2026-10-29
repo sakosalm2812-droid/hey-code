@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "06-AGENTS",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:25:54.1790089+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/agentEngine.js",
+                                 "--exists",
+                                 "src/core/agentRouter.js",
+                                 "--exists",
+                                 "src/core/agentToolMap.js",
+                                 "--exists",
+                                 "src/core/capabilityExpansionEngine.js",
+                                 "--exists",
+                                 "src/AgentsPage.jsx",
+                                 "--test",
+                                 "tests/release-surfaces.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

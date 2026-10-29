@@ -1,0 +1,50 @@
+﻿{
+    "moduleId":  "02-UI-DESIGN-SYSTEM",
+    "title":  "Premium adaptive design system, shell, landing benchmark, responsive behavior",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/lib/themes.js",
+                                    "--import",
+                                    "src/lib/themeTokens.js",
+                                    "--exists",
+                                    "src/lib/designTokens.js",
+                                    "--exists",
+                                    "src/styles/variables.css",
+                                    "--exists",
+                                    "src/styles/theme.css",
+                                    "--exists",
+                                    "src/components/Buttons.jsx",
+                                    "--exists",
+                                    "src/pages/Landing.module.css",
+                                    "--exists",
+                                    "src/theme",
+                                    "--exists",
+                                    "src/styles/utilities.css",
+                                    "--test",
+                                    "tests/theme-studio.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "27 themed design tokens; every theme passes \u003e=4.5:1 contrast checks for action labels and body text; invalid custom accents rejected. Premium restrained landing direction. Verified by theme-studio.test.js."
+}

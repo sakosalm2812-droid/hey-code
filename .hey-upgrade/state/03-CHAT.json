@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "03-CHAT",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:25:46.5482810+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/chatTransport.js",
+                                 "--import",
+                                 "src/core/messageRouter.js",
+                                 "--exists",
+                                 "src/core/completionRuntime.js",
+                                 "--exists",
+                                 "src/ChatPage.jsx",
+                                 "--exists",
+                                 "src/styles/chat.css",
+                                 "--test",
+                                 "tests/journeys.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

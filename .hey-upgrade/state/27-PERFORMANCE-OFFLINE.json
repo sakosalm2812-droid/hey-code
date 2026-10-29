@@ -1,0 +1,25 @@
+﻿{
+    "moduleId":  "27-PERFORMANCE-OFFLINE",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:41.4318919+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/heyLogger.js",
+                                 "--exists",
+                                 "src/core/offlineEngine.js",
+                                 "--exists",
+                                 "src/core/backgroundRuntimeKeepAlive.js",
+                                 "--exists",
+                                 "public/sw.js",
+                                 "--exists",
+                                 "src/core/healthEngine.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

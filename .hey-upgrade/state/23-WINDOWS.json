@@ -1,0 +1,33 @@
+﻿{
+    "moduleId":  "23-WINDOWS",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:34.5324532+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/lib/tauriAdapter.js",
+                                 "--import",
+                                 "src/core/osAdapter.js",
+                                 "--exists",
+                                 "src-tauri/src/main.rs",
+                                 "--exists",
+                                 "src-tauri/tauri.conf.json",
+                                 "--exists",
+                                 "src-tauri/capabilities/default.json",
+                                 "--exists",
+                                 "src-tauri/build.rs",
+                                 "--exists",
+                                 "src-tauri/Cargo.toml",
+                                 "--test",
+                                 "tests/platform-capabilities.test.js",
+                                 "--test",
+                                 "tests/runtime-integrity.test.js"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

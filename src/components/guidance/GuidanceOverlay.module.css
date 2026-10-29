@@ -1,0 +1,236 @@
+/**
+ * Guidance Overlay Styles
+ */
+
+.guidance-overlay {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.guidance-card {
+  animation: guidance-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes guidance-enter {
+  from {
+    opacity: 0;
+    transform: translateX(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guidance-card {
+    animation: none;
+  }
+  .guidance-overlay {
+    transition: none;
+  }
+}
+
+.guidance-spine {
+  /* rendered inline via getSpineStyle() */
+}
+
+.guidance-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  borderBottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.guidance-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.guidance-icon {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--hey-accent, #00d4aa);
+}
+
+.guidance-step-counter {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--hey-text-tertiary, #888);
+  font-variant-numeric: tabular-nums;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  borderRadius: 999px;
+}
+
+.guidance-close {
+  margin-left: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  borderRadius: 8px;
+  color: var(--hey-text-secondary, #aaa);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.guidance-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.guidance-close:focus-visible {
+  outline: 2px solid var(--hey-focus, #00d4aa);
+  outline-offset: 2px;
+}
+
+.guidance-content {
+  padding: 16px;
+  flex: 1;
+  minHeight: 80px;
+}
+
+.guidance-step-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--hey-text-primary, #e8e8e8);
+  marginBottom: 8px;
+  lineHeight: 1.3;
+}
+
+.guidance-step-description {
+  font-size: 14px;
+  color: var(--hey-text-secondary, #aaa);
+  lineHeight: 1.5;
+}
+
+.guidance-progress {
+  marginTop: 16px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  borderRadius: 2px;
+  overflow: hidden;
+}
+
+.guidance-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--hey-accent, #00d4aa), var(--hey-accent-light, #00ffcc));
+  borderRadius: 2px;
+  transition: width 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.guidance-empty {
+  textAlign: center;
+  padding: 24px 16px;
+  color: var(--hey-text-tertiary, #888);
+}
+
+.guidance-empty p {
+  margin: 0 0 12px;
+}
+
+.guidance-unavailable {
+  fontSize: 13px;
+  color: var(--hey-warning, #ffb800);
+  background: rgba(255, 184, 0, 0.1);
+  padding: 8px 12px;
+  borderRadius: 8px;
+  border: 1px solid rgba(255, 184, 0, 0.2);
+}
+
+.guidance-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 16px;
+  borderTop: 1px solid rgba(255, 255, 255, 0.04);
+  justifyContent: flex-end;
+}
+
+.guidance-btn {
+  minWidth: 96px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: none;
+  borderRadius: 10px;
+  fontSize: 14px;
+  fontWeight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.guidance-btn-next {
+  background: var(--hey-accent, #00d4aa);
+  color: var(--hey-accent-text, #05080a);
+}
+
+.guidance-btn-next:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.guidance-btn-next:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.guidance-btn-next:focus-visible {
+  outline: 2px solid var(--hey-focus, #00d4aa);
+  outline-offset: 2px;
+}
+
+.guidance-btn-undo {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--hey-text-primary, #e8e8e8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.guidance-btn-undo:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.guidance-btn-undo:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.guidance-btn-finish {
+  background: var(--hey-success, #00d47e);
+  color: #05080a;
+}
+
+.guidance-btn-finish:hover {
+  filter: brightness(1.1);
+}
+
+.guidance-dismissed {
+  padding: 8px 16px 16px;
+  fontSize: 13px;
+  color: var(--hey-text-tertiary, #888);
+  textAlign: center;
+}
+
+.guidance-dismissed button {
+  background: none;
+  border: none;
+  color: var(--hey-accent, #00d4aa);
+  fontSize: 13px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.guidance-dismissed button:hover {
+  textDecoration: underline;
+}

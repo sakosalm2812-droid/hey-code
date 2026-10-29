@@ -1,0 +1,107 @@
+.hey-toast-host {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: 400px;
+  width: calc(100% - 32px);
+}
+
+.hey-toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--hey-glass-elevated-fill, rgba(10, 13, 17, 0.92));
+  backdrop-filter: blur(var(--hey-glass-elevated-blur, 40px));
+  border: 1px solid var(--hey-glass-elevated-border, rgba(255, 255, 255, 0.1));
+  border-left-width: 4px;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    var(--hey-glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.3));
+  color: var(--hey-text-primary, #e8e8e8);
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(100px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.hey-toast-digest {
+  border-left-color: var(--hey-warning, #f5a623);
+}
+
+.hey-toast-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hey-toast-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hey-toast-content strong {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.hey-toast-content small {
+  font-size: 12px;
+  color: var(--hey-text-secondary, #aaa);
+  line-height: 1.3;
+}
+
+.hey-toast-dismiss {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--hey-text-tertiary, #888);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-toast-dismiss:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  border-radius: 0 0 12px 12px;
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hey-toast {
+    animation: none;
+  }
+  .hey-toast-progress {
+    transition: none;
+  }
+}

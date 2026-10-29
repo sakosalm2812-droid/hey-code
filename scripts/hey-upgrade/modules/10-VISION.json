@@ -1,0 +1,38 @@
+﻿{
+    "moduleId":  "10-VISION",
+    "title":  "Camera/screen/image perception pipeline with consent and verified observations",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/visionEngine.js",
+                                    "--import",
+                                    "src/lib/heyVision.js",
+                                    "--exists",
+                                    "src/core/visionEngine.js",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Vision rejects invalid input and missing providers without inventing observations (VISION_PROVIDER_UNAVAILABLE); only structured verified provider observations pass. Camera consent delegated to permission system."
+}

@@ -1,0 +1,48 @@
+﻿{
+    "moduleId":  "04-VOICE",
+    "title":  "Hands-free natural realtime-capable Voice with free-first provider stack",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/lib/voiceProviders.js",
+                                    "--import",
+                                    "src/core/voiceState.js",
+                                    "--import",
+                                    "src/lib/wakeWordDetector.js",
+                                    "--exists",
+                                    "src/core/voiceEngine.js",
+                                    "--exists",
+                                    "src/pages/VoicePage.jsx",
+                                    "--exists",
+                                    "src/pages/Voice.module.css",
+                                    "--exists",
+                                    "src/core/heyVoiceSettings.js",
+                                    "--test",
+                                    "tests/platform-capabilities.test.js",
+                                    "--test",
+                                    "tests/fix-pass.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Free-first provider stack; honest unavailable/offline/permission states; state machine rejects impossible transitions; wake-word boundary matching. Dedicated /voice surface in the nav catalog. Real microphone/TTS cannot be headless-verified; provider behavior covered with mocks."
+}

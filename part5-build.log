@@ -1,0 +1,166 @@
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 2914 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/assets/worker-A4ZT02e5.js                                      2.52 kB
+dist/index.html                                                     3.62 kB │ gzip:   1.19 kB
+dist/assets/inter-vietnamese-400-normal-DMkecbls.woff2              4.97 kB
+dist/assets/inter-vietnamese-600-normal-Cc8MFFhd.woff2              5.10 kB
+dist/assets/inter-vietnamese-500-normal-DOriooB6.woff2              5.11 kB
+dist/assets/inter-greek-ext-400-normal-DGGRlc-M.woff2               5.26 kB
+dist/assets/inter-greek-ext-500-normal-C4iEst2y.woff2               5.42 kB
+dist/assets/inter-greek-ext-600-normal-DRtmH8MT.woff2               5.43 kB
+dist/assets/orbitron-latin-400-normal-U6xZUhur.woff2                6.39 kB
+dist/assets/inter-vietnamese-400-normal-Bbgyi5SW.woff               6.50 kB
+dist/assets/orbitron-latin-700-normal-4jsRXGGJ.woff2                6.52 kB
+dist/assets/orbitron-latin-600-normal-mazHmDYu.woff2                6.58 kB
+dist/assets/inter-vietnamese-500-normal-mJboJaSs.woff               6.59 kB
+dist/assets/orbitron-latin-500-normal-DQ2gt4P1.woff2                6.59 kB
+dist/assets/inter-vietnamese-600-normal-BuLX-rYi.woff               6.64 kB
+dist/assets/inter-greek-ext-400-normal-KugGGMne.woff                7.06 kB
+dist/assets/inter-greek-ext-500-normal-2j5mBUwD.woff                7.19 kB
+dist/assets/inter-greek-ext-600-normal-B8X0CLgF.woff                7.21 kB
+dist/assets/inter-cyrillic-400-normal-obahsSVq.woff2                7.71 kB
+dist/assets/inter-greek-400-normal-B4URO6DV.woff2                   7.77 kB
+dist/assets/inter-cyrillic-500-normal-BasfLYem.woff2                7.90 kB
+dist/assets/inter-greek-500-normal-BIZE56-Y.woff2                   7.92 kB
+dist/assets/inter-greek-600-normal-plRanbMR.woff2                   7.94 kB
+dist/assets/inter-cyrillic-600-normal-CWCymEST.woff2                7.97 kB
+dist/assets/dm-serif-display-latin-ext-400-normal-B1toqZab.woff     8.64 kB
+dist/assets/orbitron-latin-400-normal-DBk4Dmer.woff                 8.65 kB
+dist/assets/orbitron-latin-700-normal-DmYOh-W9.woff                 8.96 kB
+dist/assets/rajdhani-latin-ext-500-normal-CyRWJZ5B.woff             9.02 kB
+dist/assets/orbitron-latin-500-normal-BCCupJ8c.woff                 9.03 kB
+dist/assets/orbitron-latin-600-normal-75H6acHo.woff                 9.03 kB
+dist/assets/rajdhani-latin-ext-400-normal-Der7ynDE.woff             9.08 kB
+dist/assets/rajdhani-latin-ext-600-normal-BleIgkPp.woff             9.34 kB
+dist/assets/inter-cyrillic-400-normal-HOLc17fK.woff                 9.78 kB
+dist/assets/instrument-serif-latin-ext-400-normal-CFCUzsTy.woff     9.86 kB
+dist/assets/inter-greek-400-normal-q2sYcFCs.woff                    9.92 kB
+dist/assets/inter-cyrillic-600-normal-4D_pXhcN.woff                 9.93 kB
+dist/assets/inter-cyrillic-500-normal-CxZf_p3X.woff                 9.94 kB
+dist/assets/inter-greek-500-normal-Xzm54t5V.woff                    9.98 kB
+dist/assets/inter-greek-600-normal-BZpKdvQh.woff                   10.03 kB
+dist/assets/inter-cyrillic-ext-400-normal-BQZuk6qB.woff2           10.23 kB
+dist/assets/inter-cyrillic-ext-500-normal-B0yAr1jD.woff2           10.43 kB
+dist/assets/inter-cyrillic-ext-600-normal-Dfes3d0z.woff2           10.48 kB
+dist/assets/instrument-serif-latin-ext-400-italic-D7-lnxEk.woff    10.50 kB
+dist/assets/dm-serif-display-latin-ext-400-normal-p18AlW_x.woff2   10.80 kB
+dist/assets/instrument-serif-latin-ext-400-normal-C2je3j2s.woff2   11.60 kB
+dist/assets/rajdhani-latin-500-normal-DfvNI-Td.woff                11.76 kB
+dist/assets/rajdhani-latin-400-normal-C6_q4usG.woff                11.76 kB
+dist/assets/rajdhani-latin-600-normal-Dx02qI2_.woff                12.09 kB
+dist/assets/rajdhani-latin-ext-500-normal-DiyUS11w.woff2           12.38 kB
+dist/assets/instrument-serif-latin-ext-400-italic-C9HzH3YL.woff2   12.38 kB
+dist/assets/rajdhani-latin-ext-400-normal-DACPYgMx.woff2           12.38 kB
+dist/assets/rajdhani-latin-ext-600-normal-C9ZjJQAt.woff2           13.12 kB
+dist/assets/inter-cyrillic-ext-400-normal-DQukG94-.woff            13.33 kB
+dist/assets/inter-cyrillic-ext-500-normal-BmqWE9Dz.woff            13.45 kB
+dist/assets/inter-cyrillic-ext-600-normal-Bcila6Z-.woff            13.46 kB
+dist/assets/rajdhani-latin-400-normal-CurJOxDW.woff2               14.97 kB
+dist/assets/rajdhani-latin-500-normal-ByNUCHrt.woff2               15.08 kB
+dist/assets/rajdhani-latin-600-normal-CXCVEoA9.woff2               15.73 kB
+dist/assets/instrument-serif-latin-400-normal-BVbkICAY.woff        18.33 kB
+dist/assets/instrument-serif-latin-400-italic-u__WvvIK.woff        19.26 kB
+dist/assets/instrument-serif-latin-400-normal-DnYpCC2O.woff2       21.03 kB
+dist/assets/dm-serif-display-latin-400-normal-_kVFYEpx.woff        21.80 kB
+dist/assets/instrument-serif-latin-400-italic-DKMiL14s.woff2       22.12 kB
+dist/assets/inter-latin-400-normal-C38fXH4l.woff2                  23.66 kB
+dist/assets/inter-latin-500-normal-Cerq10X2.woff2                  24.27 kB
+dist/assets/inter-latin-600-normal-LgqL8muc.woff2                  24.45 kB
+dist/assets/dm-serif-display-latin-400-normal-C5_t9oOD.woff2       24.74 kB
+dist/assets/inter-latin-400-normal-CyCys3Eg.woff                   30.69 kB
+dist/assets/inter-latin-600-normal-CiBQ2DWP.woff                   31.26 kB
+dist/assets/inter-latin-500-normal-BL9OpVg8.woff                   31.28 kB
+dist/assets/inter-latin-ext-400-normal-C1nco2VV.woff2              35.00 kB
+dist/assets/inter-latin-ext-500-normal-CV4jyFjo.woff2              36.02 kB
+dist/assets/inter-latin-ext-600-normal-D2bJ5OIk.woff2              36.26 kB
+dist/assets/inter-latin-ext-400-normal-77YHD8bZ.woff               47.56 kB
+dist/assets/inter-latin-ext-500-normal-BxGbmqWO.woff               48.49 kB
+dist/assets/inter-latin-ext-600-normal-CIVaiw4L.woff               48.66 kB
+dist/assets/rajdhani-devanagari-400-normal-BdIzgbsr.woff           55.80 kB
+dist/assets/rajdhani-devanagari-500-normal-BPH8g_s8.woff           56.26 kB
+dist/assets/rajdhani-devanagari-600-normal-BtY48IV_.woff           56.43 kB
+dist/assets/rajdhani-devanagari-400-normal-CTuj2HZW.woff2          75.74 kB
+dist/assets/rajdhani-devanagari-500-normal-B_DH_jja.woff2          77.44 kB
+dist/assets/rajdhani-devanagari-600-normal-DhS7ScYx.woff2          79.34 kB
+dist/assets/OwnerAccessPage-DjYUri5l.css                            1.59 kB │ gzip:   0.59 kB
+dist/assets/InboxPage-D-QDrmin.css                                  2.68 kB │ gzip:   0.83 kB
+dist/assets/Pricing-BQoNmVhQ.css                                    2.75 kB │ gzip:   1.06 kB
+dist/assets/Landing-DDDwNuzL.css                                    2.93 kB │ gzip:   1.01 kB
+dist/assets/WorldStudio-BmF2xAVi.css                                3.39 kB │ gzip:   1.02 kB
+dist/assets/AgentsPage-_1xU36wt.css                                 3.43 kB │ gzip:   1.10 kB
+dist/assets/MissionControl-DRGhOq-4.css                             3.91 kB │ gzip:   1.17 kB
+dist/assets/Features-BjBp1NKW.css                                   5.85 kB │ gzip:   1.62 kB
+dist/assets/Home-vkQ2ZV8M.css                                       7.08 kB │ gzip:   1.93 kB
+dist/assets/MediaStudio-B9Lnrb08.css                                9.01 kB │ gzip:   2.51 kB
+dist/assets/vendor-other-B-LnDgbl.css                              14.11 kB │ gzip:   1.66 kB
+dist/assets/index-B-mfOtuZ.css                                    146.21 kB │ gzip:  28.86 kB
+dist/assets/Landing.module-CbeIuppW.js                              0.39 kB │ gzip:   0.21 kB
+dist/assets/NotFound-KObrMbfo.js                                    0.42 kB │ gzip:   0.27 kB
+dist/assets/HEYCard-DdiEd8cB.js                                     0.50 kB │ gzip:   0.34 kB
+dist/assets/rolldown-runtime-B0Z9INg1.js                            0.90 kB │ gzip:   0.51 kB
+dist/assets/PageHeader-D18B4M7v.js                                  0.95 kB │ gzip:   0.51 kB
+dist/assets/ErrorPages-v21PErEi.js                                  1.32 kB │ gzip:   0.73 kB
+dist/assets/Create-DjxVDL-1.js                                      1.62 kB │ gzip:   0.82 kB
+dist/assets/Legal-CBq-8RS0.js                                       2.04 kB │ gzip:   0.84 kB
+dist/assets/Live-B7FjWVXA.js                                        2.19 kB │ gzip:   0.97 kB
+dist/assets/Download-BQULsv23.js                                    2.22 kB │ gzip:   0.96 kB
+dist/assets/Pricing-B8KhrsAs.js                                     2.37 kB │ gzip:   1.04 kB
+dist/assets/CapabilitiesPage-D1PpPdm4.js                            2.94 kB │ gzip:   1.18 kB
+dist/assets/Support-B42_JJhs.js                                     3.07 kB │ gzip:   1.40 kB
+dist/assets/About-CG0hhJcO.js                                       3.28 kB │ gzip:   1.33 kB
+dist/assets/AgentsPage-BWk7x1ec.js                                  3.66 kB │ gzip:   1.40 kB
+dist/assets/PermissionsPage-DG5EpwC1.js                             4.14 kB │ gzip:   1.65 kB
+dist/assets/InboxPage-BQGTSf71.js                                   4.66 kB │ gzip:   1.65 kB
+dist/assets/VoicePage-CI5PlgBn.js                                   4.79 kB │ gzip:   1.95 kB
+dist/assets/WorldStudio-FjYCpx0y.js                                 5.30 kB │ gzip:   1.97 kB
+dist/assets/NotesPage-CmMIsKEZ.js                                   5.34 kB │ gzip:   1.97 kB
+dist/assets/HabitsPage-CCZlKfO8.js                                  5.52 kB │ gzip:   2.05 kB
+dist/assets/CrisisMode-Cho3FNFH.js                                  6.06 kB │ gzip:   2.12 kB
+dist/assets/FinancePage-Dq_rxX5Y.js                                 6.15 kB │ gzip:   2.16 kB
+dist/assets/Home-_FoNRP8G.js                                        6.15 kB │ gzip:   2.19 kB
+dist/assets/lib-utils-CpeBOYRF.js                                   6.32 kB │ gzip:   2.60 kB
+dist/assets/Features-KzsfNQZ9.js                                    6.35 kB │ gzip:   2.35 kB
+dist/assets/GoalsPage-4hcmQTYr.js                                   6.35 kB │ gzip:   2.28 kB
+dist/assets/OwnerAccessPage-DrSnXYgT.js                             6.46 kB │ gzip:   2.42 kB
+dist/assets/HealthPage-Dey1HO_f.js                                  6.47 kB │ gzip:   2.27 kB
+dist/assets/ProjectsPage-Do3PKqJ0.js                                6.56 kB │ gzip:   2.31 kB
+dist/assets/MorningMode-DClZhewg.js                                 6.62 kB │ gzip:   2.31 kB
+dist/assets/JournalPage-DqsI9U9N.js                                 6.84 kB │ gzip:   2.36 kB
+dist/assets/StudioPage-xsiltxpk.js                                  6.94 kB │ gzip:   2.61 kB
+dist/assets/LearnPage-Bk44u8Sc.js                                   6.99 kB │ gzip:   2.45 kB
+dist/assets/Customization-OZNdqHne.js                               7.01 kB │ gzip:   2.47 kB
+dist/assets/CalendarPage-MsdiN-pV.js                                7.52 kB │ gzip:   2.75 kB
+dist/assets/DebugPage-EqpGry4o.js                                   7.63 kB │ gzip:   2.18 kB
+dist/assets/DeenPage-B2c2q5G2.js                                    8.88 kB │ gzip:   2.75 kB
+dist/assets/MemoryPage-AfXCSjkb.js                                  8.95 kB │ gzip:   3.14 kB
+dist/assets/MissionControl-Ecid5WW3.js                              9.44 kB │ gzip:   3.32 kB
+dist/assets/TasksPage-BS2KwFn7.js                                   9.88 kB │ gzip:   3.28 kB
+dist/assets/AnalyticsPage-BJk9JZjn.js                               9.93 kB │ gzip:   3.39 kB
+dist/assets/MediaStudio-DD4RUzwu.js                                10.64 kB │ gzip:   3.71 kB
+dist/assets/Dashboard-Dm6UygfS.js                                  13.12 kB │ gzip:   4.71 kB
+dist/assets/CosmosPage-C8ADRbr-.js                                 14.95 kB │ gzip:   5.22 kB
+dist/assets/DeviceCenterPage-DpZWQjas.js                           15.74 kB │ gzip:   5.22 kB
+dist/assets/ChatPage-DMNf4F0X.js                                   17.56 kB │ gzip:   5.70 kB
+dist/assets/ForgePage-BGqH7Ksn.js                                  17.62 kB │ gzip:   5.03 kB
+dist/assets/SettingsPage-DeIknfLB.js                               22.37 kB │ gzip:   5.79 kB
+dist/assets/vendor-ui-ChN-0U-0.js                                  32.95 kB │ gzip:  11.34 kB
+dist/assets/lib-other-ovCAGaTK.js                                  39.18 kB │ gzip:  14.33 kB
+dist/assets/ModesPage-moVkprXO.js                                  84.48 kB │ gzip:  19.72 kB
+dist/assets/index-CkocWW1l.js                                     102.24 kB │ gzip:  27.76 kB
+dist/assets/vendor-react-G8-zU2lK.js                              301.89 kB │ gzip:  95.84 kB
+dist/assets/core-engine-xQjt0KWo.js                               383.39 kB │ gzip: 106.32 kB
+dist/assets/vendor-other-BlWUeEYA.js                              407.84 kB │ gzip: 124.35 kB
+dist/assets/core-other-Cf1LSLh0.js                                688.33 kB │ gzip: 176.21 kB
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0msrc/core/contextManager.js is dynamically imported by src/core/memoryInbox.js but also statically imported by src/components/widgets/dashboard/DailyPlanWidget.jsx, src/components/widgets/dashboard/ProactiveSuggestionsWidget.jsx, src/core/accountState.js, src/core/agentRouter.js, src/core/executionEngine.js, ..., dynamic import will not move module into another chunk.
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/@tauri-apps/api/core.js is dynamically imported by src/core/completionRuntime.js, src/core/gestureEngine.js, src/lib/tauriAdapter.js but also statically imported by node_modules/@tauri-apps/api/event.js, src/components/desktop/DesktopIslandSurface.jsx, src/core/desktopIslandBridge.js, src/core/systemGestureRuntime.js, dynamic import will not move module into another chunk.
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0mnode_modules/@tauri-apps/api/event.js is dynamically imported by src/components/desktop/DesktopIslandSurface.jsx, src/core/systemGestureRuntime.js but also statically imported by src/components/desktop/DesktopIslandSurface.jsx, src/core/desktopIslandBridge.js, dynamic import will not move module into another chunk.
+
+[33m[INEFFECTIVE_DYNAMIC_IMPORT] [0msrc/core/externalControlBridge.js is dynamically imported by src/core/gestureEngine.js but also statically imported by src/core/index.js, dynamic import will not move module into another chunk.
+
+✓ built in 710ms

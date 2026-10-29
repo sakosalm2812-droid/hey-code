@@ -1,0 +1,40 @@
+﻿{
+    "moduleId":  "28-ACCESSIBILITY",
+    "title":  "Keyboard, screen-reader, motion, contrast, touch and cognitive accessibility",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "02-UI-DESIGN-SYSTEM"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/lib/themeTokens.js",
+                                    "--exists",
+                                    "src/styles/compliance.css",
+                                    "--exists",
+                                    "src/components/IdleScreensaver.jsx",
+                                    "--exists",
+                                    "src/styles/states.css",
+                                    "--test",
+                                    "tests/theme-studio.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Contrast \u003e=4.5:1 enforced across 27 themes, reduced-motion + compliance styles exist. Real screen-reader/keyboard end-to-end checks require a browser/AT environment -\u003e manual verification item (EXTERNAL/physical-device)."
+}

@@ -1,0 +1,211 @@
+﻿{
+    "mode":  "VerifyOnly",
+    "moduleCount":  34,
+    "results":  [
+                    {
+                        "moduleId":  "00-MASTER-ORCHESTRATOR",
+                        "title":  "Master transactional upgrade/orchestration layer",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "01-CORE",
+                        "title":  "Canonical HEY core contracts and execution architecture",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "02-UI-DESIGN-SYSTEM",
+                        "title":  "Premium adaptive design system, shell, landing benchmark, responsive behavior",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "03-CHAT",
+                        "title":  "Persistent multimodal conversation surface",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "04-VOICE",
+                        "title":  "Hands-free natural realtime-capable Voice with free-first provider stack",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "05-COSMOS",
+                        "title":  "Private timeline + semantic memory graph + retrieval intelligence",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "06-AGENTS",
+                        "title":  "229 built-in specialists + custom executable agents and teams",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "07-FORGE",
+                        "title":  "Safe builder for agents, teams, workflows, skills, commands, automations, widgets and capabilities",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "08-WORKFLOWS-AUTOMATIONS",
+                        "title":  "Durable workflows, schedules, triggers, retries and approvals",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "09-RESEARCH-WEB-FILES",
+                        "title":  "Grounded research, web/source provenance, file intelligence and prompt-injection resistance",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "10-VISION",
+                        "title":  "Camera/screen/image perception pipeline with consent and verified observations",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "11-MEDIA-STUDIO",
+                        "title":  "Real local-first media editing + pluggable AI generation",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "12-COMPUTER-CONTROL",
+                        "title":  "Native verified computer control with scoped permissions and receipts",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "13-DEVICE-FABRIC",
+                        "title":  "Trusted device identity, pairing, capability negotiation and handoff",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "14-DYNAMIC-ISLAND",
+                        "title":  "Platform-native live status surface, not a fake universal overlay",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "15-GESTURES",
+                        "title":  "Camera hand-gesture control with calibration, debouncing and safe action mapping",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "16-WORKSPACE-WIDGETS",
+                        "title":  "Persistent spatial workspace + widget runtime",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "17-TASKS-PLANNER",
+                        "title":  "Tasks, planner, calendar, reminders and time-aware intelligence",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "18-MODES",
+                        "title":  "Coherent HEY modes/workbenches without fragmenting the assistant",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "19-PROVIDER-ROUTER",
+                        "title":  "Free-first multi-provider/model routing, health, fallback and future paid adapters",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "20-AUTH-SECURITY",
+                        "title":  "Auth lifecycle, profiles, RLS, rate limiting, trust center and security hardening",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "21-PLANS-ENTITLEMENTS",
+                        "title":  "Future-proof Free/Pro/Elite entitlements with launch-free operation",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "22-PWA",
+                        "title":  "Installable resilient mobile-first PWA with truthful platform limits",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "23-WINDOWS",
+                        "title":  "Windows/Tauri native product integration",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "24-ANDROID",
+                        "title":  "Android native/mobile integration with shared HEY core",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "25-IOS",
+                        "title":  "iOS native integration using legitimate platform capabilities",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "26-DREAM-WORLD-RUNTIME",
+                        "title":  "Dream World prompt-to-interactive-world foundation using the right runtime",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "27-PERFORMANCE-OFFLINE",
+                        "title":  "Performance budgets, workers, caching, offline/recovery and resource governance",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "28-ACCESSIBILITY",
+                        "title":  "Keyboard, screen-reader, motion, contrast, touch and cognitive accessibility",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "29-OBSERVABILITY-DEBUG",
+                        "title":  "Local/free structured logs, traces, health and diagnostics",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "30-TESTING-E2E",
+                        "title":  "Comprehensive automated and manual evidence matrix",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "31-DEPLOYMENT-LAUNCH",
+                        "title":  "Free-first release pipeline, backend migrations, rollback, launch truthfulness",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "32-FINAL-INTEGRATION",
+                        "title":  "Cross-module consolidation, cleanup, evidence and release candidate",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    },
+                    {
+                        "moduleId":  "33-EXTERNAL-CONTROL",
+                        "title":  "OS-level control bridge and native ladder (Windows daemon, Android accessibility, iOS facts)",
+                        "status":  "verified-local",
+                        "skipped":  false
+                    }
+                ],
+    "completedAt":  "2026-09-18T19:28:25.8396162+03:00"
+}

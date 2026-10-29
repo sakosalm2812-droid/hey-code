@@ -1,0 +1,234 @@
+.hey-notification-bell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  color: var(--hey-text-secondary, #aaa);
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-bell:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-notification-bell:focus-visible {
+  outline: 2px solid var(--hey-focus, #d4a843);
+  outline-offset: 2px;
+}
+
+.hey-notification-bell-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background: var(--hey-danger, #ff4444);
+  color: white;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown - now a popover attached to bell */
+.hey-notification-bell-dropdown {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  width: 360px;
+  max-height: 500px;
+  background: var(--hey-glass-elevated-fill, rgba(10, 13, 17, 0.92));
+  backdrop-filter: blur(var(--hey-glass-elevated-blur, 40px));
+  border: 1px solid var(--hey-glass-elevated-border, rgba(255, 255, 255, 0.1));
+  border-radius: 12px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+    var(--hey-glass-shadow, 0 8px 32px rgba(0, 0, 0, 0.3));
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hey-notification-bell-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+}
+
+.hey-notification-bell-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-notification-bell-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hey-notification-bell-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+  border-radius: 6px;
+  color: var(--hey-text-secondary, #aaa);
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-bell-control:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+.hey-notification-bell-control.active {
+  background: var(--hey-accent, #d4a843);
+  color: var(--hey-accent-text, #0a0d11);
+  border-color: transparent;
+}
+
+.hey-notification-bell-control:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hey-notification-bell-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.hey-notification-bell-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px;
+  color: var(--hey-text-tertiary, #888);
+  text-align: center;
+}
+
+.hey-notification-bell-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  width: 100%;
+}
+
+.hey-notification-bell-item:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.05));
+}
+
+.hey-notification-bell-item.unread {
+  background: var(--hey-accent, #d4a843);
+  background: linear-gradient(90deg, var(--hey-accent, #d4a843) 0%, transparent 100%);
+}
+
+.hey-notification-bell-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hey-notification-bell-item-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--hey-text-primary, #e8e8e8);
+  flex: 1;
+}
+
+.hey-notification-bell-item-title.unread {
+  font-weight: 600;
+}
+
+.hey-notification-bell-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hey-accent, #d4a843);
+  flex-shrink: 0;
+}
+
+.hey-notification-bell-item-message {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--hey-text-secondary, #aaa);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hey-notification-bell-item-time {
+  font-size: 10px;
+  color: var(--hey-text-tertiary, #888);
+}
+
+.hey-notification-bell-footer {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--hey-border, rgba(255, 255, 255, 0.06));
+  color: var(--hey-accent, #d4a843);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.hey-notification-bell-footer:hover {
+  background: var(--hey-surface-2, rgba(255, 255, 255, 0.03));
+  color: var(--hey-text-primary, #e8e8e8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hey-notification-bell-dropdown {
+    animation: none;
+  }
+  .hey-notification-bell-item,
+  .hey-notification-bell-control,
+  .hey-notification-bell-footer {
+    transition: none;
+  }
+}

@@ -1,0 +1,1 @@
+E:/hey/node_modules/@embedded-postgres/windows-x64/native/bin/postgres.exe "-D" "E:\hey\.pgdata" "-p" "5433"

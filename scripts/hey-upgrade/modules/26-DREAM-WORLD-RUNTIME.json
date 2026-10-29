@@ -1,0 +1,40 @@
+﻿{
+    "moduleId":  "26-DREAM-WORLD-RUNTIME",
+    "title":  "Dream World prompt-to-interactive-world foundation using the right runtime",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+                         "01-CORE"
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--import",
+                                    "src/core/generationEngine.js",
+                                    "--exists",
+                                    "src/pages/WorldStudio.jsx",
+                                    "--exists",
+                                    "src/core/infinity/worldStyleEngine.js",
+                                    "--exists",
+                                    "src/pages/WorldStudio.module.css",
+                                    "--test",
+                                    "tests/theme-studio.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "World Studio surface + world style engine + generation engine produce themed interactive worlds from prompts/theme choices (local-first theme application). Real AI generation (image/video) depends on provider keys and is EXTERNAL; local theme generation is source-implemented."
+}

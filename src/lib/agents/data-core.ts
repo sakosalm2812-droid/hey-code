@@ -1,0 +1,62 @@
+/**
+ * Registry part 1: Core Intelligence (A, 1-16), Cosmos/Memory (B, 17-32),
+ * Research (C, 33-48). 48 agents.
+ */
+import type { AgentContract } from './types';
+import { ag } from './factory';
+
+export const AGENTS_CORE: AgentContract[] = [
+  // ── A · CORE INTELLIGENCE (1-16) ──────────────────────────────────────────
+  ag('intent', 'Intent Agent', 'A', 'Classifies what the user actually wants and picks the owning agent. Never executes actions itself.', { tools: ['memory_search'], keywords: ['intent', 'classify', 'what do you want', 'purpose'] }),
+  ag('context', 'Context Agent', 'A', 'Assembles session, memory, time and device context before any agent acts.', { tools: ['memory_search', 'memory_save'], keywords: ['context', 'background', 'situation', 'so far'] }),
+  ag('planner', 'Planner Agent', 'A', 'Breaks user goals into ordered, testable steps and owns the plan until done.', { tools: ['current_time', 'calculator', 'memory_save'], keywords: ['plan', 'roadmap', 'steps', 'how should i', 'break down'] }),
+  ag('executor', 'Executor Agent', 'A', 'Runs the confirmed plan step by step using allowed tools, reporting each result.', { tools: ['calculator', 'current_time', 'memory_save', 'web_fetch', 'summarize'], permissions: ['compute', 'memory', 'web', 'data'], risk: 'medium', keywords: ['execute', 'do it', 'run it', 'perform', 'go ahead'] }),
+  ag('verifier', 'Verifier Agent', 'A', 'Double-checks outputs against facts, memory and previous results before delivery.', { tools: ['calculator', 'memory_search'], keywords: ['verify', 'check that', 'confirm', 'double-check'] }),
+  ag('recovery', 'Recovery Agent', 'A', 'Detects failed steps or tool errors and proposes a corrected, safe retry path.', { tools: ['calculator', 'current_time', 'memory_search'], risk: 'medium', keywords: ['recover', 'failed', 'retry', 'error happened', 'rollback'] }),
+  ag('task', 'Task Agent', 'A', 'Creates, updates and completes tasks with clear acceptance criteria.', { tools: ['memory_save', 'current_time', 'calculator'], keywords: ['task', 'subtask', 'to-do', 'todo', 'step list'] }),
+  ag('workflow', 'Workflow Agent', 'A', 'Models multi-step workflows and enforces their order, inputs and handoffs.', { tools: ['memory_save', 'current_time'], keywords: ['workflow', 'sequence', 'pipeline', 'flow', 'automation'] }),
+  ag('capability', 'Capability Agent', 'A', 'Answers what HEY can and cannot do and which agent to use for a request.', { tools: ['memory_search'], keywords: ['capability', 'what can you do', 'skills', 'features', 'abilities'] }),
+  ag('permission', 'Permission Agent', 'A', 'Grants, denies and audits permission requests. Never self-grants.', { tools: ['memory_search'], risk: 'medium', privacy: 'sensitive', keywords: ['permission', 'allow', 'grant access', 'approve access'] }),
+  ag('security-policy', 'Security Policy Agent', 'A', 'Applies and explains HEY security policies and guardrails for every action.', { tools: ['web_search'], permissions: ['compute', 'web'], risk: 'medium', keywords: ['policy', 'guardrail', 'safety rules', 'allowed'] }),
+  ag('quality', 'Quality Agent', 'A', 'Raises the bar on outputs using HEY quality standards before any release.', { tools: ['summarize', 'memory_search'], keywords: ['quality', 'standards', 'best practice', 'polish'] }),
+  ag('response', 'Response Agent', 'A', 'Formats the final reply: tone, structure, emoji-use and length per user and mode.', { tools: ['memory_search'], keywords: ['tone', 'response style', 'reply', 'format', 'wording'] }),
+  ag('personality', 'Personality Agent', 'A', 'Maintains the user-chosen personality, voice and warm-but-clear HEY style.', { tools: ['memory_search'], keywords: ['personality', 'voice', 'character', 'friendly', 'style'] }),
+  ag('mode', 'Mode Agent', 'A', 'Enforces the active mode (focus, quiet, standard) and its behavioral rules.', { tools: ['memory_search'], keywords: ['focus mode', 'quiet', 'do not disturb', 'mode'] }),
+  ag('orchestration', 'Orchestration Agent', 'A', 'Supervises spawning, handoff and completion of specialist agents for complex requests.', { tools: ['memory_search', 'memory_save', 'planner'], risk: 'medium', keywords: ['orchestrate', 'coordinate', 'manage agents', 'supervise', 'delegate'] }),
+
+  // ── B · COSMOS / MEMORY (17-32) ───────────────────────────────────────────
+  ag('memory-ingest', 'Memory Ingest Agent', 'B', 'Writes facts from conversations into long-term memory, deduped and attributed.', { tools: ['memory_save', 'memory_search'], keywords: ['remember', 'store this', 'save that', 'note down'] }),
+  ag('memory-retrieve', 'Memory Retrieve Agent', 'B', 'Finds the most relevant stored memory for the current question.', { tools: ['memory_search'], keywords: ['recall', 'what did i say', 'find memory', 'remember when'] }),
+  ag('memory-rank', 'Memory Rank Agent', 'B', 'Rank-order candidate memories by relevance before they reach the model.', { tools: ['memory_search'], keywords: ['rank memories', 'most relevant memory'] }),
+  ag('memory-dedup', 'Memory Dedup Agent', 'B', 'Merges duplicate or conflicting memories into one canonical fact.', { tools: ['memory_search', 'memory_save'], keywords: ['duplicate memories', 'dedupe', 'merge memories'] }),
+  ag('memory-update', 'Memory Update Agent', 'B', 'Corrects outdated memories when the user provides new information.', { tools: ['memory_search', 'memory_save'], keywords: ['update memory', 'correct that', 'that changed'] }),
+  ag('memory-decay', 'Memory Decay Agent', 'B', 'Lowers relevance of unused memories over time so fresh facts win.', { tools: ['memory_search'], keywords: ['decay', 'stale memory', 'old memory', 'forget old'] }),
+  ag('memory-delete', 'Memory Delete Agent', 'B', 'Removes memories the user explicitly asks to erase, logged for audit.', { tools: ['memory_search'], keywords: ['delete memory', 'erase', 'forget that', 'remove memory'] }),
+  ag('memory-privacy', 'Memory Privacy Agent', 'B', 'Tags and redacts sensitive memories so they stay private-by-default.', { tools: ['memory_search'], privacy: 'sensitive', risk: 'medium', keywords: ['private memory', 'sensitive', 'redact', 'keep private'] }),
+  ag('memory-provenance', 'Memory Provenance Agent', 'B', 'Tracks where every memory came from (source, time, conversation).', { tools: ['memory_search'], keywords: ['provenance', 'memory source', 'where did that come from'] }),
+  ag('memory-graph', 'Memory Graph Agent', 'B', 'Links related memories into a graph of connected facts and people.', { tools: ['memory_search', 'memory_save'], keywords: ['memory graph', 'connections', 'related facts'] }),
+  ag('knowledge-graph', 'Knowledge Graph Agent', 'B', 'Builds and queries the persistent knowledge graph of entities and relations.', { tools: ['memory_search', 'web_search'], permissions: ['compute', 'memory', 'web'], keywords: ['knowledge graph', 'entities', 'relations'] }),
+  ag('memory-summarize', 'Memory Summarize Agent', 'B', 'Condenses long memory history into a compact digest on demand.', { tools: ['memory_search', 'summarize'], keywords: ['summarize my memory', 'memory digest', 'memory recap'] }),
+  ag('preference', 'Preference Agent', 'B', 'Learns and applies user preferences (style, time, format).', { tools: ['memory_search', 'memory_save'], keywords: ['preference', 'i like', 'i prefer', 'favorite', 'always do'] }),
+  ag('pattern', 'Pattern Agent', 'B', 'Detects recurring patterns and habits from history to act proactively.', { tools: ['memory_search'], keywords: ['pattern', 'habit', 'recurring', 'always', 'trend'] }),
+  ag('project-memory', 'Project Memory Agent', 'B', 'Keeps the active project context (goals, decisions, files) always loaded.', { tools: ['memory_search', 'memory_save'], keywords: ['project memory', 'project context', 'where were we'] }),
+  ag('goal-memory', 'Goal Memory Agent', 'B', 'Tracks long-term goals and connects daily actions back to them.', { tools: ['memory_search', 'memory_save'], keywords: ['goal', 'objective', 'target', 'long-term', 'progress'] }),
+
+  // ── C · RESEARCH (33-48) ──────────────────────────────────────────────────
+  ag('web-research', 'Web Research Agent', 'C', 'Runs multi-query web research with fresh sources and saves findings.', { tools: ['web_search', 'web_fetch', 'memory_save', 'summarize'], permissions: ['compute', 'web', 'memory', 'data'], keywords: ['research', 'investigate', 'look up', 'find out', 'web search'] }),
+  ag('deep-research', 'Deep Research Agent', 'C', 'Coordinates long, thorough research passes for complex questions.', { tools: ['web_search', 'web_fetch'], permissions: ['compute', 'web'], keywords: ['deep research', 'thorough', 'comprehensive', 'full report'] }),
+  ag('source-verify', 'Source Verify Agent', 'C', 'Checks the credibility and recency of sources before citing them.', { tools: ['web_search', 'web_fetch'], permissions: ['compute', 'web'], keywords: ['source verification', 'reliable source', 'trustworthy', 'credible'] }),
+  ag('fact-check', 'Fact Check Agent', 'C', 'Verifies claims against at least two independent sources.', { tools: ['web_search'], permissions: ['compute', 'web'], keywords: ['fact check', 'is that true', 'verify claim', 'accurate'] }),
+  ag('news', 'News Agent', 'C', 'Finds the latest news on a topic and frames what changed today.', { tools: ['web_search'], permissions: ['compute', 'web'], keywords: ['news', 'headlines', 'latest', 'current events', 'breaking'] }),
+  ag('academic', 'Academic Agent', 'C', 'Finds peer-reviewed papers, journals and scholarly consensus.', { tools: ['web_search', 'web_fetch'], permissions: ['compute', 'web'], keywords: ['academic', 'paper', 'journal', 'scholar', 'peer-reviewed', 'study'] }),
+  ag('document-research', 'Document Research Agent', 'C', 'Reviews user documents and extracts the answers or requirements.', { tools: ['file_search', 'memory_search', 'summarize'], permissions: ['compute', 'files', 'memory', 'data'], keywords: ['document research', 'review document', 'read this file'] }),
+  ag('pdf-research', 'PDF Research Agent', 'C', 'Extracts structure, text and key points from PDF files.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: ['pdf', 'extract from pdf', 'parse pdf'] }),
+  ag('image-research', 'Image Research Agent', 'C', 'Analyzes images the user shares for facts, objects and context.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: ['image research', 'analyze image', 'what is in this photo'] }),
+  ag('competitive-research', 'Competitive Research Agent', 'C', 'Maps competitors, their features, pricing and positioning.', { tools: ['web_search', 'memory_save'], permissions: ['compute', 'web', 'memory'], keywords: ['competitor', 'comparison', 'alternatives', 'competitive'] }),
+  ag('customer-research', 'Customer Research Agent', 'C', 'Builds customer personas and needs from research and feedback.', { tools: ['web_search'], permissions: ['compute', 'web'], keywords: ['customer research', 'persona', 'user needs', 'audience'] }),
+  ag('market-research', 'Market Research Agent', 'C', 'Analyzes market size, segments, trends and entry strategy.', { tools: ['web_search'], permissions: ['compute', 'web'], keywords: ['market research', 'market size', 'industry', 'segments', 'trend'] }),
+  ag('synthesis', 'Synthesis Agent', 'C', 'Merges multiple sources into one coherent, opinionated answer.', { tools: ['summarize', 'memory_save'], permissions: ['compute', 'memory', 'data'], keywords: ['synthesize', 'combine findings', 'merge insights'] }),
+  ag('citation', 'Citation Agent', 'C', 'Formats sources as clean, clickable citations for every claim.', { tools: ['web_search'], permissions: ['compute', 'web'], keywords: ['cite', 'citation', 'references', 'sources list'] }),
+  ag('research-planner', 'Research Planner Agent', 'C', 'Designs the research plan: queries, sources, timeline and output shape.', { tools: ['current_time', 'planner'], permissions: ['compute', 'data'], keywords: ['research plan', 'research approach', 'how to research'] }),
+  ag('uncertainty', 'Uncertainty Agent', 'C', 'Labels confidence levels so the user knows what is verified vs estimated.', { tools: ['memory_search'], keywords: ['uncertainty', 'confidence', 'estimate', 'how sure'] }),
+];

@@ -1,0 +1,40 @@
+﻿{
+    "moduleId":  "00-MASTER-ORCHESTRATOR",
+    "title":  "Master transactional upgrade/orchestration layer",
+    "version":  "2026.09.18.1",
+    "files":  [
+
+              ],
+    "dependencies":  [
+
+                     ],
+    "migrations":  [
+
+                   ],
+    "functions":  [
+
+                  ],
+    "backendDeployment":  false,
+    "productionBackend":  false,
+    "nativeBuild":  false,
+    "androidBuild":  false,
+    "verify":  [
+                   {
+                       "args":  [
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--exists",
+                                    "HEY-UPGRADE.ps1",
+                                    "--exists",
+                                    "scripts/hey-upgrade/HeyUpgrade.psm1",
+                                    "--exists",
+                                    "scripts/hey-upgrade/verify-module.mjs",
+                                    "--exists",
+                                    "scripts/hey-upgrade/Test-HeyUpgrade.ps1",
+                                    "--test",
+                                    "tests/upgrade-orchestrator.test.js"
+                                ],
+                       "file":  "node"
+                   }
+               ],
+    "notes":  "Transactional backups + SHA-256 manifests, baseline conflict detection (Force never bypasses), secret redaction, state machine (pending/applied/verified-local/verified-backend/verified-native/failed/rolled-back), per-module and ALL/resume orchestration. Verified by tests/upgrade-orchestrator.test.js which drives Test-HeyUpgrade.ps1 (8 assertions)."
+}

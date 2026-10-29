@@ -1,0 +1,67 @@
+/**
+ * Registry part 2: Software Engineering (D, 49-71), Security (E, 72-85),
+ * Computer/Browser/Files (F, 86-101). 53 agents.
+ */
+import type { AgentContract } from './types';
+import { ag, DEV_KEYWORDS, DEV_TOOLS } from './factory';
+
+export const AGENTS_DEV: AgentContract[] = [
+  // ── D · SOFTWARE ENGINEERING (49-71) ──────────────────────────────────────
+  ag('architect', 'Architect Agent', 'D', 'Designs system architecture, data flow and module boundaries before code.', { tools: ['memory_search'], keywords: DEV_KEYWORDS(['architecture', 'blueprint', 'how should this be built']) }),
+  ag('frontend', 'Frontend Agent', 'D', 'Builds the UI with the app framework, components and styling conventions.', { tools: DEV_TOOLS, permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['frontend', 'ui code', 'component', 'page']) }),
+  ag('backend', 'Backend Agent', 'D', 'Builds server logic, routes, validation and business rules.', { tools: DEV_TOOLS, permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['backend', 'server', 'route handler', 'logic']) }),
+  ag('fullstack', 'Fullstack Agent', 'D', 'Implements end-to-end features touching UI, API and database.', { tools: DEV_TOOLS, permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['fullstack', 'feature end to end', 'implement feature']) }),
+  ag('database', 'Database Agent', 'D', 'Schema design, queries, migrations and data integrity.', { tools: ['file_search', 'web_fetch'], permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['database', 'schema', 'prisma', 'sql', 'postgres']) }),
+  ag('supabase', 'Supabase Agent', 'D', 'Configures Supabase auth, storage, database and edge functions.', { tools: ['web_fetch'], permissions: ['compute', 'web'], keywords: DEV_KEYWORDS(['supabase', 'edge function', 'storage rules']) }),
+  ag('api', 'API Agent', 'D', 'Designs and implements REST/API endpoints with proper contracts.', { tools: ['file_search', 'web_fetch'], permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['api', 'endpoint', 'rest']) }),
+  ag('ai-integration', 'AI Integration Agent', 'D', 'Wires LLM calls, prompts, streaming and model fallbacks into the app.', { tools: ['web_fetch'], permissions: ['compute', 'web'], keywords: DEV_KEYWORDS(['ai', 'llm', 'prompt', 'model', 'openai']) }),
+  ag('provider-routing', 'Provider Routing Agent', 'D', 'Configures the provider router and fallback chains for reliability.', { tools: ['web_fetch'], permissions: ['compute', 'web'], keywords: DEV_KEYWORDS(['provider', 'fallback chain', 'model routing']) }),
+  ag('code-review', 'Code Review Agent', 'D', 'Reviews diffs for bugs, security, style and correctness before merge.', { tools: ['file_search', 'summarize'], permissions: ['compute', 'files', 'data'], keywords: DEV_KEYWORDS(['code review', 'review the code', 'approve', 'diff']) }),
+  ag('debugger', 'Debugger Agent', 'D', 'Finds root causes of bugs using files, logs and targeted searches.', { tools: ['file_search', 'web_search'], permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['debug', 'bug', 'error', 'failing', 'broken']) }),
+  ag('testing', 'Testing Agent', 'D', 'Writes and runs unit/integration tests for new and changed code.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: DEV_KEYWORDS(['tests', 'test coverage', 'unit test']) }),
+  ag('e2e', 'E2E Agent', 'D', 'Builds end-to-end user-journey tests that prove features work.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: DEV_KEYWORDS(['e2e', 'end to end', 'user journey test']) }),
+  ag('performance', 'Performance Agent', 'D', 'Profiles and optimizes slow code, queries and bundles.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: DEV_KEYWORDS(['performance', 'slow', 'optimize', 'latency', 'bundle']) }),
+  ag('devops', 'DevOps Agent', 'D', 'Owns CI/CD, environments, deploys and infrastructure.', { tools: ['file_search', 'web_fetch'], permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['devops', 'deploy', 'ci', 'cd', 'infra']) }),
+  ag('release', 'Release Agent', 'D', 'Prepares changelogs, version bumps and release artifacts.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: DEV_KEYWORDS(['release', 'version', 'changelog', 'ship']) }),
+  ag('migration', 'Migration Agent', 'D', 'Plans and runs safe schema and data migrations.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: DEV_KEYWORDS(['migration', 'upgrade', 'move data']) }),
+  ag('dependency', 'Dependency Agent', 'D', 'Audits and updates npm/pip dependencies safely.', { tools: ['file_search', 'web_search'], permissions: ['compute', 'files', 'web'], keywords: DEV_KEYWORDS(['dependency', 'package', 'npm', 'update lib', 'vulnerability']) }),
+  ag('documentation', 'Documentation Agent', 'D', 'Writes accurate READMEs, docs and API references.', { tools: ['file_search', 'summarize'], permissions: ['compute', 'files', 'data'], keywords: DEV_KEYWORDS(['documentation', 'readme', 'write docs']) }),
+  ag('code-quality', 'Code Quality Agent', 'D', 'Enforces lint, types and maintainability standards.', { tools: ['file_search', 'summarize'], permissions: ['compute', 'files', 'data'], keywords: DEV_KEYWORDS(['code quality', 'lint', 'maintainable', 'standards']) }),
+  ag('refactor', 'Refactor Agent', 'D', 'Restructures code for clarity without changing behavior.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: DEV_KEYWORDS(['refactor', 'restructure', 'clean up code', 'simplify']) }),
+  ag('build', 'Build Agent', 'D', 'Makes the project compile, type-check and bundle cleanly.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: DEV_KEYWORDS(['build', 'compile', 'typecheck', 'build error']) }),
+  ag('native-tauri', 'Native Tauri Agent', 'D', 'Packages the app for desktop via Tauri (Rust shell, entitlements, build).', { tools: ['web_fetch', 'file_search'], permissions: ['compute', 'web', 'files'], keywords: DEV_KEYWORDS(['tauri', 'native', 'desktop app', 'rust']) }),
+
+  // ── E · SECURITY (72-85) ──────────────────────────────────────────────────
+  ag('security-auditor', 'Security Auditor Agent', 'E', 'Runs security audits and risk assessments across the app.', { tools: ['file_search', 'web_search'], permissions: ['compute', 'files', 'web'], risk: 'high', privacy: 'sensitive', keywords: ['security audit', 'vulnerability', 'risk assessment', 'hardening'] }),
+  ag('authentication', 'Authentication Agent', 'E', 'Implements login, sessions, MFA and password rules securely.', { tools: ['web_fetch', 'file_search'], permissions: ['compute', 'web', 'files'], risk: 'high', privacy: 'sensitive', keywords: ['auth', 'login', 'sign in', 'oauth', 'session'] }),
+  ag('authorization', 'Authorization Agent', 'E', 'Applies roles, scopes and access-control checks on every action.', { tools: ['file_search'], permissions: ['compute', 'files'], risk: 'high', keywords: ['authorization', 'access control', 'role', 'rbac'] }),
+  ag('secrets', 'Secrets Agent', 'E', 'Guards API keys and secrets: detection, rotation and no-logging.', { tools: ['file_search'], permissions: ['compute', 'files'], risk: 'critical', privacy: 'sensitive', keywords: ['secrets', 'api key', 'token', 'env file', 'leak'] }),
+  ag('appsec', 'AppSec Agent', 'E', 'Prevents XSS, injection, CSRF and other OWASP top-10 issues.', { tools: ['web_search', 'file_search'], permissions: ['compute', 'web', 'files'], risk: 'high', keywords: ['appsec', 'xss', 'injection', 'csrf', 'owasp'] }),
+  ag('api-security', 'API Security Agent', 'E', 'Hardens endpoints: rate limits, CORS, validation, quota, abuse.', { tools: ['web_fetch', 'file_search'], permissions: ['compute', 'web', 'files'], risk: 'high', keywords: ['api security', 'rate limit', 'cors', 'abuse', 'quota'] }),
+  ag('ai-security', 'AI Security Agent', 'E', 'Defends against prompt injection, jailbreaks and data exfiltration.', { tools: ['web_search', 'file_search'], permissions: ['compute', 'web', 'files'], risk: 'high', keywords: ['ai security', 'prompt injection', 'jailbreak', 'exfiltration'] }),
+  ag('tool-security', 'Tool Security Agent', 'E', 'Reviews what each tool can do, its scope and its risk before use.', { tools: ['file_search'], permissions: ['compute', 'files'], risk: 'high', keywords: ['tool security', 'sandbox', 'tool scope', 'approve tool'] }),
+  ag('computer-control-security', 'Computer Control Security Agent', 'E', 'Gates computer-use actions: never click unknown links or run unapproved commands.', { tools: ['file_search'], permissions: ['compute', 'files'], risk: 'critical', keywords: ['computer control', 'device security', 'lockdown', 'unapproved'] }),
+  ag('file-security', 'File Security Agent', 'E', 'Sanitizes uploads, blocks dangerous types and checks contents.', { tools: ['file_search'], permissions: ['compute', 'files'], risk: 'high', keywords: ['file security', 'upload', 'sanitize', 'malware'] }),
+  ag('privacy', 'Privacy Agent', 'E', 'Applies GDPR-class privacy: minimization, retention and consent.', { tools: ['file_search'], permissions: ['compute', 'files'], privacy: 'sensitive', keywords: ['privacy', 'gdpr', 'data protection', 'retention', 'consent'] }),
+  ag('audit', 'Audit Agent', 'E', 'Keeps tamper-proof action logs for everything agents do.', { tools: ['file_search', 'summarize'], permissions: ['compute', 'files', 'data'], risk: 'medium', keywords: ['audit', 'log', 'trail', 'action history'] }),
+  ag('abuse-prevention', 'Abuse Prevention Agent', 'E', 'Detects spam, fraud and harmful content before it spreads.', { tools: ['web_search', 'memory_search'], permissions: ['compute', 'web', 'memory'], risk: 'medium', keywords: ['abuse', 'spam', 'fraud', 'harmful'] }),
+  ag('incident-response', 'Incident Response Agent', 'E', 'Coordinates the response to a security incident with clear steps.', { tools: ['memory_save', 'web_search'], permissions: ['compute', 'memory', 'web'], risk: 'critical', privacy: 'sensitive', keywords: ['incident', 'breach', 'urgent security'] }),
+
+  // ── F · COMPUTER / BROWSER / FILES (86-101) ───────────────────────────────
+  ag('computer-use', 'Computer Use Agent', 'F', 'Controls the user machine (with permission) to complete real actions.', { tools: ['calculator'], risk: 'high', keywords: ['computer use', 'control my computer', 'do it on my computer'] }),
+  ag('desktop', 'Desktop Agent', 'F', 'Manages the desktop, windows and screen state.', { tools: ['file_search', 'calculator'], permissions: ['compute', 'files'], keywords: ['desktop', 'screen', 'window arrange'] }),
+  ag('keyboard', 'Keyboard Agent', 'F', 'Types text and shortcuts on behalf of the user when approved.', { tools: ['calculator'], risk: 'medium', keywords: ['type for me', 'keyboard', 'keystroke', 'shortcut'] }),
+  ag('pointer', 'Pointer Agent', 'F', 'Moves the pointer and clicks within approved application windows.', { tools: ['calculator'], risk: 'medium', keywords: ['click', 'pointer', 'mouse', 'select'] }),
+  ag('window', 'Window Agent', 'F', 'Manages open windows: focus, minimize, move, resize.', { tools: ['calculator'], keywords: ['window', 'switch window', 'minimize', 'bring up'] }),
+  ag('app-launcher', 'App Launcher Agent', 'F', 'Launches applications the user asks to open.', { tools: ['calculator'], keywords: ['open app', 'launch', 'start the app'] }),
+  ag('process', 'Process Agent', 'F', 'Lists, starts and stops processes on the machine.', { tools: ['calculator'], risk: 'medium', keywords: ['process', 'running', 'kill process', 'start process'] }),
+  ag('filesystem', 'Filesystem Agent', 'F', 'Navigates, reads and manages the filesystem.', { tools: ['file_search', 'memory_search'], permissions: ['compute', 'files', 'memory'], keywords: ['filesystem', 'files', 'folders', 'list files'] }),
+  ag('file-organization', 'File Organization Agent', 'F', 'Organizes, renames and tidies the user files.', { tools: ['file_search'], permissions: ['compute', 'files'], keywords: ['organize files', 'tidy files', 'sort files'] }),
+  ag('browser', 'Browser Agent', 'F', 'Navigate the browser web through requested URLs.', { tools: ['web_fetch', 'web_search'], permissions: ['compute', 'web'], keywords: ['browse', 'browser', 'open url', 'go to site'] }),
+  ag('web-form', 'Web Form Agent', 'F', 'Fills and submits web forms within approved sessions.', { tools: ['web_fetch'], permissions: ['compute', 'web'], risk: 'medium', keywords: ['form', 'fill form', 'submit form'] }),
+  ag('download', 'Download Agent', 'F', 'Downloads files the user requested to the right folder.', { tools: ['web_fetch'], permissions: ['compute', 'web'], keywords: ['download', 'save file', 'get the file'] }),
+  ag('clipboard', 'Clipboard Agent', 'F', 'Copies text to and reads from the system clipboard.', { tools: ['calculator'], keywords: ['clipboard', 'copy', 'paste'] }),
+  ag('screenshot', 'Screenshot Agent', 'F', 'Takes and analyzes screenshots when approved.', { tools: ['calculator'], keywords: ['screenshot', 'capture screen'] }),
+  ag('terminal', 'Terminal Agent', 'F', 'Runs terminal commands the user explicitly authorizes.', { tools: ['calculator'], risk: 'high', keywords: ['terminal', 'shell', 'run command'] }),
+  ag('system-settings', 'System Settings Agent', 'F', 'Reads and applies system settings and preferences.', { tools: ['calculator'], keywords: ['settings', 'preferences', 'wifi', 'volume', 'brightness'] }),
+];

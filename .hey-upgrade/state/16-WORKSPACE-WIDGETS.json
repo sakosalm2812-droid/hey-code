@@ -1,0 +1,27 @@
+﻿{
+    "moduleId":  "16-WORKSPACE-WIDGETS",
+    "status":  "verified-local",
+    "transactionId":  null,
+    "updatedAt":  "2026-09-18T19:26:18.4593336+03:00",
+    "details":  {
+                    "file":  "node",
+                    "args":  [
+                                 "scripts/hey-upgrade/verify-module.mjs",
+                                 "--import",
+                                 "src/core/eventBus.js",
+                                 "--import",
+                                 "src/core/artifactEngine.js",
+                                 "--exists",
+                                 "src/core/workspaceEngine.js",
+                                 "--exists",
+                                 "src/core/workspaceManager.js",
+                                 "--exists",
+                                 "src/core/infinity/actionTimeline.js",
+                                 "--exists",
+                                 "src/Dashboard.jsx"
+                             ],
+                    "exitCode":  0,
+                    "timedOut":  false,
+                    "log":  null
+                }
+}

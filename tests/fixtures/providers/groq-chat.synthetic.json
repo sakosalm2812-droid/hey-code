@@ -1,0 +1,27 @@
+{
+  "_label": "SYNTHETIC",
+  "_warning": "Not real provider output. No provider was called and no API key exists. This file records a plausible wire shape so the evaluator can be tested offline.",
+  "provider": "groq",
+  "model": "llama-3.3-70b-versatile",
+  "endpoint": "POST /openai/v1/chat/completions (shape only)",
+  "request": {
+    "messages": [{ "role": "user", "content": "Return JSON: {\"answer\": string, \"confidence\": number}. Question: capital of France?" }],
+    "max_tokens": 64,
+    "response_format": "text"
+  },
+  "response": {
+    "id": "chatcmpl-synthetic-groq-0001",
+    "object": "chat.completion",
+    "created": 0,
+    "model": "llama-3.3-70b-versatile",
+    "choices": [
+      {
+        "index": 0,
+        "message": { "role": "assistant", "content": "{\"answer\":\"Paris\",\"confidence\":0.9}" },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": { "prompt_tokens": 40, "completion_tokens": 11, "total_tokens": 51 },
+    "x_groq": { "id": "req_synthetic_0001" }
+  }
+}
