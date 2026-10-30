@@ -20,10 +20,17 @@ import {
 } from '../src/components/widgets/widgetData.js';
 
 describe('widgetData', () => {
-  const now = Date.now();
-  const oneHourAgo = now - 3600000;
-  const oneHourFromNow = now + 3600000;
-  const twoHoursFromNow = now + 7200000;
+  // Anchor item times to the start of the current day. Times relative to
+  // "now" can fall on tomorrow (or yesterday) when the suite runs near
+  // midnight, which made these expectations time-of-day dependent.
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const atHour = (hour) => new Date(todayStart.getTime() + hour * 3600000).toISOString();
+  const startOfToday = atHour(0);
+  const endOfTomorrow = atHour(24);
+  const earlierToday = atHour(1);
+  const laterToday = atHour(12);
+  const endOfToday = atHour(23);
 
   describe('deriveTodayWidget', () => {
     it('returns empty state when no items', () => {
@@ -40,13 +47,13 @@ describe('widgetData', () => {
       const missions = [{
         id: 'm1',
         title: 'Current Mission',
-        scheduledAt: new Date(oneHourAgo).toISOString(),
-        endAt: new Date(twoHoursFromNow).toISOString(),
+        scheduledAt: startOfToday,
+        endAt: endOfTomorrow,
         progress: 50,
       }, {
         id: 'm2',
         title: 'Next Mission',
-        scheduledAt: new Date(twoHoursFromNow).toISOString(),
+        scheduledAt: laterToday,
       }];
 
       const vm = deriveTodayWidget({ missions, tasks: [], calendar: [] });
@@ -60,7 +67,7 @@ describe('widgetData', () => {
       const missions = Array.from({ length: 5 }, (_, i) => ({
         id: `m${i}`,
         title: `Mission ${i}`,
-        scheduledAt: new Date(now + i * 3600000).toISOString(),
+        scheduledAt: atHour(i + 1),
       }));
 
       const vm = deriveTodayWidget({ missions, tasks: [], calendar: [] });
@@ -69,8 +76,8 @@ describe('widgetData', () => {
     });
 
     it('includes tasks and calendar events', () => {
-      const tasks = [{ id: 't1', title: 'Task due', dueAt: new Date(oneHourFromNow).toISOString() }];
-      const calendar = [{ id: 'c1', title: 'Meeting', startAt: new Date(oneHourAgo).toISOString(), endAt: new Date(twoHoursFromNow).toISOString() }];
+      const tasks = [{ id: 't1', title: 'Task due', dueAt: laterToday }];
+      const calendar = [{ id: 'c1', title: 'Meeting', startAt: earlierToday, endAt: endOfToday }];
 
       const vm = deriveTodayWidget({ missions: [], tasks, calendar });
       assert.ok(vm.currentItem);
@@ -329,10 +336,9 @@ describe('widgetData', () => {
 
   describe('freshness and staleness', () => {
     it('marks stale when age > maxAge', () => {
-      // Today widget has maxAge 15 min
-      const oldTimestamp = now - 20 * 60 * 1000; // 20 minutes ago
-      // We can't easily test this without mocking Date.now,
-      // but we verify the logic exists in baseViewModel
+      // Today widget has maxAge 15 min. We can't easily test staleness without
+      // mocking Date.now, so we verify the freshness contract is present and
+      // that a freshly derived widget is not stale.
       const vm = deriveTodayWidget({ missions: [], tasks: [], calendar: [] });
       // The derived widget gets current timestamp, so not stale
       assert.strictEqual(vm.freshness.isStale, false);
