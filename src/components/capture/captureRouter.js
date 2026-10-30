@@ -25,7 +25,18 @@ export const ACTION_CATEGORIES = Object.freeze({
   'discard': 'dismiss',
 });
 
-export const MIME_TO_CATEGORY = Object.freeze({
+function unknownOnMiss(map) {
+  return Object.freeze(new Proxy(map, {
+    get(target, key, receiver) {
+      if (typeof key === 'string' && !Object.prototype.hasOwnProperty.call(target, key)) {
+        return 'unknown';
+      }
+      return Reflect.get(target, key, receiver);
+    },
+  }));
+}
+
+export const MIME_TO_CATEGORY = unknownOnMiss({
   // Text
   'text/plain': 'note',
   'text/markdown': 'note',
@@ -82,7 +93,7 @@ export const MIME_TO_CATEGORY = Object.freeze({
   'application/gzip': 'document',
 });
 
-export const EXTENSION_TO_CATEGORY = Object.freeze({
+export const EXTENSION_TO_CATEGORY = unknownOnMiss({
   // Code
   js: 'code', ts: 'code', jsx: 'code', tsx: 'code',
   py: 'code', java: 'code', c: 'code', cpp: 'code', h: 'code', hpp: 'code',
@@ -321,8 +332,8 @@ export function routeCaptureItem(item) {
     else if (/^#\s/.test(lower)) confidence = 0.7;
     else confidence = 0.6;
   } else if (item.file && item.file.mimeType) {
-    if (MIME_TO_CATEGORY[item.file.mimeType]) confidence = 0.8;
-    else if (EXTENSION_TO_CATEGORY[getExtension(item.file.name)]) confidence = 0.7;
+    if (MIME_TO_CATEGORY[item.file.mimeType] !== 'unknown') confidence = 0.8;
+    else if (EXTENSION_TO_CATEGORY[getExtension(item.file.name)] !== 'unknown') confidence = 0.7;
     else confidence = 0.5;
   }
 

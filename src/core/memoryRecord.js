@@ -355,13 +355,22 @@ export function isRetrievable(record, options = {}) {
   if (record.retention === 'session' && settings.sessionActive === false) {
     return { allowed: false, reason: 'session-ended' };
   }
-  if (isNonEmptyString(settings.scope) && record.scope !== settings.scope) {
-    return { allowed: false, reason: 'scope-mismatch' };
+  // Tenant-scoped records are only readable inside a tenant context. Asking for
+  // one from a personal/project scope is a tenant mismatch, not a scope
+  // mismatch: the caller has not named the tenant they are entitled to.
+  const requestedScope = isNonEmptyString(settings.scope) ? settings.scope : null;
+  const recordIsTenantScoped = TENANT_SCOPES.includes(record.scope);
+  const requestIsTenantScoped = requestedScope === null || TENANT_SCOPES.includes(requestedScope);
+  if (recordIsTenantScoped && !requestIsTenantScoped) {
+    return { allowed: false, reason: 'tenant-mismatch' };
   }
   if (isNonEmptyString(record.tenantId)) {
     if (!isNonEmptyString(settings.tenantId) || settings.tenantId !== record.tenantId) {
       return { allowed: false, reason: 'tenant-mismatch' };
     }
+  }
+  if (requestedScope && record.scope !== requestedScope) {
+    return { allowed: false, reason: 'scope-mismatch' };
   }
 
   return { allowed: true, reason: 'ok' };

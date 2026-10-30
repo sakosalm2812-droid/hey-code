@@ -133,6 +133,14 @@ function rejectionFor(model, request, capabilities) {
   }
   if (request.privacy === 'local_only' && model.realization !== 'local') return 'privacy:local_only';
   if (request.privacy === 'no_training' && model.noTraining !== true) return 'privacy:no_training';
+  // Cost before context: under a budget, an unpriceable model is unusable no
+  // matter how large its window is, and "unknown cost" is the dominant reason
+  // a caller needs to see.
+  if (request.budgetRemainingCents !== null) {
+    if (model.inputCostPerMTokensCents === UNKNOWN_COST || model.outputCostPerMTokensCents === UNKNOWN_COST) {
+      return 'cost:unknown';
+    }
+  }
   if (request.contextTokens > 0) {
     if (!Number.isInteger(model.contextTokens) || model.contextTokens <= 0) return 'context:unknown';
     if (model.contextTokens < request.contextTokens) return 'context:too-small';
@@ -140,11 +148,6 @@ function rejectionFor(model, request, capabilities) {
   if (request.latencyTargetMs > 0) {
     if (!Number.isInteger(model.expectedLatencyMs) || model.expectedLatencyMs <= 0) return 'latency:unknown';
     if (model.expectedLatencyMs > request.latencyTargetMs) return 'latency:too-slow';
-  }
-  if (request.budgetRemainingCents !== null) {
-    if (model.inputCostPerMTokensCents === UNKNOWN_COST || model.outputCostPerMTokensCents === UNKNOWN_COST) {
-      return 'cost:unknown';
-    }
   }
   return null;
 }
@@ -247,6 +250,19 @@ export function route(request, options = {}) {
   // 8. No candidate at all: report the dominant exclusion reason.
   if (candidates.length === 0) {
     const reasons = [...rejected.values()];
+    if (req.budgetRemainingCents !== null) {
+      // A model can be rejected for a capability gap *and* have unknown cost;
+      // the cost rule is checked first, so "some model would otherwise fit"
+      // is the honest test for an unknown-cost refusal.
+      const unbudgeted = { ...req, budgetRemainingCents: null };
+      const viableButUnpriced = pool.some((model) => rejectionFor(model, unbudgeted, capabilities) === null);
+      if (viableButUnpriced) {
+        return refusal(
+          'unknown-cost',
+          `every viable model has unknown cost; unknown is not free and budget ${req.budgetRemainingCents}c must not be spent blind`
+        );
+      }
+    }
     if (req.budgetRemainingCents !== null && reasons.length > 0 && reasons.every((reason) => reason === 'cost:unknown')) {
       return refusal(
         'unknown-cost',

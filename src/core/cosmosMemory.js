@@ -364,3 +364,27 @@ export default {
   TRUST_LEVELS,
   cosineSimilarity,
 };
+
+// The Part 6 Cosmos API (ingest/retrieve/candidates/graph/subscriptions) is
+// still the public memory surface used by the core barrel. Keep the tiered
+// store above as the storage engine and re-export the Cosmos contract here so
+// both APIs share one import path.
+export {
+  MEMORY_TYPES,
+  PRIVACY_SCOPES,
+  ingestMemory,
+  retrieveMemories,
+  updateMemory,
+  supersedeMemory,
+  deleteMemory,
+  connectMemories,
+  getMemoryGraph,
+  getContradictions,
+  getCandidates,
+  getCandidate,
+  approveCandidate,
+  rejectCandidate,
+  getTombstones,
+  hasTombstone,
+  subscribeToCosmos,
+} from './cosmosMemoryLegacy.js';

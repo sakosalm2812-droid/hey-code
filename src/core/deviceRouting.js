@@ -13,7 +13,7 @@
  * @module core/deviceRouting
  */
 
-import { getCapabilityAvailability } from "./platformCapabilities.js";
+import { getCapabilityAvailability, getRelayRequiredMessage } from "./platformCapabilities.js";
 
 export const ROUTE_PRIORITY = Object.freeze([
   "local-native",
@@ -60,30 +60,6 @@ export function resolveRoute(capabilityId, context) {
   const { platform, deviceId, isTauri, hasRelay, pairedDevices = [] } = context;
   const availability = getCapabilityAvailability(capabilityId, platform);
 
-  // If capability is unsupported on this platform, refuse
-  if (availability.state === "unsupported") {
-    return {
-      route: "refuse",
-      capability: capabilityId,
-      platform,
-      deviceId,
-      reason: `Capability ${capabilityId} is unsupported on ${platform}`,
-      available: false,
-    };
-  }
-
-  // If capability is restricted, refuse (platform explicitly blocks it)
-  if (availability.state === "restricted") {
-    return {
-      route: "refuse",
-      capability: capabilityId,
-      platform,
-      deviceId,
-      reason: `Capability ${capabilityId} is restricted on ${platform}`,
-      available: false,
-    };
-  }
-
   // If capability requires permission but we don't have it, refuse
   // (Permission check is done at execution time; here we just note the route)
   const needsPermission = availability.requiresPermission;
@@ -115,7 +91,7 @@ export function resolveRoute(capabilityId, context) {
   }
 
   // Priority 3: Relay (only if configured and capability supports relay)
-  if (hasRelay && availability.state !== "restricted") {
+  if (hasRelay) {
     return {
       route: "relay",
       capability: capabilityId,
@@ -144,6 +120,30 @@ export function resolveRoute(capabilityId, context) {
       available: true,
       needsPermission,
       pairedDeviceId: pairedDevices[0],
+    };
+  }
+
+  // Only now, with every transport exhausted, is a platform restriction a
+  // refusal: a relay or paired device is a real path even on a blocked platform.
+  if (availability.state === "unsupported") {
+    return {
+      route: "refuse",
+      capability: capabilityId,
+      platform,
+      deviceId,
+      reason: `Capability ${capabilityId} is unsupported on ${platform}`,
+      available: false,
+    };
+  }
+
+  if (availability.state === "restricted") {
+    return {
+      route: "refuse",
+      capability: capabilityId,
+      platform,
+      deviceId,
+      reason: `Capability ${capabilityId} is restricted on ${platform}`,
+      available: false,
     };
   }
 

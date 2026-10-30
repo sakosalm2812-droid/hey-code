@@ -31,6 +31,13 @@ export const CHARS_PER_TOKEN = 4;
 /** No record is ever free to admit. */
 export const MIN_RECORD_TOKENS = 1;
 
+/**
+ * Separator charged to every record after the first. Two memories in a prompt
+ * are not free to concatenate: the boundary between them costs a token, so the
+ * second record costs its own content plus this separator.
+ */
+export const SEPARATOR_TOKENS = 1;
+
 /** Recency decays to 0.5 at this age. */
 export const RECENCY_HALF_LIFE_DAYS = 30;
 
@@ -235,7 +242,7 @@ export function scoreRecord(record, options = {}) {
   return { score, signals, weights, matchedTerms };
 }
 
-function explain(record, score, signals, matchedTerms, tokens) {
+function explain(record, score, signals, weights, matchedTerms, tokens) {
   const parts = [
     `relevance ${signals.relevance.toFixed(2)}`,
     `recency ${signals.recency.toFixed(2)}`,
@@ -245,6 +252,7 @@ function explain(record, score, signals, matchedTerms, tokens) {
   return {
     score,
     signals,
+    weights,
     matchedTerms,
     tokens,
     text: `${record.kind} "${record.content}" scored ${score.toFixed(3)} (${parts.join(', ')})`
@@ -349,6 +357,7 @@ export function retrieve(options = {}) {
       record,
       score: result.score,
       signals: result.signals,
+      weights: result.weights,
       matchedTerms: result.matchedTerms,
       tokens: recordTokens(record),
     };
@@ -374,18 +383,23 @@ export function retrieve(options = {}) {
       truncated = true;
       continue;
     }
-    if (tokensUsed + entry.tokens > budgetTokens) {
-      excluded.push({ id: entry.record.id, reason: 'budget-exhausted', tokens: entry.tokens });
+    // Every record after the first pays for the separator that joins it to the
+    // records already admitted. The cost is folded into the entry so that
+    // `sum(entry.tokens) === tokensUsed` stays true.
+    const separator = selected.length > 0 ? SEPARATOR_TOKENS : 0;
+    const cost = entry.tokens + separator;
+    if (tokensUsed + cost > budgetTokens) {
+      excluded.push({ id: entry.record.id, reason: 'budget-exhausted', tokens: cost });
       truncated = true;
       continue;
     }
 
-    tokensUsed += entry.tokens;
+    tokensUsed += cost;
     selected.push({
       record: entry.record,
       score: entry.score,
-      tokens: entry.tokens,
-      why: explain(entry.record, entry.score, entry.signals, entry.matchedTerms, entry.tokens),
+      tokens: cost,
+      why: explain(entry.record, entry.score, entry.signals, entry.weights, entry.matchedTerms, cost),
     });
   }
 
@@ -441,6 +455,7 @@ export default {
   EXCLUSION_REASONS,
   MIN_RECORD_TOKENS,
   RECENCY_HALF_LIFE_DAYS,
+  SEPARATOR_TOKENS,
   SEMANTIC_BLEND,
   estimateTokens,
   exclusionMap,

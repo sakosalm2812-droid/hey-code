@@ -38,7 +38,7 @@ export const TRAY_STATE_TOOLTIPS = Object.freeze({
   waiting: 'An approval is waiting. Click to respond.',
   offline: 'No connectivity. Some features unavailable.',
   'relay-off': 'Relay is not running. Global hotkeys inactive.',
-  error: 'An error occurred. Click to see details.',
+  error: 'An error occurred. Error details available on click.',
 });
 
 /**
@@ -73,12 +73,14 @@ export function deriveTrayState(appState) {
     });
   }
 
-  // Check connectivity
-  const isOnline = notificationCenter.connectivity === 'online' ||
-    deviceGateway.connectivity === 'online' ||
-    heyLive.connectivity === 'online';
-
-  if (isOnline === false) {
+  // Offline only when a source explicitly reports it. Missing connectivity
+  // information means "unknown", not "offline".
+  const connectivity = [
+    notificationCenter.connectivity,
+    deviceGateway.connectivity,
+    heyLive.connectivity,
+  ];
+  if (connectivity.some(value => value === 'offline')) {
     return createTrayState('offline', {
       lastOnline: notificationCenter.lastOnline || deviceGateway.lastOnline,
     });

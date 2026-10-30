@@ -80,6 +80,14 @@ export const RELEASE_SURFACES = Object.freeze([
     releaseGate: "GitHub Actions ubuntu-latest + AppImage sign",
   },
   {
+    id: "ios",
+    name: "iOS / TestFlight (IPA)",
+    family: "Mobile",
+    status: RELEASE_STATUS.nativeProjectRequired,
+    statusLabel: "Blocked — macOS + Xcode required",
+    detail: "Cannot build iOS from Windows. Requires Xcode + Apple Developer Program ($99/yr).",
+    releaseGate: "Xcode archive + TestFlight upload + App Store review",
+  },  {
     id: "android",
     name: "Android (APK/AAB)",
     family: "Mobile",
@@ -88,15 +96,7 @@ export const RELEASE_SURFACES = Object.freeze([
     detail: "Android SDK, NDK, JDK required. src-tauri/gen/android not initialized.",
     releaseGate: "Gradle build + Play Console upload (or sideload APK)",
   },
-  {
-    id: "ios",
-    name: "iOS / TestFlight (IPA)",
-    family: "Mobile",
-    status: RELEASE_STATUS.nativeProjectRequired,
-    statusLabel: "Blocked — macOS + Xcode required",
-    detail: "Cannot build iOS from Windows. Requires Xcode + Apple Developer Program ($99/yr).",
-    releaseGate: "Xcode archive + TestFlight upload + App Store review",
-  },
+
 ]);
 
 /**

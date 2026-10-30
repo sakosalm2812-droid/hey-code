@@ -175,7 +175,8 @@ export function createRetentionPolicy(userSettings) {
  * @returns {boolean}
  */
 export function guardScreenCapture(request) {
-  return request.type === "screen" && request.userInitiated === true;
+  if (!request || request.type !== "screen") return true;
+  return request.userInitiated === true;
 }
 
 /**

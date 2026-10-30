@@ -493,9 +493,13 @@ export async function processRequest({
     input: { estimatedCostCents: routeDecision.estimatedCostCents, budgetRemainingCents: routeRequest.budgetRemainingCents },
   });
 
-  const estimatedCost = routeDecision.estimatedCostCents >= 0 ? routeDecision.estimatedCostCents : 10000;
-  const budgetLimit = routeRequest.budgetRemainingCents ?? estimatedCost;
-  const dailyLimit = Math.max(1, budgetLimit);
+  const estimatedCostCents = routeDecision.estimatedCostCents;
+  // Unknown estimates (-1) still need a positive, integer reservation: the
+  // governor refuses zero, and a missing reservation would let the call run
+  // without a budget receipt.
+  const reserveCents = Number.isInteger(estimatedCostCents) && estimatedCostCents > 0 ? estimatedCostCents : 1;
+  const budgetLimit = routeRequest.budgetRemainingCents ?? reserveCents;
+  const dailyLimit = Math.max(reserveCents, Number.isInteger(budgetLimit) ? budgetLimit : reserveCents);
   const monthlyLimit = dailyLimit * 30;
 
   const costEnvelope = createEnvelope({
@@ -506,12 +510,15 @@ export async function processRequest({
     reservedCents: 0,
   });
 
-  const reserveResult = reserve(costEnvelope, routeDecision.estimatedCostCents || 1, `model:${routeDecision.model}`);
+  const reserveResult = reserve(costEnvelope, reserveCents, {
+    capabilityId: "cap.model.call",
+    traceId,
+  });
 
   endTrace(costSpan.spanId, {
     output: reserveResult,
     status: reserveResult.ok ? "ok" : "error",
-    metadata: { envelopeLimit: costEnvelope.limitCents, reserved: reserveResult.ok ? routeDecision.estimatedCostCents : 0 },
+    metadata: { envelopeLimit: dailyLimit, reserved: reserveResult.ok ? reserveCents : 0 },
   });
   trace.push(getTrace(traceId).find(s => s.spanId === costSpan.spanId));
 
@@ -549,7 +556,7 @@ export async function processRequest({
   const actualCostCents = estimateActualCost(routeDecision, fixtureResponse);
 
   // Commit actual cost
-  commit(costEnvelope, reserveResult.reservationId, actualCostCents);
+  commit(costEnvelope, reserveResult.reservationId, Math.min(actualCostCents, reserveCents), { traceId });
 
   endTrace(modelSpan.spanId, {
     output: { response: fixtureResponse, latencyMs: modelLatencyMs, costCents: actualCostCents },
@@ -618,7 +625,7 @@ export async function processRequest({
   const memorySpan = startTrace({
     traceId,
     parentSpanId: requestSpan.spanId,
-    operation: "memory:update",
+    operation: "memory:write",
     capabilityId: "cap.memory.update",
     input: { conversationId, response: fixtureResponse, toolCalls: toolCallsResult.calls },
   });
@@ -828,17 +835,18 @@ async function runVerification(modelResponse, toolCalls, traceId) {
     },
   });
 
-  // Assign verifier (different from implementer)
-  assignVerifier(verRecord, "verifier-agent");
+  // Assign verifier (different from implementer). Each step returns a frozen
+  // successor record; the update is lost if the previous record is reused.
+  let assigned = assignVerifier(verRecord, "verifier-agent");
 
   // Record independent reproduction (simulated)
-  recordIndependentReproduction(verRecord, {
+  assigned = recordIndependentReproduction(assigned, {
     reproductionEvidence: { fixture: true, traceId },
     reproducedBy: "verifier-agent",
   });
 
   // Complete verification
-  const completed = completeVerification(verRecord, {
+  const completed = completeVerification(assigned, {
     status: "verified",
     limitations: ["fixture response", "no live provider call"],
   });
@@ -982,7 +990,9 @@ function buildAnswerEnvelope(modelResponse, routeDecision, toolCalls, verificati
       provider: modelResponse.provider,
       route: routeDecision.reason,
       latencyMs: routeDecision.expectedLatencyMs,
-      costCents: routeDecision.estimatedCostCents,
+      costCents: Number.isFinite(routeDecision.estimatedCostCents) && routeDecision.estimatedCostCents >= 0
+        ? routeDecision.estimatedCostCents
+        : null,
     },
     limitations: verification.limitations || ["fixture response", "no live provider call"],
     producedAt: new Date().toISOString(),

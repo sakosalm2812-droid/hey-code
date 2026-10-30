@@ -364,7 +364,7 @@ test('hostile records are excluded instead of throwing', () => {
   ];
 
   const result = retrieve({ records, budgetTokens: 1000, now: NOW });
-  assert.equal(result.selected.map((entry) => entry.record.id), ['good']);
+  assert.deepEqual(result.selected.map((entry) => entry.record.id), ['good']);
   assert.equal(result.excluded.filter((entry) => entry.reason === 'invalid').length, 6);
   assert.equal(result.selected.length + result.excluded.length, records.length);
 });

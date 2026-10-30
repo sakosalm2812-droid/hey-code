@@ -86,7 +86,7 @@ function getPolicy(action) {
  * @returns {PolicyDecision}
  */
 function evaluate(context) {
-  const auditMeta = { action: context?.action, userId: context?.userId, at: Date.now() };
+  const auditMeta = { action: context?.action, userId: context?.userId };
 
   try {
     // Fail closed: missing or invalid context

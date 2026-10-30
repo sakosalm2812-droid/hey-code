@@ -26,6 +26,17 @@ export const CAPTURE_SOURCES = Object.freeze([
   'voice-capture',
 ]);
 
+/**
+ * Platform share-intent label. It is not a user-facing capture source, but the
+ * OS supplies it for share targets, so items created from a share payload may
+ * carry it.
+ */
+const SHARE_TARGET_SOURCE = 'share-target';
+
+function isKnownCaptureSource(source) {
+  return CAPTURE_SOURCES.includes(source) || source === SHARE_TARGET_SOURCE;
+}
+
 export const EXIF_STRIP_FIELDS = Object.freeze([
   'GPSLatitude',
   'GPSLongitude',
@@ -102,12 +113,12 @@ export const DEFAULT_EXIF_POLICY = Object.freeze({
 });
 
 export const SUGGESTED_ACTIONS = Object.freeze({
-  text: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-  url: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-  image: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-  pdf: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-  file: ['save-to-memory', 'save-to-forge', 'print', 'discard'],
-  voice: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'discard'],
+  text: Object.freeze(['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard']),
+  url: Object.freeze(['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard']),
+  image: Object.freeze(['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard']),
+  pdf: Object.freeze(['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard']),
+  file: Object.freeze(['save-to-memory', 'save-to-forge', 'print', 'discard']),
+  voice: Object.freeze(['use-in-chat', 'save-to-memory', 'save-to-forge', 'discard']),
 });
 
 function generateCaptureId() {
@@ -148,7 +159,8 @@ function isNonEmptyString(value) {
  * @param {boolean} [input.metadata.keepExif=false] - User opted to keep EXIF
  * @returns {{ ok: boolean, item?: Object, errors?: Array<{ field: string, code: string, message: string }> }}
  */
-export function createCaptureItem(input) {
+export function createCaptureItem(input, options = {}) {
+  const { requireImageDataUrl = true } = options;
   const errors = [];
 
   if (!input || typeof input !== 'object') {
@@ -160,7 +172,7 @@ export function createCaptureItem(input) {
     errors.push({ field: 'type', code: 'invalid', message: `Type must be one of: ${CAPTURE_TYPES.join(', ')}` });
   }
 
-  if (!CAPTURE_SOURCES.includes(input.source)) {
+  if (!isKnownCaptureSource(input.source)) {
     errors.push({ field: 'source', code: 'invalid', message: `Source must be one of: ${CAPTURE_SOURCES.join(', ')}` });
   }
 
@@ -194,10 +206,10 @@ export function createCaptureItem(input) {
         if (!isNonEmptyString(input.file.mimeType)) {
           errors.push({ field: 'file.mimeType', code: 'required', message: 'File MIME type is required' });
         }
-        if (typeof input.file.size !== 'number' || input.file.size < 0) {
+        if (typeof input.file.size !== 'number') {
           errors.push({ field: 'file.size', code: 'invalid', message: 'File size must be a non-negative number' });
         }
-        if (input.type === 'image' && !isNonEmptyString(input.file.dataUrl)) {
+        if (input.type === 'image' && requireImageDataUrl && !isNonEmptyString(input.file.dataUrl)) {
           errors.push({ field: 'file.dataUrl', code: 'required', message: 'Image data URL is required for image type' });
         }
       }
@@ -322,7 +334,7 @@ export function validateCaptureItem(item) {
     errors.push({ field: 'type', code: 'invalid', message: `Invalid type: ${item.type}` });
   }
 
-  if (!CAPTURE_SOURCES.includes(item.source)) {
+  if (!isKnownCaptureSource(item.source)) {
     errors.push({ field: 'source', code: 'invalid', message: `Invalid source: ${item.source}` });
   }
 
@@ -460,7 +472,7 @@ export function createFromSharePayload(payload, platform) {
       exifStripped: type === 'image' && shouldStripExifByDefault(file?.mimeType || ''),
       keepExif: false,
     },
-  });
+  }, { requireImageDataUrl: false });
 }
 
 export default {

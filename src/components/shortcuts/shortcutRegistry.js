@@ -23,7 +23,7 @@ export const SHORTCUT_ACTIONS = Object.freeze({
   'print-studio': { scope: 'window', description: 'Open print studio', category: 'print' },
   'toggle-theme': { scope: 'window', description: 'Cycle theme', category: 'appearance' },
   'open-settings': { scope: 'window', description: 'Open settings', category: 'settings' },
-  'close-top-surface': { scope: 'window', description: 'Close topmost HEY surface', category: 'navigation' },
+  'close-top-surface': { scope: 'in-app', description: 'Close topmost HEY surface', category: 'navigation' },
 
   // In-app only
   'focus-search': { scope: 'in-app', description: 'Focus search input', category: 'navigation' },
@@ -107,7 +107,7 @@ export const DEFAULT_SHORTCUTS = Object.freeze([
     id: 'close-top-surface',
     action: 'close-top-surface',
     defaultKeys: { win: 'Escape', mac: 'Escape', linux: 'Escape' },
-    scope: 'window',
+    scope: 'in-app',
     description: 'Close topmost HEY surface (modal, drawer, palette)',
     category: 'navigation',
     editable: false, // Escape is special
@@ -165,7 +165,8 @@ export function formatChord(modifiers, key, platform = 'win') {
   const m = modMap[platform] || modMap.win;
   const mods = modifiers.map(mod => m[mod] || mod).join(platform === 'mac' ? '' : '+');
   const keyDisplay = key === 'Space' ? 'Space' : key === 'Comma' ? ',' : key === 'Escape' ? 'Esc' : key;
-  return platform === 'mac' ? `${mods}${keyDisplay}` : `${mods}+${keyDisplay}`;
+  if (platform === 'mac') return `${mods}${keyDisplay}`;
+  return mods ? `${mods}+${keyDisplay}` : keyDisplay;
 }
 
 /**
@@ -321,7 +322,8 @@ export function createShortcutRegistry(options = {}) {
 
     getDisplayChord(id, platform = 'win') {
       const chord = this.getChord(id, platform);
-      return formatChord(...parseChord(chord), platform);
+      const { modifiers, key } = parseChord(chord);
+      return formatChord(modifiers, key, platform);
     },
 
     setBinding(id, keys, platform = 'win') {

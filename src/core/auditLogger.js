@@ -48,7 +48,8 @@ export class AuditLogger {
     this.logDir = options.logDir || path.resolve(process.cwd(), 'data', 'audit');
     this.retentionMonths = options.retentionMonths ?? 6;
     this.prevHash = options.initialPrevHash || '0'.repeat(64);
-    this.currentDate = options.currentDate || null;
+    this.fixedDate = options.currentDate || null;
+    this.currentDate = this.fixedDate;
     this.currentFile = null;
 
     try {
@@ -110,7 +111,7 @@ export class AuditLogger {
   log({ event_type, actor, payload = {}, correlation_id = null, timestamp = null }) {
     try {
       const ts = timestamp || new Date().toISOString();
-      const dateObj = new Date(ts);
+      const dateObj = this.fixedDate ? new Date(`${this.fixedDate}T12:00:00.000Z`) : new Date(ts);
       this._rotateIfNeeded(dateObj);
 
       const id = `audit_${crypto.randomUUID()}`;

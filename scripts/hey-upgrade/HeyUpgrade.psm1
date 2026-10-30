@@ -20,9 +20,13 @@ function Get-HeyEvidenceFingerprint {
     $root = [System.IO.Path]::GetFullPath($RepoRoot)
     $gitRoot = & git -C $root rev-parse --show-toplevel 2>$null
     if (-not $gitRoot) { throw "Unable to enumerate source files for evidence in $root; Git repository not found." }
-    $head = & git -C $root rev-parse HEAD 2>$null
-    if (-not $head) { $head = 'NO_COMMIT' }
-    $paths = @(& git -C $root diff --name-only --no-renames HEAD -- 2>$null)
+    $head = & git -C $root rev-parse --verify --quiet HEAD 2>$null
+    if (-not $head) {
+        $head = 'NO_COMMIT'
+        $paths = @()
+    } else {
+        $paths = @(& git -C $root diff --name-only --no-renames HEAD -- 2>$null)
+    }
     $paths += @(& git -C $root ls-files --others --exclude-standard 2>$null)
     $paths = @($paths | Where-Object { $_ } | Sort-Object -Unique)
 
