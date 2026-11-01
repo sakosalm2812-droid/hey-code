@@ -1,31 +1,19 @@
-import fs from 'node:fs';
-import path from 'node:path';
+// Browser-compatible ModelRouter: node:fs and node:path removed.
+// Models are set programmatically via setModels() or via constructor options.
 import { log as auditLog } from './auditLogger.js';
 
 export class ModelRouter {
   constructor(options = {}) {
     this.auditLogger = options.auditLogger || auditLog;
-    this.modelsRegistryPath = options.registryPath || path.resolve(process.cwd(), 'src', 'core', 'models.json');
     this.cacheLimit = options.cacheLimit || 100;
     this.cache = new Map();
     this.stats = { totalRequests: 0, cacheHits: 0 };
-    this.models = [];
-    this.loadRegistry();
+    // Accept models list directly; no fs loading in browser
+    this.models = Array.isArray(options.models) ? options.models.filter((m) => m && m.provider && m.model) : [];
   }
 
   loadRegistry() {
-    try {
-      if (fs.existsSync(this.modelsRegistryPath)) {
-        const raw = fs.readFileSync(this.modelsRegistryPath, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          // Skip invalid entries missing provider or model
-          this.models = parsed.filter((m) => m && m.provider && m.model);
-        }
-      }
-    } catch {
-      this.models = [];
-    }
+    // No-op in browser: models must be provided via constructor options or setModels()
   }
 
   setModels(modelsList) {

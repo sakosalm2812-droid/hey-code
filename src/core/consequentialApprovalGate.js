@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+// Browser-compatible: use globalThis.crypto for UUID (no node:crypto needed)
 import { log as auditLog } from './auditLogger.js';
 import { defaultPermissionChecker } from './failClosedPermissionChecker.js';
 
@@ -18,7 +18,7 @@ export class ApprovalGate {
       throw new TypeError('ApprovalGate: action and content_hash are required');
     }
 
-    const id = `appr_${crypto.randomUUID()}`;
+    const id = `appr_${globalThis.crypto.randomUUID()}`;
     const now = Date.now();
     const duration = ttlMs !== null ? ttlMs : this.expiryMs;
     const expires_at = new Date(now + duration).toISOString();

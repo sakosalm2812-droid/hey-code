@@ -1,8 +1,18 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import crypto from 'node:crypto';
-import zlib from 'node:zlib';
+import path from 'path-browserify';
 import { log as auditLog } from './auditLogger.js';
+
+// Dynamic Node modules loaded only in Node.js environment with Vite ignore
+let nodeFs = null;
+let nodeZlib = null;
+
+if (typeof window === 'undefined') {
+  try {
+    const fsMod = 'node:fs';
+    const zlibMod = 'node:zlib';
+    nodeFs = await import(/* @vite-ignore */ fsMod).then((m) => m.default || m).catch(() => null);
+    nodeZlib = await import(/* @vite-ignore */ zlibMod).then((m) => m.default || m).catch(() => null);
+  } catch {}
+}
 
 export const TRUST_LEVELS = Object.freeze({
   INFERRED: 1,
@@ -38,9 +48,23 @@ export function cosineSimilarity(a, b) {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+function getUUID() {
+  const cryptoObj = typeof window !== 'undefined' ? (window.crypto || globalThis.crypto) : globalThis.crypto;
+  if (cryptoObj && typeof cryptoObj.randomUUID === 'function') {
+    return cryptoObj.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export class CosmosMemory {
   constructor(options = {}) {
-    this.coldDir = options.coldDir || path.resolve(process.cwd(), 'data', 'memory', 'cold');
+    // Browser-safe: do not use process.cwd() or path.resolve with process.
+    // coldDir is only used as a key prefix for localStorage in browser environment.
+    this.coldDir = options.coldDir || 'data/memory/cold';
     this.auditLogger = options.auditLogger || auditLog;
     this.hotTierLimit = options.hotTierLimit || 20;
 
@@ -48,12 +72,28 @@ export class CosmosMemory {
     this.hotTier = new Map();
     // Warm tier: Map<id, record>
     this.warmTier = new Map();
-    // Cold tier tracking: Map<id, { coldPath, metadata }>
+    // Cold tier tracking: Map<id, { id, filePath, scope, expires_at, record }>
     this.coldIndex = new Map();
 
+    // Hydrate existing coldIndex from localStorage in browser environment
     try {
-      if (!fs.existsSync(this.coldDir)) {
-        fs.mkdirSync(this.coldDir, { recursive: true });
+      if (typeof localStorage !== 'undefined') {
+        const storedKeys = localStorage.getItem('hey_cosmos_cold_index');
+        if (storedKeys) {
+          const list = JSON.parse(storedKeys);
+          if (Array.isArray(list)) {
+            for (const item of list) {
+              this.coldIndex.set(item.id, item);
+            }
+          }
+        }
+      }
+    } catch {}
+
+    // Safe directory creation if running under Node with fs
+    try {
+      if (nodeFs && typeof nodeFs.existsSync === 'function' && !nodeFs.existsSync(this.coldDir)) {
+        nodeFs.mkdirSync(this.coldDir, { recursive: true });
       }
     } catch {}
   }
@@ -84,8 +124,6 @@ export class CosmosMemory {
   _detectContradictions(newRecord) {
     if (newRecord.trust_level !== TRUST_LEVELS.EXPLICIT_USER) return;
 
-    // Simple conflict detection for explicit user facts:
-    // If statements talk about same entity/attribute but differ (e.g. "I live in Paris" vs "I live in Tokyo")
     const wordsNew = new Set(newRecord.content.toLowerCase().split(/\s+/));
 
     const checkRecord = (existing) => {
@@ -96,7 +134,6 @@ export class CosmosMemory {
       const wordsExisting = existing.content.toLowerCase().split(/\s+/);
       const overlap = wordsExisting.filter((w) => wordsNew.has(w) && w.length > 3);
 
-      // If heavy overlap in subject keywords and different content
       if (overlap.length >= 2 && existing.content !== newRecord.content) {
         existing.contradiction = true;
         existing.contradictory_with = existing.contradictory_with || [];
@@ -119,7 +156,7 @@ export class CosmosMemory {
   write({ content, provenance, trust_level = TRUST_LEVELS.INFERRED, scope = 'default', ttl = null, embedding = null, key = null }) {
     this._validateInput({ content, provenance, trust_level });
 
-    const id = `mem_${crypto.randomUUID()}`;
+    const id = `mem_${getUUID()}`;
     const now = new Date().toISOString();
     const expires_at = ttl ? new Date(Date.now() + ttl * 1000).toISOString() : null;
 
@@ -146,7 +183,6 @@ export class CosmosMemory {
 
     // Manage hot tier FIFO
     if (this.hotTier.size >= this.hotTierLimit) {
-      // Promote oldest hot item to warm tier
       const oldestId = this.hotTier.keys().next().value;
       const promoted = this.hotTier.get(oldestId);
       this.hotTier.delete(oldestId);
@@ -187,9 +223,33 @@ export class CosmosMemory {
 
     record.tier = 'cold';
     const filePath = path.join(this.coldDir, `${id}.json.gz`);
-    const compressed = zlib.gzipSync(JSON.stringify(record));
-    fs.writeFileSync(filePath, compressed);
-    this.coldIndex.set(id, { filePath, scope: record.scope, expires_at: record.expires_at });
+
+    // Rewrite: store cold record to browser localStorage
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(`hey_cosmos_cold_${id}`, JSON.stringify(record));
+        const indexList = Array.from(this.coldIndex.values());
+        indexList.push({ id, filePath, scope: record.scope, expires_at: record.expires_at });
+        localStorage.setItem('hey_cosmos_cold_index', JSON.stringify(indexList));
+      }
+    } catch (e) {
+      console.warn('[CosmosMemory] Failed to write cold record to localStorage:', e);
+    }
+
+    // If Node filesystem is present, also write to disk
+    try {
+      if (nodeFs && typeof nodeFs.writeFileSync === 'function') {
+        if (!nodeFs.existsSync(this.coldDir)) {
+          nodeFs.mkdirSync(this.coldDir, { recursive: true });
+        }
+        const compressed = nodeZlib && typeof nodeZlib.gzipSync === 'function'
+          ? nodeZlib.gzipSync(JSON.stringify(record))
+          : Buffer.from(JSON.stringify(record));
+        nodeFs.writeFileSync(filePath, compressed);
+      }
+    } catch {}
+
+    this.coldIndex.set(id, { id, filePath, scope: record.scope, expires_at: record.expires_at, record });
     return true;
   }
 
@@ -218,18 +278,49 @@ export class CosmosMemory {
       return { ...rec };
     }
 
-    // Check cold tier
+    // Check cold tier: Rewrite to read from in-memory / localStorage
     if (this.coldIndex.has(id)) {
       const info = this.coldIndex.get(id);
-      if (fs.existsSync(info.filePath)) {
-        const raw = zlib.gunzipSync(fs.readFileSync(info.filePath)).toString('utf-8');
-        const rec = JSON.parse(raw);
-        if (this._isExpired(rec, now)) {
+
+      // 1. Check in-memory record cache
+      if (info.record) {
+        if (this._isExpired(info.record, now)) {
           this.delete(id);
           return null;
         }
-        return rec;
+        return { ...info.record };
       }
+
+      // 2. Check localStorage
+      if (typeof localStorage !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(`hey_cosmos_cold_${id}`);
+          if (raw) {
+            const rec = JSON.parse(raw);
+            if (this._isExpired(rec, now)) {
+              this.delete(id);
+              return null;
+            }
+            return rec;
+          }
+        } catch {}
+      }
+
+      // 3. Fallback to disk if fs is present in Node environment
+      try {
+        if (nodeFs && typeof nodeFs.existsSync === 'function' && nodeFs.existsSync(info.filePath)) {
+          const fileBuffer = nodeFs.readFileSync(info.filePath);
+          const raw = nodeZlib && typeof nodeZlib.gunzipSync === 'function'
+            ? nodeZlib.gunzipSync(fileBuffer).toString('utf-8')
+            : fileBuffer.toString('utf-8');
+          const rec = JSON.parse(raw);
+          if (this._isExpired(rec, now)) {
+            this.delete(id);
+            return null;
+          }
+          return rec;
+        }
+      } catch {}
     }
 
     return null;
@@ -287,11 +378,23 @@ export class CosmosMemory {
     }
     if (this.coldIndex.has(id)) {
       const info = this.coldIndex.get(id);
+
+      // Remove from localStorage
       try {
-        if (fs.existsSync(info.filePath)) {
-          fs.unlinkSync(info.filePath);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem(`hey_cosmos_cold_${id}`);
+          const remaining = Array.from(this.coldIndex.values()).filter((item) => item.id !== id);
+          localStorage.setItem('hey_cosmos_cold_index', JSON.stringify(remaining));
         }
       } catch {}
+
+      // Remove from disk if fs present
+      try {
+        if (nodeFs && typeof nodeFs.existsSync === 'function' && nodeFs.existsSync(info.filePath)) {
+          nodeFs.unlinkSync(info.filePath);
+        }
+      } catch {}
+
       this.coldIndex.delete(id);
       removed = true;
     }
@@ -320,9 +423,13 @@ export class CosmosMemory {
       }
     }
 
-    const payload = Buffer.from(JSON.stringify(exportData, null, 2), 'utf-8');
-    // Compress as gzip archive
-    const zipArchive = zlib.gzipSync(payload);
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const payload = typeof Buffer !== 'undefined' ? Buffer.from(jsonStr, 'utf-8') : new TextEncoder().encode(jsonStr);
+
+    const zipArchive = nodeZlib && typeof nodeZlib.gzipSync === 'function'
+      ? nodeZlib.gzipSync(payload)
+      : payload;
+
     return {
       archiveBuffer: zipArchive,
       data: exportData,
@@ -331,26 +438,34 @@ export class CosmosMemory {
   }
 }
 
-export const defaultCosmosMemory = new CosmosMemory();
+// Wrap default instantiation in try/catch block
+let defaultCosmosMemoryInstance = null;
+try {
+  defaultCosmosMemoryInstance = new CosmosMemory();
+} catch (err) {
+  console.warn('[CosmosMemory] Failed to instantiate defaultCosmosMemory:', err);
+}
+
+export const defaultCosmosMemory = defaultCosmosMemoryInstance;
 
 export function write(entry) {
-  return defaultCosmosMemory.write(entry);
+  return defaultCosmosMemory ? defaultCosmosMemory.write(entry) : null;
 }
 
 export function read(id) {
-  return defaultCosmosMemory.read(id);
+  return defaultCosmosMemory ? defaultCosmosMemory.read(id) : null;
 }
 
 export function search(params) {
-  return defaultCosmosMemory.search(params);
+  return defaultCosmosMemory ? defaultCosmosMemory.search(params) : [];
 }
 
 export function del(id) {
-  return defaultCosmosMemory.delete(id);
+  return defaultCosmosMemory ? defaultCosmosMemory.delete(id) : false;
 }
 
 export function exp(scope) {
-  return defaultCosmosMemory.export(scope);
+  return defaultCosmosMemory ? defaultCosmosMemory.export(scope) : null;
 }
 
 export default {
@@ -365,10 +480,6 @@ export default {
   cosineSimilarity,
 };
 
-// The Part 6 Cosmos API (ingest/retrieve/candidates/graph/subscriptions) is
-// still the public memory surface used by the core barrel. Keep the tiered
-// store above as the storage engine and re-export the Cosmos contract here so
-// both APIs share one import path.
 export {
   MEMORY_TYPES,
   PRIVACY_SCOPES,

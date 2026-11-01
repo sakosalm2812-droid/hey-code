@@ -1,4 +1,4 @@
-﻿import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -80,6 +80,26 @@ const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 const ErrorPage = lazy(() => import("./pages/ErrorPages.jsx").then((module) => ({ default: module.default })));
 const LegalPage = lazy(() => import("./pages/Legal.jsx"));
 const SupportPage = lazy(() => import("./pages/Support.jsx"));
+const TeacherEntry = lazy(() => import("./pages/TeacherEntry.jsx"));
+const TeacherDashboard = lazy(() => import("./pages/TeacherDashboard.jsx"));
+const KeySettingsPage = lazy(() => import("./pages/Settings.jsx"));
+
+function DashboardDispatcher() {
+  const isTeacherActive = typeof window !== "undefined" && (
+    localStorage.getItem("hey_teacher_active") === "true" ||
+    localStorage.getItem("hey_teacher_analysis") !== null
+  );
+
+  if (isTeacherActive) {
+    return <TeacherDashboard />;
+  }
+
+  return (
+    <ProtectedLayout>
+      <Dashboard />
+    </ProtectedLayout>
+  );
+}
 
 
 function ProtectedLayout({ children }) {
@@ -187,6 +207,16 @@ function AnimatedRoutes() {
         />
 
         {/* AUTH */}
+        {/* HEY TEACHER ENGINE ROUTES */}
+        <Route path="/teacher" element={<TeacherEntry />} />
+        <Route path="/teacher-entry" element={<TeacherEntry />} />
+        <Route path="/teacher/dashboard" element={<TeacherDashboard />} />
+        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+        <Route path="/dashboard" element={<DashboardDispatcher />} />
+        <Route path="/settings/keys" element={<KeySettingsPage />} />
+        <Route path="/teacher/settings" element={<KeySettingsPage />} />
+        <Route path="/keys" element={<KeySettingsPage />} />
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -194,7 +224,7 @@ function AnimatedRoutes() {
 
         {/* PROTECTED APP */}
         <Route
-          path="/dashboard"
+          path="/dashboard-core"
           element={
             <ProtectedLayout>
               <Dashboard />

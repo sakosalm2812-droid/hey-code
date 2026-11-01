@@ -1,29 +1,37 @@
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
+// Browser-compatible SchemaMigrationSystem: node:crypto, node:fs, node:path removed.
+// State is persisted to localStorage; checksum uses djb2 (synchronous, browser-safe).
 import { log as auditLog } from './auditLogger.js';
+
+const MIGRATIONS_STORAGE_KEY = 'hey_schema_migrations';
+
+/** Simple deterministic checksum (djb2) — replaces crypto.createHash in browser */
+function djb2Hash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) + h) ^ str.charCodeAt(i);
+    h = h >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
 
 export class SchemaMigrationSystem {
   constructor(options = {}) {
-    this.storagePath = options.storagePath || path.resolve(process.cwd(), 'data', 'migrations', 'schema_migrations.json');
+    this.storageKey = options.storageKey || MIGRATIONS_STORAGE_KEY;
     this.auditLogger = options.auditLogger || auditLog;
     this.migrations = new Map(); // version -> { version, up, down, checksum }
     this.applied = []; // [{ version, applied_at, checksum }]
     this.isLocked = false;
-
-    try {
-      const dir = path.dirname(this.storagePath);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    } catch {}
 
     this.loadState();
   }
 
   loadState() {
     try {
-      if (fs.existsSync(this.storagePath)) {
-        const raw = fs.readFileSync(this.storagePath, 'utf-8');
-        this.applied = JSON.parse(raw);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem(this.storageKey);
+        if (raw) {
+          this.applied = JSON.parse(raw);
+        }
       }
     } catch {
       this.applied = [];
@@ -32,14 +40,16 @@ export class SchemaMigrationSystem {
 
   saveState() {
     try {
-      fs.writeFileSync(this.storagePath, JSON.stringify(this.applied, null, 2), 'utf-8');
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.applied));
+      }
     } catch {}
   }
 
   computeChecksum(up, down) {
     const upStr = typeof up === 'string' ? up : up.toString();
     const downStr = typeof down === 'string' ? down : down.toString();
-    return crypto.createHash('sha256').update(upStr + downStr).digest('hex');
+    return djb2Hash(upStr + downStr);
   }
 
   register({ version, up, down, checksum = null }) {

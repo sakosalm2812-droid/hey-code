@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+// Browser-compatible: node:crypto removed. Using simple deterministic hash for params.
 import { defaultPermissionChecker } from './failClosedPermissionChecker.js';
 import { defaultApprovalGate } from './consequentialApprovalGate.js';
 import { defaultSandbox } from './sandbox.js';
@@ -32,8 +32,14 @@ export class GovernedToolExecutor {
   }
 
   computeParamsHash(params) {
+    // Deterministic string hash using djb2 (browser-safe, no node:crypto)
     const canonical = JSON.stringify(params, Object.keys(params || {}).sort());
-    return crypto.createHash('sha256').update(canonical || '').digest('hex');
+    let h = 5381;
+    for (let i = 0; i < canonical.length; i++) {
+      h = ((h << 5) + h) ^ canonical.charCodeAt(i);
+      h = h >>> 0; // keep unsigned 32-bit
+    }
+    return h.toString(16).padStart(8, '0');
   }
 
   async execute({ tool_id, params = {}, requester = 'user', approval_id = null }) {

@@ -4,6 +4,12 @@ export { buildCommandIndex, resolveCommandRow, getCapabilityAvailabilityForRow }
 export { rankRows, scoreRow, subsequenceScore } from './scoring.js';
 export { getRowAvailability, getRowsAvailability, filterEnabledRows, partitionRowsByAvailability } from './availability.js';
 
+import { PaletteProvider, usePalette } from './PaletteProvider.jsx';
+import { Palette } from './Palette.jsx';
+import { buildCommandIndex, resolveCommandRow, getCapabilityAvailabilityForRow } from './commandIndex.js';
+import { rankRows, scoreRow, subsequenceScore } from './scoring.js';
+import { getRowAvailability, getRowsAvailability, filterEnabledRows, partitionRowsByAvailability } from './availability.js';
+
 export default {
   PaletteProvider,
   usePalette,

@@ -48,14 +48,61 @@ const surface = new URLSearchParams(window.location.search).get("surface");
 const islandSurface = surface === "island";
 initWorldStyleEngine().catch((error) => console.warn("HEY World style failed:", error));
 if (!islandSurface) {
-  keepDesktopRuntimeAlive();
-  installCompletionRuntime();
-  installInfinityRuntime().catch((error) => console.warn("HEY Infinity runtime failed:", error));
-  initializeDesktopIslandBridge().catch((error) => console.warn("HEY Island bridge failed:", error));
-  installWindowControlsOverlay();
-  initBadgeSync();
-  installGestureRuntimeBridge();
+  try {
+    keepDesktopRuntimeAlive();
+  } catch (err) {
+    console.warn("Desktop runtime keepalive failed:", err);
+  }
+  try {
+    installCompletionRuntime();
+  } catch (err) {
+    console.warn("Completion runtime failed:", err);
+  }
+  try {
+    installInfinityRuntime().catch((error) => console.warn("HEY Infinity runtime failed:", error));
+  } catch (err) {
+    console.warn("Infinity runtime failed:", err);
+  }
+  try {
+    initializeDesktopIslandBridge().catch((error) => console.warn("HEY Island bridge failed:", error));
+  } catch (err) {
+    console.warn("Desktop island bridge failed:", err);
+  }
+  try {
+    installWindowControlsOverlay();
+    initBadgeSync();
+    installGestureRuntimeBridge();
+  } catch (err) {
+    console.warn("Window or gesture bridges failed:", err);
+  }
 }
-ReactDOM.createRoot(document.getElementById("root")).render(<React.StrictMode>{islandSurface ? <DesktopIslandSurface /> : <AuthProvider><ThemeProvider><LocaleProvider><App /><WorkspaceWindows /><PWAUpdatePrompt /></LocaleProvider></ThemeProvider></AuthProvider>}</React.StrictMode>);
-if (!islandSurface) bootLogger();
+try {
+  ReactDOM.createRoot(document.getElementById("root")).render(
+    <React.StrictMode>
+      {islandSurface ? (
+        <DesktopIslandSurface />
+      ) : (
+        <AuthProvider>
+          <ThemeProvider>
+            <LocaleProvider>
+              <App />
+              <WorkspaceWindows />
+              <PWAUpdatePrompt />
+            </LocaleProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      )}
+    </React.StrictMode>
+  );
+} catch (renderError) {
+  console.error("Critical root render failure:", renderError);
+}
+
+if (!islandSurface) {
+  try {
+    bootLogger();
+  } catch (err) {
+    console.warn("[AuditLogger] Boot logger initialization warning:", err);
+  }
+}
 if (!islandSurface && "serviceWorker" in navigator && import.meta.env.PROD) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch((error) => console.error("HEY service worker registration failed:", error)));

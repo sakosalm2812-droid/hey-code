@@ -1,7 +1,8 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import crypto from 'node:crypto';
+// Browser-compatible DurableScheduler: uses localStorage instead of fs/path.
+// node:fs, node:path, node:crypto removed.
 import { log as auditLog } from './auditLogger.js';
+
+const SCHEDULER_STORAGE_KEY = 'hey_durable_scheduler_jobs';
 
 export function parseCron(cronString) {
   if (!cronString || typeof cronString !== 'string') {
@@ -61,33 +62,30 @@ export function computeNextRun(cronString, fromDate = new Date()) {
 
 export class DurableScheduler {
   constructor(options = {}) {
-    this.storagePath = options.storagePath || path.resolve(process.cwd(), 'data', 'scheduler', 'jobs.json');
+    this.storageKey = options.storageKey || SCHEDULER_STORAGE_KEY;
     this.auditLogger = options.auditLogger || auditLog;
-    this.workerId = options.workerId || `worker_${crypto.randomUUID().slice(0, 8)}`;
+    this.workerId = options.workerId || `worker_${globalThis.crypto.randomUUID().slice(0, 8)}`;
     this.jobs = new Map();
     this.watchers = new Map();
     this.jobHandlers = new Map(); // jobId -> fn
-
-    try {
-      const dir = path.dirname(this.storagePath);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    } catch {}
 
     this.loadState();
   }
 
   loadState() {
     try {
-      if (fs.existsSync(this.storagePath)) {
-        const raw = fs.readFileSync(this.storagePath, 'utf-8');
-        const data = JSON.parse(raw);
-        if (Array.isArray(data)) {
-          for (const item of data) {
-            const existing = this.jobs.get(item.id);
-            if (existing) {
-              Object.assign(existing, item);
-            } else {
-              this.jobs.set(item.id, item);
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem(this.storageKey);
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (Array.isArray(data)) {
+            for (const item of data) {
+              const existing = this.jobs.get(item.id);
+              if (existing) {
+                Object.assign(existing, item);
+              } else {
+                this.jobs.set(item.id, item);
+              }
             }
           }
         }
@@ -99,15 +97,17 @@ export class DurableScheduler {
 
   saveState() {
     try {
-      const items = Array.from(this.jobs.values());
-      fs.writeFileSync(this.storagePath, JSON.stringify(items, null, 2), 'utf-8');
+      if (typeof localStorage !== 'undefined') {
+        const items = Array.from(this.jobs.values());
+        localStorage.setItem(this.storageKey, JSON.stringify(items));
+      }
     } catch {}
   }
 
   schedule({ cron, job, payload = {}, timezone = 'UTC' }) {
     parseCron(cron); // Throws if invalid cron
 
-    const id = `sched_${crypto.randomUUID()}`;
+    const id = `sched_${globalThis.crypto.randomUUID()}`;
     const next_run_at = computeNextRun(cron);
 
     const jobRecord = {
@@ -138,7 +138,7 @@ export class DurableScheduler {
   watch({ event, condition = null, job }) {
     if (!event) throw new TypeError('Event name is required for watch()');
 
-    const id = `watch_${crypto.randomUUID()}`;
+    const id = `watch_${globalThis.crypto.randomUUID()}`;
     const watchRecord = {
       id,
       type: 'watch',

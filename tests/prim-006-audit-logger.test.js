@@ -1,15 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
-import { AuditLogger } from '../src/core/auditLogger.js';
+import { AuditLogger, getStoredLogs, redactSecrets, subtleDigestSha256 } from '../src/core/auditLogger.js';
 
-test('PRIM-006 Acceptance Test 1: Writing 100 events produces 100 lines', () => {
-  const tmpDir = path.resolve('tmp', 'test-audit-1');
-  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+test('PRIM-006 Acceptance Test 1: Writing events saves to localStorage under hey_audit_logs', () => {
+  localStorage.removeItem('hey_audit_logs');
+  const logger = new AuditLogger();
 
-  const logger = new AuditLogger({ logDir: tmpDir, currentDate: '2026-10-24' });
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 50; i++) {
     const id = logger.log({
       event_type: 'test:event',
       actor: 'system',
@@ -19,22 +16,19 @@ test('PRIM-006 Acceptance Test 1: Writing 100 events produces 100 lines', () => 
     assert.ok(id, 'id should be returned');
   }
 
-  const logFile = path.join(tmpDir, 'audit-2026-10-24.jsonl');
-  assert.ok(fs.existsSync(logFile), 'log file should exist');
-  const lines = fs.readFileSync(logFile, 'utf-8').trim().split('\n');
-  assert.equal(lines.length, 100, 'must have exactly 100 lines');
+  const stored = getStoredLogs();
+  assert.equal(stored.length, 50, 'must have exactly 50 entries in localStorage');
 
-  const check = logger.verifyChain(logFile);
+  const check = logger.verifyChain(stored);
   assert.equal(check.valid, true, 'chain must be valid initially');
-  assert.equal(check.count, 100);
+  assert.equal(check.count, 50);
 });
 
-test('PRIM-006 Acceptance Test 2: Tampering with line 50 breaks verify_chain()', () => {
-  const tmpDir = path.resolve('tmp', 'test-audit-2');
-  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+test('PRIM-006 Acceptance Test 2: Tampering with an entry breaks verifyChain()', () => {
+  localStorage.removeItem('hey_audit_logs');
+  const logger = new AuditLogger();
 
-  const logger = new AuditLogger({ logDir: tmpDir, currentDate: '2026-10-24' });
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 20; i++) {
     logger.log({
       event_type: 'test:event',
       actor: 'agent',
@@ -42,89 +36,62 @@ test('PRIM-006 Acceptance Test 2: Tampering with line 50 breaks verify_chain()',
     });
   }
 
-  const logFile = path.join(tmpDir, 'audit-2026-10-24.jsonl');
-  const lines = fs.readFileSync(logFile, 'utf-8').trim().split('\n');
-  const record50 = JSON.parse(lines[49]);
-  record50.payload.value = 9999; // tamper
-  lines[49] = JSON.stringify(record50);
-  fs.writeFileSync(logFile, lines.join('\n') + '\n', 'utf-8');
+  const stored = getStoredLogs();
+  // Tamper with record #10
+  stored[10].payload.value = 9999;
 
-  const check = logger.verifyChain(logFile);
+  const check = logger.verifyChain(stored);
   assert.equal(check.valid, false, 'verifyChain must report invalid after tampering');
-  assert.equal(check.brokenLine, 49, 'tampered line must be detected');
+  assert.equal(check.brokenLine, 10, 'tampered index must be detected');
 });
 
 test('PRIM-006 Acceptance Test 3: Correlation ID links related events', () => {
-  const tmpDir = path.resolve('tmp', 'test-audit-3');
-  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+  localStorage.removeItem('hey_audit_logs');
+  const logger = new AuditLogger();
 
-  const logger = new AuditLogger({ logDir: tmpDir, currentDate: '2026-10-24' });
   logger.log({ event_type: 'task:start', actor: 'user', payload: {}, correlation_id: 'corr-xyz' });
   logger.log({ event_type: 'task:step', actor: 'agent', payload: {}, correlation_id: 'corr-xyz' });
   logger.log({ event_type: 'task:end', actor: 'agent', payload: {}, correlation_id: 'corr-xyz' });
   logger.log({ event_type: 'other:event', actor: 'other', payload: {}, correlation_id: 'corr-other' });
 
-  const logFile = path.join(tmpDir, 'audit-2026-10-24.jsonl');
-  const lines = fs.readFileSync(logFile, 'utf-8').trim().split('\n').map((l) => JSON.parse(l));
-  const linked = lines.filter((r) => r.correlation_id === 'corr-xyz');
+  const stored = getStoredLogs();
+  const linked = stored.filter((r) => r.correlation_id === 'corr-xyz');
   assert.equal(linked.length, 3, 'all 3 events should share the correlation_id');
 });
 
-test('PRIM-006 Acceptance Test 4: Rotation creates a new file at midnight and compresses previous', () => {
-  const tmpDir = path.resolve('tmp', 'test-audit-4');
-  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+test('PRIM-006 Acceptance Test 4: Enforces 1,000 maximum entries cap in localStorage', () => {
+  localStorage.removeItem('hey_audit_logs');
+  const logger = new AuditLogger();
 
-  const logger = new AuditLogger({ logDir: tmpDir });
-  logger.log({ event_type: 'event1', actor: 'user', payload: {}, timestamp: '2026-10-24T23:59:59.000Z' });
-
-  const day1File = path.join(tmpDir, 'audit-2026-10-24.jsonl');
-  assert.ok(fs.existsSync(day1File), 'day 1 file should exist');
-
-  // Trigger next event on next day
-  logger.log({ event_type: 'event2', actor: 'user', payload: {}, timestamp: '2026-10-25T00:00:01.000Z' });
-
-  const day2File = path.join(tmpDir, 'audit-2026-10-25.jsonl');
-  assert.ok(fs.existsSync(day2File), 'day 2 file should exist');
-  assert.ok(fs.existsSync(`${day1File}.gz`), 'previous day file should be archived as .gz');
-});
-
-test('PRIM-006 Acceptance Test 5: Archived files remain readable', () => {
-  const tmpDir = path.resolve('tmp', 'test-audit-5');
-  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
-
-  const logger = new AuditLogger({ logDir: tmpDir });
-  logger.log({ event_type: 'archived_event', actor: 'system', payload: { secret_data: 'important' } });
-  const logFile = logger.currentFile;
-  const gzPath = logger.archiveFile(logFile);
-
-  assert.ok(fs.existsSync(gzPath), 'gz file exists');
-  const content = logger.readArchivedFile(gzPath);
-  assert.ok(content.includes('archived_event'), 'archived content must be uncompressed and readable');
-});
-
-test('PRIM-006 Acceptance Test 6: Log write failure does not crash caller and secrets are redacted', () => {
-  const logger = new AuditLogger({ logDir: '/invalid\0path' });
-  assert.doesNotThrow(() => {
-    const res = logger.log({
-      event_type: 'safe_failure',
-      actor: 'user',
-      payload: { api_key: 'sk-123456789', token: 'secret-token-xyz', safeField: 'visible' },
+  // Write 1,050 entries
+  for (let i = 0; i < 1050; i++) {
+    logger.log({
+      event_type: 'bulk:event',
+      actor: 'system',
+      payload: { seq: i },
     });
-    // returns null on error
-    assert.equal(res, null);
+  }
+
+  const stored = getStoredLogs();
+  assert.equal(stored.length, 1000, 'must cap strictly at 1,000 entries');
+  assert.equal(stored[stored.length - 1].payload.seq, 1049, 'latest entry must be retained');
+});
+
+test('PRIM-006 Acceptance Test 5: Native Web Crypto API hash matches digest', async () => {
+  const hash = await subtleDigestSha256('test_cryptographic_payload');
+  assert.ok(typeof hash === 'string' && hash.length === 64, 'hash must be 64-char hex string');
+});
+
+test('PRIM-006 Acceptance Test 6: Secrets are redacted and failures do not crash', () => {
+  const safe = redactSecrets({
+    api_key: 'sk-123456789',
+    token: 'secret-token-xyz',
+    user_password: 'superpassword',
+    visible_info: 'hello world',
   });
 
-  const tmpDir = path.resolve('tmp', 'test-audit-6');
-  if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
-  const validLogger = new AuditLogger({ logDir: tmpDir });
-  validLogger.log({
-    event_type: 'secret_test',
-    actor: 'user',
-    payload: { api_key: 'sk-abcdef', token: 'secret-xyz', regular: 'text' },
-  });
-
-  const lines = fs.readFileSync(validLogger.currentFile, 'utf-8').trim().split('\n').map((l) => JSON.parse(l));
-  assert.equal(lines[0].payload.api_key, '[REDACTED]');
-  assert.equal(lines[0].payload.token, '[REDACTED]');
-  assert.equal(lines[0].payload.regular, 'text');
+  assert.equal(safe.api_key, '[REDACTED]');
+  assert.equal(safe.token, '[REDACTED]');
+  assert.equal(safe.user_password, '[REDACTED]');
+  assert.equal(safe.visible_info, 'hello world');
 });

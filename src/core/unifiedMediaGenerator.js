@@ -1,6 +1,5 @@
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
+// Browser-compatible UnifiedMediaGenerator: node:crypto, node:fs, node:path removed.
+// Artifact storage uses in-memory Map; dispatchers handle output URLs directly.
 import { defaultModelRouter } from './modelRouter.js';
 import { log as auditLog } from './auditLogger.js';
 
@@ -18,15 +17,9 @@ export class UnifiedMediaGenerator {
   constructor(options = {}) {
     this.router = options.modelRouter || defaultModelRouter;
     this.auditLogger = options.auditLogger || auditLog;
-    this.artifactDir = options.artifactDir || path.resolve(process.cwd(), 'data', 'artifacts');
+    // artifactDir is Node-only; ignored in browser
     this.jobs = new Map();
     this.dispatchers = options.dispatchers || {};
-
-    try {
-      if (!fs.existsSync(this.artifactDir)) {
-        fs.mkdirSync(this.artifactDir, { recursive: true });
-      }
-    } catch {}
   }
 
   registerDispatcher(modality, fn) {
@@ -47,7 +40,7 @@ export class UnifiedMediaGenerator {
       throw new Error('UnifiedMediaGenerator: Prompt must be a non-empty string');
     }
 
-    const jobId = `job_${crypto.randomUUID()}`;
+    const jobId = `job_${globalThis.crypto.randomUUID()}`;
     const startTime = Date.now();
     const activeTimeout = timeoutMs ?? (MODALITY_TIMEOUTS_MS[modality] || 60000);
 
@@ -82,10 +75,8 @@ export class UnifiedMediaGenerator {
       const dispatcher =
         this.dispatchers[modality] ||
         (async (p) => {
-          // Default mock generator for testing
-          const filePath = path.join(this.artifactDir, `${jobId}.${modality === 'image' ? 'png' : 'bin'}`);
-          fs.writeFileSync(filePath, Buffer.from(`generated_${modality}_data_${p.prompt}`));
-          return { output_url: filePath, cost: estimatedCost };
+          // Default browser stub: dispatchers must be registered for real generation
+          return { output_url: null, cost: estimatedCost, error: 'no_dispatcher_registered' };
         });
 
       const execPromise = dispatcher({ prompt, params, scope, provider });
@@ -106,20 +97,14 @@ export class UnifiedMediaGenerator {
 
       const outputUrl = result.output_url || result.url || result.filePath;
 
-      // 4. Verify output exists and is valid (non-zero size)
+      // 4. Verify output exists and is valid
       if (!outputUrl) {
         throw new Error('Generation completed without producing an output URL or file path');
       }
-
-      if (fs.existsSync(outputUrl)) {
-        const stats = fs.statSync(outputUrl);
-        if (stats.size === 0) {
-          throw new Error('Generated output file is empty (0 bytes)');
-        }
-      }
+      // Browser: cannot check filesystem; trust the dispatcher's output_url
 
       // 5. Store in artifact system with provenance
-      const artifactId = `art_${crypto.randomUUID()}`;
+      const artifactId = `art_${globalThis.crypto.randomUUID()}`;
       const provenance = {
         source_type: 'generate',
         job_id: jobId,

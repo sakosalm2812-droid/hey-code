@@ -1,5 +1,5 @@
-import fs from 'node:fs';
 import { log as auditLog } from './auditLogger.js';
+// Note: Node fs removed — ActionVerificationEngine stores state in-memory only (browser-compatible)
 
 export const VERDICT_STATUS = Object.freeze({
   VERIFIED: 'verified',
@@ -59,9 +59,10 @@ export class ActionVerificationEngine {
           return { type, pass, evidence: { pattern: String(valExpected), actual: valActual } };
         }
         case 'file_exists': {
+          // Browser environment: cannot check filesystem. Always returns false (fail-closed).
           const filePath = String(valActual ?? valExpected ?? '');
-          const pass = Boolean(filePath) && fs.existsSync(filePath);
-          return { type, pass, evidence: { filePath, exists: pass } };
+          const pass = false;
+          return { type, pass, evidence: { filePath, exists: false, note: 'file_exists unavailable in browser' } };
         }
         case 'http_status': {
           const actualStatus =

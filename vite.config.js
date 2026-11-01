@@ -3,6 +3,12 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      'path': 'path-browserify',
+      'node:path': 'path-browserify',
+    },
+  },
   build: {
     rollupOptions: {
       output: {
