@@ -1,198 +1,52 @@
-The user wants me to upgrade src\app\(auth)\reset-password\page.tsx. The current code isn't provided. I need to produce a strong upgraded version.
+The user wants me to output an upgraded version of src/app/(auth)/reset-password/page.tsx wrapped in a JSON code block per the format requirement.
 
-Format requirement: wrap JSON tool call arrays in  code block. Mission says "output ONLY the raw upgraded code. No markdown." Conflict. The format requirement is explicit about the harness parsing code blocks. I'll output the json code block with write_file.
+Let me write a genuinely excellent reset-password page with Liquid Glass aesthetic and purposeful motion. The file path uses Windows-style backslashes but I should use a proper path. Let me use src/app/(auth)/reset-password/page.tsx.
 
-Let me write a genuinely excellent reset-password page with Liquid Glass aesthetic and purposeful motion (Jakub primary, Jhey secondary, Emil for high-freq).
+Let me build this carefully:
 
-Key design decisions:
-
-Client component
+Client component, Suspense wrapper for useSearchParams
 
 Two modes: request reset (email) vs set new password (token)
 
-Liquid Glass card: backdrop-blur, layered borders, specular highlights
+Liquid Glass card with layered glass effect
 
-Motion: staggered entrance, focus glow, button press, error slide, success checkmark draw
+Motion: staggered entrance, focus glow, button press, error shake, success checkmark draw
 
 prefers-reduced-motion respect
 
 Accessibility: aria-live, proper labels, autocomplete
 
-Fixed-width button to avoid layout shift
+Security: don't reveal whether email exists (always show success message)
 
-Security: don't reveal whether email exists
+Password strength meter
 
-Let me write clean code.
+Let me write clean, complete code.
 
-Path: src/app/(auth)/reset-password/page.tsx
+Key considerations:
 
-Need useSearchParams wrapped in Suspense for Next 14/15. Better: export default function Page() { return <Suspense><ResetPasswordClient/></Suspense> }.
+Next.js App Router — "use client" at top
 
-Let me write it.
+useSearchParams requires Suspense boundary
 
-Motion tokens: cubic-bezier(0.16, 1, 0.3, 1) for entrances; 0.22, 1, 0.36, 1 alternative.
+Use Tailwind classes for layout + inline <style> for keyframes
 
-CSS: I'll use Tailwind classes but also a <style jsx>? That requires styled-jsx which is built into Next. Actually styled-jsx is included by default in Next.js. But safer to use a plain <style> tag with scoped class names to avoid dependency assumptions. I'll use a <style> element with a unique class prefix. Actually inline <style> in a client component is fine.
-
-Hmm, but Tailwind is likely used given "Liquid Glass" aesthetic request. I'll use Tailwind utility classes primarily plus a small <style> block for keyframes and reduced-motion. That's safest.
-
-Let me write it.
-
-tsx
-"use client";
-
-import { Suspense, useEffect, useId, useRef, useState } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-
-/* ------------------------------------------------------------------ */
-/*  Motion tokens                                                      */
-/* ------------------------------------------------------------------ */
-const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
-
-type Status = "idle" | "submitting" | "sent" | "error" | "success";
-
-Password strength calculation.
-
-Let me carefully write the whole thing.
-
-I'll structure:
-
-ResetPasswordPage — Suspense wrapper
-
-ResetPasswordView — reads searchParams token
-
-RequestForm — email
-
-SetPasswordForm — new password + confirm
-
-Maybe simpler to have one component with conditional rendering. Let's keep it manageable but complete.
-
-Actually let me write a single ResetPasswordView that switches on mode = token ? "set" : "request".
-
-Let me write.
-
-tsx
-function ResetPasswordView() {
-  const params = useSearchParams();
-  const token = params.get("token");
-  const mode: "request" | "set" = token ? "set" : "request";
-  ...
-}
-
-Motion: entrance stagger via CSS animation with delay using inline style animationDelay.
-
-I'll define keyframes in a <style> block:
-
-css
-@keyframes rp-rise { from { opacity:0; transform: translateY(10px) } to { opacity:1; transform:none } }
-@keyframes rp-fade { from { opacity: 0 } to { opacity: 1 } }
-@keyframes rp-slide-in { from { opacity:0; transform: translateY(-6px) } to { opacity:1; transform:none } }
-@keyframes rp-shake { 10%,90%{transform:translateX(-1px)} 20%,80%{transform:translateX(2px)} 30%,50%,70%{transform:translateX(-3px)} 40%,60%{transform:translateX(3px)} }
-@keyframes rp-draw { to { stroke-dashoffset: 0 } }
-@keyframes rp-spin { to { transform: rotate(360deg) } }
-
-Reduced motion block kills animation durations.
-
-Now the Liquid Glass card:
-
-text
-className="relative w-full max-w-[420px] rounded-[28px] p-[1px] bg-gradient-to-b from-white/25 via-white/10 to-white/[0.03] shadow-[0_24px_80px_-24px_rgba(0,0,0,0.65)]"
-
-Inner: rounded-[27px] bg-white/[0.06] backdrop-blur-2xl p-8 plus inset highlight shadow-[inset_0_1px_0_rgba(255,255,255,0.18)].
-
-Dark page background: deep gradient + two blurred color orbs.
-
-Good.
-
-Inputs: bg-white/[0.04] border border-white/10 focus:border-white/25 focus:bg-white/[0.07] with a focus ring glow via focus-within:shadow-[0_0_0_4px_rgba(255,255,255,0.06)].
-
-Button: gradient white-ish or accent. Let's use a bright accent — maybe a cyan/violet gradient. Use bg-white text-neutral-900 for primary? Liquid glass often uses white pill. I'll use white button with dark text — crisp and premium.
-
-Now the success state: crossfade to a checkmark + message.
-
-Let's write the actual code carefully.
-
-For the submit handler, define:
-
-tsx
-async function requestPasswordReset(email: string) {
-  const res = await fetch("/api/auth/reset-password", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  if (!res.ok) throw new Error("Request failed");
-}
-
-Good.
-
-Now writing the full file.
-
-Also add aria-live="polite" region for errors, role="alert".
-
-Fixed-width button: use relative with a grid overlay of both labels so width doesn't shift. Simpler: keep button full width — width doesn't change. Height fixed with h-12. So no layout shift regardless. Good.
+Motion tokens
 
 Let me write it now.
 
-For the checkmark draw: SVG path with strokeDasharray=48 strokeDashoffset=48 and animation.
-
-Let's produce final code.
-
-Also useEffect for autofocus on email.
-
-Password strength: simple heuristic.
-
-Let me write out fully.
-
-One more thing: autoComplete="new-password".
-
-Final code below.
-
-Length: substantial but fine.
-
-Let me be careful with the JSON escaping — all " inside content must be \". That's a lot of escaping. I need to be meticulous.
-
-Alternative: since the content is huge with many quotes, escaping everything by hand is error-prone. But required. I'll be careful.
-
-Hmm, this is a big file. Let me minimize double quotes where possible? No, JSX needs them. I must escape all.
-
-Let me write the content, then escape.
-
-Actually, I'll write the content in my head with escapes directly.
-
-Let me draft the raw TSX first mentally, then convert.
-
-RAW TSX:
-
-text
+tsx
 "use client";
 
-import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const EASE_SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
-async function requestPasswordReset(email: string) {
-  const res = await fetch("/api/auth/reset-password", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  if (!res.ok) throw new Error("reset-request-failed");
-}
+type Phase = "idle" | "submitting" | "sent" | "success";
 
-async function confirmPasswordReset(token: string, password: string) {
-  const res = await fetch("/api/auth/reset-password/confirm", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, password }),
-  });
-  if (!res.ok) throw new Error("reset-confirm-failed");
-}
-
-function scorePassword(pw: string) {
+function scorePassword(pw: string): number {
   let score = 0;
   if (pw.length >= 8) score++;
   if (pw.length >= 12) score++;
@@ -202,238 +56,146 @@ function scorePassword(pw: string) {
   return Math.min(score, 4);
 }
 
-const STRENGTH_LABEL = ["Too short", "Weak", "Fair", "Strong", "Excellent"];
-const STRENGTH_TONE = ["bg-red-400/70", "bg-amber-400/70", "bg-yellow-300/70", "bg-emerald-400/70", "bg-emerald-300"];
+const strengthLabels = ["Too short", "Weak", "Fair", "Good", "Strong"];
+const strengthColors = [
+  "bg-rose-400",
+  "bg-orange-400",
+  "bg-amber-400",
+  "bg-emerald-400",
+  "bg-emerald-400",
+];
 
-export default function ResetPasswordPage() {
-  return (
-    <Suspense fallback={<Shell />}>
-      <ResetPasswordView />
-    </Suspense>
-  );
-}
+Now the main structure.
 
-Shell = background only.
+Let me think about the two forms:
 
-Then ResetPasswordView.
+Request form: email input → submit → success message "If an account exists..."
 
-OK let me just write it out in the answer.
+Set form: new password + confirm → submit → success message
 
-I'll include the styles via a <style> tag with dangerouslySetInnerHTML? No — just <style>{...}</style> works in React with a template literal string child. Yes, <style>{css}</style> is fine (React 19 hoists style). But it's global CSS. Use prefixed class names. Fine.
+Both in the same glass card. Staggered entrance using CSS animation delays.
 
-Actually simpler and safer: use a <style> element rendered once in the page. Fine.
+I'll make the checkmark animate with an SVG stroke-dashoffset animation.
 
-Let me write.
+Error handling: inline error message with shake on the input.
 
-Also need import type { Metadata }? No, client component.
+Let me finalize the code.
 
-Write final.
+For the submit button, fixed width to prevent layout shift, with a spinner during submitting.
 
-Now, careful with escaping. Let me produce the JSON with the content string where every " → \" and newlines → \n. That's really tedious for a 400-line file but the format demands it.
+Let me write it out completely now.
 
-Hmm — is there a way to avoid? The instruction says escape. I'll do it but the content is long. I'll write it as one long JSON string with \n escapes. That's very error-prone and huge.
+For accessibility:
 
-Alternative interpretation: JSON allows literal newlines? No, it doesn't — must be \n.
+aria-live="polite" on status region
 
-OK. I'll do it. Let me keep the file reasonably sized (~300 lines) to manage escaping.
+aria-describedby for errors
 
-Let me write the final TSX compactly but completely.
+aria-invalid on error inputs
 
-I'll now carefully construct.
+Proper autoComplete attributes
 
-Content lines (I'll build the escaped string):
-
-L1: "use client"; → \"use client\";
-...
-
-This is going to be long. Let's go.
-
-Let me finalize the TSX design (compact):
+Let me write the full thing:
 
 tsx
 "use client";
 
-import { Suspense, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
+/* ------------------------------------------------------------------ */
+/*  Motion tokens & helpers                                           */
+/* ------------------------------------------------------------------ */
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-const STRENGTH_LABEL = ["Too short", "Weak", "Fair", "Strong", "Excellent"];
-const STRENGTH_TONE = [
-  "bg-red-400/80",
-  "bg-amber-400/80",
-  "bg-yellow-300/80",
-  "bg-emerald-400/80",
-  "bg-emerald-300",
+type Phase = "idle" | "submitting" | "sent" | "success";
+
+function scorePassword(pw: string): number {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  return Math.min(score, 4);
+}
+
+const STRENGTH_LABELS = ["Too short", "Weak", "Fair", "Good", "Strong"];
+const STRENGTH_COLORS = [
+  "#f43f5e",
+  "#fb923c",
+  "#fbbf24",
+  "#34d399",
+  "#10b981",
 ];
 
-function scorePassword(pw: string) {
-  let s = 0;
-  if (pw.length >= 8) s += 1;
-  if (pw.length >= 12) s += 1;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s += 1;
-  if (/\d/.test(pw)) s += 1;
-  if (/[^A-Za-z0-9]/.test(pw)) s += 1;
-  return Math.min(s, 4);
-}
-
-async function requestPasswordReset(email: string) {
-  const res = await fetch("/api/auth/reset-password", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  if (!res.ok) throw new Error("reset-request-failed");
-}
-
-async function confirmPasswordReset(token: string, password: string) {
-  const res = await fetch("/api/auth/reset-password/confirm", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, password }),
-  });
-  if (!res.ok) throw new Error("reset-confirm-failed");
-}
-
+/* ------------------------------------------------------------------ */
+/*  Page shell — Suspense boundary for useSearchParams                */
+/* ------------------------------------------------------------------ */
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<Backdrop />}>
+    <Suspense fallback={<ResetPasswordSkeleton />}>
       <ResetPasswordView />
     </Suspense>
   );
 }
 
-Hmm Backdrop needs children? Make Backdrop accept optional children.
-
-tsx
-function Backdrop({ children }: { children?: React.ReactNode }) {
+function ResetPasswordSkeleton() {
   return (
-    <main className="relative min-h-[100dvh] w-full overflow-hidden bg-[#07070b] flex items-center justify-center px-5 py-16">
-      <style>{CSS}</style>
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-40 -left-32 h-[520px] w-[520px] rounded-full bg-indigo-500/25 blur-[120px]" />
-        <div className="absolute -bottom-40 -right-24 h-[520px] w-[520px] rounded-full bg-cyan-400/20 blur-[120px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.06),transparent_60%)]" />
-      </div>
-      <div className="relative z-10 w-full flex justify-center">{children}</div>
-    </main>
+    <div className="flex min-h-dvh items-center justify-center bg-[#050507]">
+      <div className="h-[420px] w-full max-w-[420px] animate-pulse rounded-[28px] bg-white/[0.04]" />
+    </div>
   );
 }
 
-Good.
-
-CSS string constant.
-
-tsx
-const CSS = `
-.rp-rise { animation: rp-rise 560ms ${EASE_OUT} both; }
-...
-`;
-
-Careful: template literal with ${EASE_OUT} inside a template literal — fine.
-
-But inside JSON, backticks are fine.
-
-Now the card + forms.
-
-Let me write ResetPasswordView:
-
-tsx
+/* ------------------------------------------------------------------ */
+/*  Main view                                                         */
+/* ------------------------------------------------------------------ */
 function ResetPasswordView() {
   const params = useSearchParams();
   const token = params.get("token");
-  const mode = token ? "set" : "request";
-  const [done, setDone] = useState(false);
+  const isSetMode = Boolean(token);
 
   return (
-    <Backdrop>
-      <section className="w-full max-w-[420px]">
-        <div className="rp-rise relative rounded-[28px] p-[1px] bg-gradient-to-b from-white/25 via-white/10 to-white/[0.02] shadow-[0_32px_90px_-30px_rgba(0,0,0,0.9)]">
-          <div className="rounded-[27px] bg-white/[0.055] backdrop-blur-2xl px-7 py-8 sm:px-8 sm:py-9 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),inset_0_-1px_0_rgba(255,255,255,0.04)]">
-            {done ? (
-              <SuccessState mode={mode} />
-            ) : mode === "set" && token ? (
-              <SetPasswordForm token={token} onDone={() => setDone(true)} />
-            ) : (
-              <RequestForm onDone={() => setDone(true)} />
-            )}
-          </div>
-        </div>
-        <p className="rp-rise mt-6 text-center text-[13px] text-white/45" style={{ animationDelay: "220ms" }}>
-          <Link href="/login" className="text-white/70 hover:text-white transition-colors duration-200 underline-offset-4 hover:underline">
-            Back to sign in
-          </Link>
-        </p>
-      </section>
-    </Backdrop>
-  );
-}
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#050507] px-4 py-12">
+      {/* Scoped keyframes + reduced-motion killswitch */}
+      <style>{`
+        @keyframes rp-rise {
+          from { opacity: 0; transform: translate3d(0, 12px, 0); }
+          to   { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        @keyframes rp-fade {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes rp-shake {
+          10%, 90% { transform: translate3d(-1px, 0, 0); }
+          20%, 80% { transform: translate3d(2px, 0, 0); }
+          30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+          40%, 60% { transform: translate3d(3px, 0, 0); }
+        }
+        @keyframes rp-draw {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes rp-spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes rp-orb {
+          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+          50%      { transform: translate3d(0, -24px, 0) scale(1.06); }
+        }
+        .rp-rise { animation: rp-rise 0.7s ${EASE_OUT} both; }
+        .rp-fade { animation: rp-fade 0.5s ${EASE_OUT} both; }
+        .rp-shake { animation: rp-shake 0.45s ${EASE_OUT} both; }
+        .rp-orb  { animation: rp-orb 14s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .rp-rise, .rp-fade, .rp-shake, .rp-orb { animation: none !important; }
+          * { transition-duration: 0.01ms !important; }
+        }
+      `}</style>
 
-Then RequestForm etc.
-
-RequestForm:
-
-tsx
-function RequestForm({ onDone }: { onDone: () => void }) {
-  const id = useId();
-  const emailRef = useRef<HTMLInputElement>(null);
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    emailRef.current?.focus();
-  }, []);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (busy) return;
-    const value = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value)) {
-      setError("Enter a valid email address.");
-      return;
-    }
-    setError(null);
-    setBusy(true);
-    try {
-      await requestPasswordReset(value);
-      onDone();
-    } catch {
-      setError("We couldn't send the link. Please try again in a moment.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} noValidate>
-      <header className="rp-rise" style={{ animationDelay: "40ms" }}>
-        <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-inset ring-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
-          <KeyIcon />
-        </div>
-        <h1 className="text-[26px] font-semibold tracking-[-0.02em] text-white">Reset your password</h1>
-        <p className="mt-2 text-[14px] leading-relaxed text-white/55">
-          Enter the email tied to your account and we&apos;ll send a secure link to set a new password.
-        </p>
-      </header>
-
-      <div className="rp-rise mt-7" style={{ animationDelay: "100ms" }}>
-        <label htmlFor={`${id}-email`} className="mb-2 block text-[12px] font-medium tracking-wide text-white/60">Email address</label>
-        <input ... />
-        {error && <p role="alert" className="rp-slide-in mt-2 flex items-start gap-1.5 text-[12.5px] text-red-300/90"><span>...</span>{error}</p>}
-      </div>
-
-      <button type="submit" disabled={busy} className="rp-rise group relative mt-6 flex h-12 w-full items-center justify-center overflow-hidden rounded-xl bg-white text-[14.5px] font-semibold text-neutral-950 transition-[transform,box-shadow,opacity] duration-150 ease-out hover:shadow-[0_10px_30px_-8px_rgba(255,255,255,0.35)] active:scale-[0.985] disabled:opacity-70 disabled:active:scale-100" style={{ animationDelay: "160ms" }}>
-        <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-black/[0.06] to-transparent transition-transform duration-700 group-hover:translate-x-full" aria-hidden />
-        <span className="relative flex items-center gap-2">
-          {busy && <Spinner />}
-          {busy ? "Sending link…" : "Send reset link"}
-        </span>
-      </button>
-      ...
-    </form>
-  );
-}
-
-Good. Note
+      {/* Ambient glass orbs */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="rp-orb absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.35),transparent_65%)] blur-2xl" />
+        <div className="rp-orb absolute -bottom-40 right-[-10%] h-[460px] w-[460px] rounded-full bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.22),transparent_65%)] blur-2xl" style={{ animationDelay: "-
