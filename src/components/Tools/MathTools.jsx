@@ -1,3 +1,79 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY 3D Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: alpha-cutout
+description: Turns an AI-generated (or filmed) clip of a character or product into a transparent, web-ready animation by shooting it on a flat chroma plate and keying it with per-frame plate measurement and edge unmixing. Delivers stacked-alpha MP4 that plays with transparency in every browser including Safari, VP9 alpha WebM, or keyed WebP frame sequences for scroll scrubbing. Use when an animated subject has to sit over page content, between layers of type, or over a 3D scene, when someone asks for "transparent video", "video with alpha", "remove the background from this clip", or when a generated video has a background that should not be there.
+---
+
+# Alpha cutout
+
+Image-to-video models never return alpha. A character that should stand between a giant headline and a sun disc, or a bottle that should float over a page, needs its background removed from every frame, cleanly enough that no fringe shows on any page colour. This skill does it the way a film studio does: shoot the subject on a flat key colour, then pull a matte per frame.
+
+## Tools
+
+| File | What it does |
+| --- | --- |
+| `scripts/plate.py` | Places a cut-out subject on a key plate with headroom; picks the key colour the subject clashes with least |
+| `scripts/key.py` | Keys a clip or still into stacked MP4, VP9 alpha WebM, RGBA WebP frames or PNGs |
+| `assets/alpha-video.js` | Plays a stacked-alpha MP4 with transparency on a canvas (WebGL), with `seek()` for scrubbing |
+
+Needs Python 3.9+, `pip install numpy opencv-python-headless pillow`, and ffmpeg on PATH.
+
+## Pipeline
+
+1. **Cut the subject out of the still.** Any background remover works. Check what it dropped: thin objects (a ball in the air, racket strings, hair) often go missing. Put them back by hand.
+
+2. **Make the plate.**
+
+   
+   python3 scripts/plate.py subject.png plate.png --size 1350x1800 --fit 0.8
+   
+
+   The script reports, for magenta, green and blue, how much of the subject sits close to that key, and picks the cleanest. Magenta is usually right: almost nothing in skin, clothing, product or foliage is pure magenta. Green fails on plants and green products; blue fails on denim and sky. The subject is pasted with a hard edge on purpose: a soft edge pre-mixed with the plate colour teaches the model to draw a fringe.
+
+   Leave room for the motion. A serve needs space above the head; a turn needs space to the side. Match the plate's aspect to the video model's output aspect so nothing gets cropped.
+
+3. **Generate on the plate.** Use the plate as the start frame (and as the end frame for a seamless loop; see `motion-assets`). The prompt must name the plate, or the model invents a background:
+
+   > The background must remain a completely flat, uniform, pure chroma-key magenta (exact RGB 255, 0, 255) filling the entire frame, with no shadows, no floor, no gradient, no vignette and no scenery. Locked-off camera.
+
+   **The prompt wins over the image.** A leftover "on a white background" in the prompt gets you a white background whatever the plate was. Re-read the prompt after every edit.
+
+4. **Key it.**
+
+   
+   python3 scripts/key.py clip.mp4 --png check/ --frame-list 0,40,80,120   # inspect first
+   python3 scripts/key.py clip.mp4 --stacked hero-1080.mp4 --width 1080
+   python3 scripts/key.py clip.mp4 --stacked hero-720.mp4 --width 720      # phones
+   python3 scripts/key.py clip.mp4 --frames serve/lg --width 960 --start 0 --end 78
+   
+
+   `--png` prints the plate colour it measured in each frame. Models drift the plate: a pure magenta can come back pale pink (250, 178, 243) halfway through while the subject keeps its colours. That is why the key colour is measured per frame from the frame's own border instead of being set once. If the subject touches the top edge, the measurement breaks and the script says so.
+
+   Then, per pixel: alpha comes from how far the pixel's key excess is from the pl
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY 3D Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: alpha-cutout
+description: Turns an AI-generated (or filmed) clip of a character or product into a transparent, web-ready animation by shooting it on a flat chroma plate and keying it with per-frame plate measurement and edge unmixing. Delivers stacked-alpha MP4 that plays with transparency in every browser including Safari, VP9 alpha WebM, or keyed WebP frame sequences for scroll scrubbing. Use when an animated sub
+
+FILE TO UPGRADE: src\components\Tools\MathTools.jsx
+CURRENT CODE:
 import React, { useState, useRef, useEffect } from "react";
 import {
   Binary,
@@ -150,301 +226,6 @@ export default function MathTools({ activeToolName = "Graphing Calculator" }) {
       {/* Top Tool Navigation */}
       <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-black/20 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <Binary className="w-5 h-5 text-[#8B5CF6]" />
-          <span className="text-sm font-bold tracking-tight text-[#F5F6F8]">Mathematics Analytics Bench</span>
-        </div>
-
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#0A0B0F]/80 border border-white/10 text-xs">
-          {[
-            { id: "graph", label: "Graphing Calculator" },
-            { id: "latex", label: "LaTeX Formula Editor" },
-            { id: "solver", label: "Step-by-Step Solver" },
-            { id: "quiz", label: "Quiz Builder" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-[#8B5CF6] text-white font-bold shadow-md shadow-[#8B5CF6]/30"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Container */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* TAB 1: GRAPHING CALCULATOR */}
-        {activeTab === "graph" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-bold text-[#F5F6F8]">Interactive 2D Function Plotter</h3>
-                <p className="text-xs text-white/50">Plot mathematical functions, inspect roots, and adjust viewing windows.</p>
-              </div>
-
-              {/* Function Presets */}
-              <div className="flex gap-1.5 text-xs">
-                {["sin(x)", "cos(x)", "0.2*x^2 - 3", "exp(0.3*x)"].map((fn) => (
-                  <button
-                    key={fn}
-                    onClick={() => setFuncInput(fn)}
-                    className={`px-2.5 py-1 rounded-lg border font-mono ${
-                      funcInput === fn
-                        ? "bg-[#8B5CF6]/20 border-[#8B5CF6] text-[#8B5CF6]"
-                        : "bg-white/5 border-white/10 text-white/60"
-                    }`}
-                  >
-                    {fn}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Input Bar */}
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                <span className="text-sm font-mono text-[#8B5CF6] font-bold">f(x) =</span>
-                <input
-                  type="text"
-                  value={funcInput}
-                  onChange={(e) => setFuncInput(e.target.value)}
-                  className="flex-1 px-4 py-2 rounded-xl bg-[#0A0B0F] border border-white/10 text-sm font-mono text-white outline-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-white/40">Range:</span>
-                <input
-                  type="number"
-                  value={xMin}
-                  onChange={(e) => setXMin(Number(e.target.value))}
-                  className="w-14 px-2 py-1 rounded-lg bg-[#0A0B0F] border border-white/10 text-center font-mono"
-                />
-                <span className="text-white/30">to</span>
-                <input
-                  type="number"
-                  value={xMax}
-                  onChange={(e) => setXMax(Number(e.target.value))}
-                  className="w-14 px-2 py-1 rounded-lg bg-[#0A0B0F] border border-white/10 text-center font-mono"
-                />
-              </div>
-            </div>
-
-            {/* Canvas Plot */}
-            <div className="rounded-2xl border border-white/10 bg-[#0A0B0F] p-4 flex flex-col items-center shadow-inner">
-              <canvas ref={canvasRef} width={640} height={320} className="w-full max-w-2xl h-auto rounded-xl" />
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: LATEX FORMULA EDITOR */}
-        {activeTab === "latex" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Live LaTeX Formula &amp; MathML Editor</h3>
-              <p className="text-xs text-white/50">Construct complex mathematical formulas, integral notations, and matrix tensors.</p>
-            </div>
-
-            {/* Quick Symbol Palette */}
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="text-white/40 py-1">Palette:</span>
-              {[
-                { label: "∫ Integral", code: "\\int_{a}^{b}" },
-                { label: "∑ Sum", code: "\\sum_{i=1}^{n}" },
-                { label: "lim Limit", code: "\\lim_{x \\to \\infty}" },
-                { label: "√ Sqrt", code: "\\sqrt{x}" },
-                { label: "a/b Fraction", code: "\\frac{a}{b}" },
-                { label: "∂ Partial", code: "\\frac{\\partial f}{\\partial x}" },
-                { label: "π Pi", code: "\\pi" },
-                { label: "θ Theta", code: "\\theta" },
-                { label: "∞ Infinity", code: "\\infty" },
-              ].map((sym) => (
-                <button
-                  key={sym.label}
-                  onClick={() => handleInsertSymbol(sym.code)}
-                  className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/80 font-mono"
-                >
-                  {sym.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Editor Textarea */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/60">LaTeX Notation Code</label>
-              <textarea
-                rows={3}
-                value={latexCode}
-                onChange={(e) => setLatexCode(e.target.value)}
-                className="w-full p-4 rounded-2xl bg-[#0A0B0F] border border-white/10 text-sm font-mono text-[#8B5CF6] focus:border-[#8B5CF6] outline-none"
-              />
-            </div>
-
-            {/* Preview Box */}
-            <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-3">
-              <div className="text-xs uppercase tracking-wider text-white/40 font-semibold">Rendered Expression</div>
-              <div className="p-6 rounded-xl bg-[#0A0B0F] border border-white/10 flex items-center justify-center text-center">
-                <span className="text-xl md:text-2xl font-serif text-[#F5F6F8] tracking-wider italic">
-                  {latexCode}
-                </span>
-              </div>
-              <div className="flex justify-end pt-1">
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(latexCode);
-                    setCopiedLatex(true);
-                    setTimeout(() => setCopiedLatex(false), 2000);
-                  }}
-                  className="flex items-center gap-1.5 text-xs text-[#8B5CF6] hover:underline"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  {copiedLatex ? "Copied!" : "Copy LaTeX Code"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: STEP-BY-STEP SOLVER */}
-        {activeTab === "solver" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Step-by-Step Mathematical Solver</h3>
-              <p className="text-xs text-white/50">Detailed pedagogical breakdowns showing intermediate transformations.</p>
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={solveProblem}
-                onChange={(e) => setSolveProblem(e.target.value)}
-                className="flex-1 px-4 py-3 rounded-2xl bg-[#0A0B0F] border border-white/10 text-sm font-mono text-white outline-none"
-              />
-              <button
-                type="button"
-                className="px-5 py-3 rounded-2xl bg-[#8B5CF6] text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md shadow-[#8B5CF6]/30"
-              >
-                Solve Step-by-Step
-              </button>
-            </div>
-
-            {/* Steps Cards */}
-            <div className="space-y-3">
-              {solveSteps.map((s) => (
-                <div
-                  key={s.step}
-                  className={`p-4 rounded-2xl border ${
-                    s.final
-                      ? "bg-purple-500/10 border-purple-500/30 text-purple-200"
-                      : "bg-black/30 border-white/5 text-white/80"
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-bold uppercase tracking-wider text-[#8B5CF6]">Step {s.step}</span>
-                    <span className="font-medium text-white/50">{s.title}</span>
-                  </div>
-                  <div className="font-mono text-sm mt-1">{s.detail}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: QUIZ BUILDER */}
-        {activeTab === "quiz" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Calculus &amp; Algebra Quiz Builder</h3>
-              <p className="text-xs text-white/50">Synthesize graded assessments with complete worked solutions.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-white/70">Topic</label>
-                <select
-                  value={quizTopic}
-                  onChange={(e) => setQuizTopic(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0A0B0F] border border-white/10 text-xs text-[#F5F6F8] outline-none"
-                >
-                  <option>Derivatives & Power Rule</option>
-                  <option>Integration by Substitution</option>
-                  <option>Fundamental Theorem of Calculus</option>
-                  <option>Related Rates & Optimization</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-white/70">Standard</label>
-                <select
-                  value={quizLevel}
-                  onChange={(e) => setQuizLevel(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0A0B0F] border border-white/10 text-xs text-[#F5F6F8] outline-none"
-                >
-                  <option>AP Calculus AB</option>
-                  <option>AP Calculus BC</option>
-                  <option>Honors Pre-Calculus</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleGenerateQuiz}
-                className="px-6 py-3 rounded-2xl bg-[#8B5CF6] text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md shadow-[#8B5CF6]/30 flex items-center gap-2"
-              >
-                <Sparkles className="w-4 h-4" /> Generate Quiz
-              </button>
-
-              {quizQuestions && (
-                <button
-                  type="button"
-                  onClick={() => setShowQuizAnswers(!showQuizAnswers)}
-                  className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-semibold text-white transition-all"
-                >
-                  {showQuizAnswers ? "Hide Solutions" : "Reveal Solutions"}
-                </button>
-              )}
-            </div>
-
-            {/* Generated Quiz */}
-            {quizQuestions && (
-              <div className="p-6 rounded-2xl border border-white/10 bg-[#0A0B0F] space-y-6">
-                <div className="border-b border-white/10 pb-4 flex justify-between items-start">
-                  <div>
-                    <h4 className="text-base font-bold text-[#8B5CF6]">{quizLevel}: {quizTopic}</h4>
-                    <div className="text-xs text-white/50 mt-1">Total Points: 30 • Time Limit: 25 Minutes</div>
-                  </div>
-                  <button
-                    onClick={() => window.print()}
-                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 text-xs flex items-center gap-1.5"
-                  >
-                    <Printer className="w-3.5 h-3.5" /> Print
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {quizQuestions.map((q, idx) => (
-                    <div key={idx} className="space-y-2 text-xs md:text-sm">
-                      <p className="font-medium text-white/90">{q.q}</p>
-                      {showQuizAnswers && (
-                        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-300 font-mono text-xs">
-                          <strong>Solution:</strong> {q.a}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+          <Binary className="w-5 h-5 text-[#8B5CF6]" 
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
