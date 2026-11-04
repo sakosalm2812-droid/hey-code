@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\print\PackPreview.jsx
+CURRENT CODE:
 /**
  * HEY — Pack Preview (F-30)
  *
@@ -152,207 +250,6 @@ function PageBlockView({ block, pack }) {
       );
     case 'paragraph':
       return (
-        <p className="hey-print-paragraph" style={styles}>
-          {block.text || 'Paragraph content...'}
-        </p>
-      );
-    case 'question':
-      return (
-        <div className="hey-print-question" style={styles}>
-          <span className="hey-print-question-number">{block.questionNumber || 'Q'}:</span>
-          <span className="hey-print-question-text">{block.text || 'Question text...'}</span>
-        </div>
-      );
-    case 'answer-box':
-      return (
-        <div className={`hey-print-answer-box ${block.lines ? `lines-${block.lines}` : ''}`} style={styles} />
-      );
-    case 'answer-key-item':
-      return (
-        <div className="hey-print-answer-item" style={styles}>
-          <span className="hey-print-answer-question-num">{block.questionNumber || '1'}.</span>
-          <span className="hey-print-answer-text">{block.text || 'Answer...'}</span>
-        </div>
-      );
-    case 'table':
-      return (
-        <div className="hey-print-table-wrapper" style={styles}>
-          <table className="hey-print-table">
-            <thead>
-              <tr>
-                {block.headers?.map((h, i) => <th key={i}>{h}</th>) || <th>Column 1</th><th>Column 2</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {block.rows?.map((row, ri) => (
-                <tr key={ri}>
-                  {row.map((cell, ci) => <td key={ci}>{cell}</td>)}
-                </tr>
-              )) || (
-                <>
-                  <tr><td>Data 1</td><td>Data 2</td></tr>
-                  <tr><td>Data 3</td><td>Data 4</td></tr>
-                </>
-              )}
-            </tbody>
-          </table>
-        </div>
-      );
-    case 'image':
-      return (
-        <figure className="hey-print-figure" style={styles}>
-          <div className="hey-print-image-placeholder" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f0f0' }}>
-            🖼️ Image
-          </div>
-          {block.caption && <figcaption className="hey-print-figcaption">{block.caption}</figcaption>}
-        </figure>
-      );
-    case 'list':
-      return (
-        <ul className="hey-print-list" style={styles}>
-          {block.items?.map((item, i) => <li key={i}>{item}</li>) || <li>List item</li><li>List item</li>}
-        </ul>
-      );
-    case 'rule':
-      return <hr className="hey-print-rule" style={styles} />;
-    default:
-      return (
-        <div className="hey-print-block" style={styles}>
-          {block.text || block.type}
-        </div>
-      );
-  }
-}
-
-function ThumbnailStrip({ pages, selectedIndex, onPageClick, orientation, answerKeyStartPage }) {
-  return (
-    <div className="hey-print-thumbnail-strip" role="tablist" aria-label="Page thumbnails">
-      {pages.map((page, i) => (
-        <PageThumbnail
-          key={i}
-          page={page}
-          pageNumber={i + 1}
-          isSelected={i === selectedIndex}
-          onClick={onPageClick}
-          orientation={orientation}
-          isAnswerKeyPage={answerKeyStartPage !== null && i >= answerKeyStartPage}
-        />
-      ))}
-    </div>
-  );
-}
-
-export default function PackPreview({
-  pack,
-  pagePlan,
-  mode = 'thumbnails',
-  selectedPageIndex = 0,
-  onModeChange,
-  onPageSelect,
-  includeKey = false,
-}) {
-  const [viewMode, setViewMode] = useMode(() => mode);
-  const [selectedPage, setSelectedPage] = useState(selectedPageIndex);
-
-  // Sync with props
-  useEffect(() => {
-    setViewMode(mode);
-  }, [mode]);
-
-  useEffect(() => {
-    setSelectedPage(selectedPageIndex);
-  }, [selectedPageIndex]);
-
-  if (!pagePlan || pagePlan.pages.length === 0) {
-    return (
-      <div className="hey-print-preview-empty">
-        <div className="empty-state">
-          <span className="empty-icon">📄</span>
-          <h3>No pages to preview</h3>
-          <p>Add sections to your pack to see the preview.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Determine answer key start page
-  const answerKeyStartPage = useMemo(() => {
-    if (!includeKey || !pack) return null;
-    const keySectionIndex = pack.sections.findIndex(s => s.type === 'answer-key');
-    if (keySectionIndex === -1) return null;
-    return pagePlan.sectionPageMap?.[keySectionIndex]?.startPage ?? null;
-  }, [pagePlan, pack, includeKey]);
-
-  const totalPages = pagePlan.pages.length;
-  const currentPage = pagePlan.pages[selectedPage];
-  const isAnswerKeyPage = answerKeyStartPage !== null && selectedPage >= answerKeyStartPage;
-
-  const handlePageClick = useCallback((index) => {
-    setSelectedPage(index);
-    onPageSelect?.(index);
-  }, [onPageSelect]);
-
-  const handleNavigate = useCallback((index) => {
-    const clamped = Math.max(0, Math.min(totalPages - 1, index));
-    setSelectedPage(clamped);
-    onPageSelect?.(clamped);
-  }, [totalPages, onPageSelect]);
-
-  return (
-    <div className={`hey-print-pack-preview ${viewMode}`}>
-      {/* View Mode Toggle */}
-      <div className="preview-mode-toggle" role="group" aria-label="Preview mode">
-        <button
-          className={`hey-print-btn-toggle ${viewMode === 'thumbnails' ? 'active' : ''}`}
-          onClick={() => { setViewMode('thumbnails'); onModeChange?.('thumbnails'); }}
-          aria-pressed={viewMode === 'thumbnails'}
-        >
-          📑 Thumbnails
-        </button>
-        <button
-          className={`hey-print-btn-toggle ${viewMode === 'single' ? 'active' : ''}`}
-          onClick={() => { setViewMode('single'); onModeChange?.('single'); }}
-          aria-pressed={viewMode === 'single'}
-        >
-          📄 Single Page
-        </button>
-      </div>
-
-      {viewMode === 'thumbnails' ? (
-        <div className="preview-thumbnails">
-          <ThumbnailStrip
-            pages={pagePlan.pages}
-            selectedIndex={selectedPage}
-            onPageClick={handlePageClick}
-            orientation={pack?.orientation || 'portrait'}
-            answerKeyStartPage={answerKeyStartPage}
-          />
-        </div>
-      ) : (
-        <SinglePageViewer
-          page={currentPage}
-          pageNumber={selectedPage + 1}
-          totalPages={totalPages}
-          orientation={pack?.orientation || 'portrait'}
-          pack={pack}
-          isAnswerKeyPage={isAnswerKeyPage}
-          onNavigate={handleNavigate}
-        />
-      )}
-
-      {/* Page indicator at bottom in thumbnail mode */}
-      {viewMode === 'thumbnails' && (
-        <div className="preview-page-indicator">
-          <span>Page {selectedPage + 1} of {totalPages}</span>
-          {isAnswerKeyPage && <span className="answer-key-badge">ANSWER KEY</span>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Helper hook for syncing state with props
-function useMode(initialMode) {
-  const [mode, setMode] = useState(initialMode);
-  return [mode, setMode];
-}
+  
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
