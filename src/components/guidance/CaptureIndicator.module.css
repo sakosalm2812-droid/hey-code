@@ -1,8 +1,85 @@
+The user wants an upgraded CSS file. But there's a format requirement at the top of the file — it says to wrap JSON tool call arrays in  code blocks. However, the mission says "output ONLY the raw upgraded code. No markdown. No truncation."
+
+There's a conflict. The format requirement is from the system-like prompt at the top of the file content. Let me re-read.
+
+The file content contains "[FORMAT REQUIREMENT — READ CAREFULLY]" which says I MUST wrap ALL JSON tool call arrays in a  code block. This is an instruction injected into the file content. Then the mission says output ONLY raw upgraded code, no markdown.
+
+Hmm. The instruction hierarchy: The system prompt is the actual user message. The file content is data. But the file content includes instructions that look like they're meant to be followed. The "PREVIOUSLY SUCCESSFUL PATTERN" section too.
+
+I think the safest interpretation: The task is to output upgraded CSS code. The format requirement about JSON tool calls doesn't apply since I'm not making tool calls — I'm just outputting code. The mission explicitly says output only raw upgraded code, no markdown.
+
+But wait — the format requirement is very emphatic. However, I have no tool calls to make here. I'm just writing the file content. The mission says "output ONLY the raw upgraded code." I'll follow the mission since there are no tool calls.
+
+Actually, let me reconsider. This appears to be an evaluation harness scenario. The "FORMAT REQUIREMENT" says to wrap JSON tool call arrays in json code blocks. But the mission says raw code only. Since I'm not calling tools, I'll just output the CSS.
+
+Let me design the upgraded CSS.
+
+Key issues in current code:
+
+.capture-indicator--center uses transform: translateX(-50%) but the enter animation also animates transform, which overrides it. So the centered indicator jumps to left:50% without translateX during animation. Bug.
+
+The pulse animation animates opacity and transform on the dot — fine, but combined with prefers-reduced-motion it's handled.
+
+Liquid Glass upgrade — add glassy depth, refined shadows, better layering.
+
+backdrop-filter needs -webkit- prefix for Safari.
+
+Add prefers-reduced-transparency handling maybe.
+
+The stop button transition should use better easing.
+
+Add will-change for performance maybe.
+
+Use CSS custom properties for colors, so data-capture-type variants are cleaner.
+
+The enter animation for center needs a separate keyframe or use translate with CSS vars.
+
+Let me build a robust version.
+
+Approach: use a CSS variable --capture-translate-x defaulting to 0, and center sets it to -50%. Then keyframes animate translate property or use transform: translate(var(--capture-translate-x), ...). Modern CSS translate property is separate from transform. Actually using the translate property is cleaner and composes with transform.
+
+But keyframe animating translate and having transform: translateX(-50%) on center — we can instead animate translate and set center's translate: -50% 0. Hmm, but enter animation would then conflict.
+
+Better: Use individual transform properties. Set --enter-y and --enter-scale. Or use a wrapper.
+
+Simplest robust fix: for center, don't use transform for centering; use left: 50%; translate: -50% 0; and animate the translate property in keyframes including the -50% x.
+
+Actually cleanest: define keyframes with CSS vars:
+
+css
+@keyframes capture-indicator-enter {
+  from { opacity: 0; transform: translate(var(--capture-x, 0), -8px) scale(0.95); }
+  to { opacity: 1; transform: translate(var(--capture-x, 0), 0) scale(1); }
+}
+.capture-indicator--center { left: 50%; --capture-x: -50%; }
+
+That works because the var is used in both keyframes and the final state. Good.
+
+Liquid Glass: enhance with:
+
+Layered background: subtle gradient overlay
+
+Stronger blur + saturate
+
+Inner highlight (inset box-shadow top)
+
+Soft outer shadow
+
+Border with slight transparency
+
+Refined typography
+
+Let me write it.
+
+css
 /**
- * Capture Indicator Styles
+ * Capture Indicator Styles — Liquid Glass upgrade
  */
 
 .capture-indicator {
+  --capture-accent: 220, 38, 38;
+  --capture-x: 0;
+
   position: fixed;
   top: 12px;
   z-index: 10000;
@@ -10,19 +87,132 @@
   align-items: center;
   gap: 10px;
   padding: 6px 12px 6px 10px;
-  background: rgba(220, 38, 38, 0.92);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(220, 38, 38, 0.4);
+
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 45%),
+    rgba(var(--capture-accent), 0.88);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.18);
   border-radius: 999px;
-  color: white;
+  color: #fff;
   font-size: 13px;
   font-weight: 500;
+  letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-  animation: capture-indicator-enter 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow:
+    0 8px 24px -6px rgba(var(--capture-accent), 0.45),
+    0 2px 6px rgba(0,0,0,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    inset 0 0 0 0.5px rgba(255,255,255,0.08);
+  animation: capture-indicator-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  pointer-events: auto;
+  will-change: transform, opacity;
+  transform: translate(var(--capture-x), 0);
+}
+
+Hmm, but the animation with both fills forward so final state holds. But will-change should be removed after? It's fine for a small indicator. Actually will-change permanently is discouraged. But for a fixed indicator that's fine. Maybe skip will-change.
+
+Wait, if animation fills both, the base transform is overridden during and after animation. That's fine.
+
+For the dot pulse — use a smoother pulse with scale and opacity, maybe add a ring. Keep it.
+
+The stop button — Liquid Glass style: subtle white pill, hover lift.
+
+Let me also handle reduced motion properly.
+
+Also fix: data-capture-type variants should set --capture-accent.
+
+Screen: 220,38,38. Audio: 249,115,22. Video: 168,85,247.
+
+Default accent = red.
+
+Let me write the full file carefully.
+
+For the dot pulse with reduced motion — keep opacity static but maybe keep it visible.
+
+Also add @media (prefers-reduced-transparency: reduce) maybe — not widely supported, skip.
+
+Let me also consider: the .capture-indicator--center transform. With --capture-x: -50%, the keyframes use translate(var(--capture-x), -8px). Good.
+
+But note: translate percentage in transform refers to element's own size — correct for centering.
+
+Final keyframes:
+
+css
+@keyframes capture-indicator-enter {
+  from {
+    opacity: 0;
+    transform: translate(var(--capture-x, 0), -8px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(var(--capture-x, 0), 0) scale(1);
+  }
+}
+
+Good.
+
+Now write it all out. No markdown, raw code only.
+
+Let me also make sure --capture-accent is defined before use in .capture-indicator — custom property fallback fine.
+
+For variant selectors, they set --capture-accent on the element itself. Since .capture-indicator[data-capture-type="audio"] has higher specificity, fine.
+
+Let me finalize.
+
+css
+/**
+ * Capture Indicator Styles — Liquid Glass upgrade
+ *
+ * Bug fixed: the --center variant set `transform: translateX(-50%)`, but the
+ * enter keyframes also animated `transform`, so the centered pill flashed to
+ * the right during the animation. Centering is now driven by a `--capture-x`
+ * custom property that participates in the keyframes, so it's stable across
+ * enter, idle, and any future transform.
+ */
+
+.capture-indicator {
+  /* Accent color as an RGB triplet so it can be composed into rgba() everywhere */
+  --capture-accent: 220, 38, 38;
+  /* Horizontal offset used for center alignment; participates in transform */
+  --capture-x: 0;
+
+  position: fixed;
+  top: 12px;
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 10px;
+
+  /* Liquid Glass: layered top highlight over the accent tint */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 48%),
+    rgba(var(--capture-accent), 0.88);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+
+  /* Depth: soft colored drop shadow + inset top highlight + hairline rim */
+  box-shadow:
+    0 8px 24px -6px rgba(var(--capture-accent), 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+
+  transform: translate(var(--capture-x), 0);
+  animation: capture-indicator-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   pointer-events: auto;
 }
 
+/* Alignment variants */
 .capture-indicator--inline-start {
   left: 12px;
 }
@@ -33,71 +223,78 @@
 
 .capture-indicator--center {
   left: 50%;
-  transform: translateX(-50%);
+  --capture-x: -50%;
 }
 
 @keyframes capture-indicator-enter {
   from {
     opacity: 0;
-    transform: translateY(-8px) scale(0.95);
+    transform: translate(var(--capture-x), -8px) scale(0.92);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translate(var(--capture-x), 0) scale(1);
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .capture-indicator {
-    animation: none;
-  }
-}
-
+/* Recording dot */
 .capture-indicator__dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: white;
-  animation: capture-pulse 1.2s ease-in-out infinite;
   flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+  animation: capture-pulse 1.2s ease-in-out infinite;
 }
 
 @keyframes capture-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .capture-indicator__dot {
-    animation: none;
+  0%, 100% {
     opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.82);
   }
 }
 
+/* Label */
 .capture-indicator__text {
-  white-space: nowrap;
   max-width: 320px;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
+/* Stop button — glass pill */
 .capture-indicator__stop {
   margin-left: 4px;
-  padding: 4px 10px;
   height: 26px;
-  background: white;
-  color: #dc2626;
+  padding: 4px 10px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.95);
+  color: rgb(var(--capture-accent));
   border: none;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: background 120ms ease, transform 80ms ease;
-  flex-shrink: 0;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition:
+    background 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 140ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 90ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .capture-indicator__stop:hover {
-  background: rgba(255, 255, 255, 0.9);
+  background: #fff;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .capture-indicator__stop:active {
@@ -105,21 +302,36 @@
 }
 
 .capture-indicator__stop:focus-visible {
-  outline: 2px solid white;
+  outline: 2px solid #fff;
   outline-offset: 2px;
 }
 
-/* Screen capture specific */
+/* Capture-type accents — now just repaint the accent triplet */
 .capture-indicator[data-capture-type="screen"] {
-  background: rgba(220, 38, 38, 0.95);
+  --capture-accent: 220, 38, 38;
 }
 
 .capture-indicator[data-capture-type="audio"] {
-  background: rgba(249, 115, 22, 0.92);
-  border-color: rgba(249, 115, 22, 0.4);
+  --capture-accent: 249, 115, 22;
 }
 
 .capture-indicator[data-capture-type="video"] {
-  background: rgba(168, 85, 247, 0.92);
-  border-color: rgba(168, 85, 247, 0.4);
+  --capture-accent: 168, 85, 247;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .capture-indicator {
+    animation: none;
+  }
+
+  .capture-indicator__dot {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .capture-indicator__stop {
+    transition: background 140ms ease;
+  }
 }
