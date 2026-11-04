@@ -1,31 +1,204 @@
-The user wants me to output the entire upgraded sign-in page file wrapped in a JSON code block. Let me create a 10x improved version.
+The user wants me to output the upgraded sign-in page file as a JSON tool call array inside a  code block. The "Current Code" section already contains a proposed version. I need to output the entire file, upgraded.
 
-Key upgrades:
+Wait, let me re-read. The file content shows the format requirement, dependencies, then feedback "[EMPTY_RESPONSE]", then "Current Code:" which contains what appears to be a previous attempt. The user wants me to output the entire upgraded file in a JSON code block.
 
-Framer Motion animations
+Let me check the dependencies:
 
-Liquid glass aesthetic
+button.tsx: Button supports loading prop, variants including gradient, sizes default/sm/lg/xl/icon. forwardRef. Good.
 
-Proper Google icon
+input.tsx: InputProps extends InputHTMLAttributes with error, label, helperText (truncated). So Input accepts label and error. Good.
 
-Password visibility toggle
+The "Current Code" seems to already be a well-upgraded version. I should produce the entire file, ensuring correctness. Let me review it for issues:
 
-Wired up remember me
+useForm with formState: { errors, isSubmitting } - but isSubmitting only applies when using handleSubmit async. Fine.
 
-Remove duplicate loading spinner
+signIn('credentials', {... remember: rememberMe ...}) - fine.
 
-Better error handling with error map
+In handleCredentialsSignIn, the ERROR_MESSAGES lookup: ERROR_MESSAGES[result.error] - result.error could be "CredentialsSignin". Fine.
 
-Animated background orbs
+fadeUp variants with custom function - the parent motion.div has initial="hidden" animate="visible" and variants={fadeUp}. Children with variants={fadeUp} and custom={n} will inherit. But note: when parent is visible, children animate. However, custom on child works only if variants is a function? Actually in framer-motion, custom prop is used by variant functions. The visible variant is a function (i) => ({...}). When a child has custom={n}, it'll use that. But propagation: parent variants propagate to children. The child also needs to be a motion component with variants. Yes.
 
-Accessibility improvements
+Wait, there's an issue: the parent motion.div has variants={fadeUp} and initial="hidden" animate="visible". The hidden variant is an object. The visible variant is a function taking custom. Parent has no custom, defaults to 0. Fine.
 
-Better micro-interactions
+But children motion.div have variants={fadeUp} and custom={n}. However for propagation to work, children should not have their own initial/animate. They inherit. Good.
 
-I need to escape all double quotes in the JSON content field. Let me write the code carefully.
+One issue: custom prop on motion components—the variant function receives custom. That works.
 
-I need to be careful about types with framer-motion ease array - use as const or type it properly.
+Potential issue: motion.div with variants={fadeUp} custom={0} also has className. Fine.
 
-Let me write the full file.
+TypeScript: fadeUp object typed implicitly. The visible function returns transition with ease: [0.16, 1, 0.3, 1] as const. Framer Motion's Easing type accepts tuple of 4 numbers. as const makes it readonly tuple, which may not match number[]? Framer motion types accept [number, number, number, number] maybe. as const produces readonly [0.16, 1, 0.3, 1]. Hmm, this could cause a type error. Safer to type the variants as Variants from framer-motion. Let me import Variants and type it.
 
-[{"tool": "write_file", "path": "C:\\Users\\DELL\\Documents\\hey\\src\\app\\(auth)\\signin\\page.tsx", "content": "'use client';\n\nimport { useState, Suspense, useCallback } from 'react';\nimport { signIn } from 'next-auth/react';\nimport { useRouter, useSearchParams } from 'next/navigation';\nimport Link from 'next/link';\nimport { useForm } from 'react-hook-form';\nimport { zodResolver } from '@hookform/resolvers/zod';\nimport { z } from 'zod';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { Button } from '@/components/ui/button';\nimport { Input } from '@/components/ui/input';\nimport { toast } from 'react-hot-toast';\nimport {\n  Github,\n  Eye,\n  EyeOff,\n  Sparkles,\n  ShieldCheck,\n  ArrowRight,\n  AlertCircle,\n} from 'lucide-react';\nimport { cn } from '@/lib/utils';\n\nconst signInSchema = z.object({\n  email: z.string().email('Invalid email address'),\n  password: z.string().min(8, 'Password must be at least 8 characters'),\n});\n\ntype SignInFormValues = z.infer<typeof signInSchema>;\n\nconst ERROR_MESSAGES: Record<string, string> = {\n  CredentialsSignin: 'Invalid email or password. Please try again.',\n  EMAIL_NOT_VERIFIED: 'Please verify your email address first. We sent a new link.',\n  OAuthAccountNotLinked: 'This email is already linked to another sign-in method.',\n  AccessDenied: 'Access denied. You do not have permission to sign in.',\n  OAuthSignin: 'Could not start OAuth sign in. Please try again.',\n  OAuthCallback: 'OAuth sign-in failed. Please try again.',\n  Configuration: 'Server configuration error. Please contact support.',\n};\n\nconst fadeUp = {\n  hidden: { opacity: 0, y: 16 },\n  visible: (i: number = 0) => ({\n    opacity: 1,\n    y: 0,\n    transition: { delay: i * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },\n  }),\n};\n\nfunction GoogleIcon({ className }: { className?: string }) {\n  return (\n    <svg className={className} viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\">\n      <path fill=\"#4285F4\" d=\"M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z\" />\n      <path fill=\"#34A853\" d=\"M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z\" />\n      <path fill=\"#FBBC05\" d=\"M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z\" />\n      <path fill=\"#EA4335\" d=\"M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z\" />\n    </svg>\n  );\n}\n\nfunction LiquidBackground() {\n  return (\n    <div className=\"pointer-events-none absolute inset-0 overflow-hidden\" aria-hidden=\"true\">\n      <div className=\"absolute -top-40 -left-40 h-[28rem] w-[28rem] rounded-full bg-primary/25 blur-[120px] animate-pulse\" />\n      <div className=\"absolute -bottom-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-fuchsia-500/20 blur-[120px] animate-pulse\" style={{ animationDelay: '1.5s' }} />\n      <div className=\"absolute top-1/3 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-sky-400/15 blur-[100px] animate-pulse\" style={{ animationDelay: '3s' }} />\n      <div className=\"absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.06)_1px,transparent_0)] [background-size:24px_24px] opacity-60\" />\n    </div>\n  );\n}\n\nfunction SignInSkeleton() {\n  return (\n    <div className=\"relative min-h-screen flex items-center justify-center bg-background px-4\">\n      <LiquidBackground />\n      <div className=\"w-full max-w-md space-y-4 p-8\">\n        <div className=\"mx-auto h-12 w-24 animate-pulse rounded-lg bg-muted/60\" />\n        <div className=\"h-72 animate-pulse rounded-2xl bg-muted/40\" />\n      </div>\n    </div>\n  );\n}\n\nexport default function SignInPage() {\n  return (\n    <Suspense fallback={<SignInSkeleton />}>\n      <SignInForm />\n    </Suspense>\n  );\n}\n\nfunction SignInForm() {\n  const router = useRouter();\n  const searchParams = useSearchParams();\n  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';\n  const errorParam = searchParams.get('error');\n\n  const [isCredentialsLoading, setIsCredentialsLoading] = useState(false);\n  const [isOAuthLoading, setIsOAuthLoading] = useState<'google' | 'github' | null>(null);\n  const [showPassword, setShowPassword] = useState(false);\n  const [rememberMe, setRememberMe] = useState(true);\n\n  const {\n    register,\n    handleSubmit,\n    formState: { errors, isSubmitting },\n  } = useForm<SignInFormValues>({\n    resolver: zodResolver(signInSchema),\n    defaultValues: { email: '', password: '' },\n    mode: 'onBlur',\n  });\n\n  const handleCredentialsSignIn = useCallback(\n    async (data: SignInFormValues) => {\n      setIsCredentialsLoading(true);\n      try {\n        const result = await signIn('credentials', {\n          email: data.email,\n          password: data.password,\n          remember: rememberMe,\n          redirect: false,\n          callbackUrl,\n        });\n\n        if (result?.error) {\n          const message =\n            ERROR_MESSAGES[result.error] ||\n            (result.error === 'EMAIL_NOT_VERIFIED'\n              ? ERROR_MESSAGES.EMAIL_NOT_VERIFIED\n              : 'Unable to sign in. Please check your credentials.');\n          toast.error(message);\n          return;\n        }\n\n        toast.success('Welcome back!');\n        router.push(callbackUrl);\n        router.refresh();\n      } catch {\n        toast.error('Something went wrong. Please try again.');\n      } finally {\n        setIsCredentialsLoading(false);\n      }\n    },\n    [callbackUrl, rememberMe, router]\n  );\n\n  const handleOAuthSignIn = useCallback(\n    (provider: 'google' | 'github') => {\n      setIsOAuthLoading(provider);\n      signIn(provider, { callbackUrl }).catch(() => {\n        setIsOAuthLoading(null);\n        toast.error('Could not start sign in. Please try again.');\n      });\n    },\n    [callbackUrl]\n  );\n\n  const isLoading = isCredentialsLoading || !!isOAuthLoading || isSubmitting;\n  const globalError = errorParam ? ERROR_MESSAGES[errorParam] || 'An error occurred. Please try again.' : null;\n\n  return (\n    <div className=\"relative min-h-screen flex items-center justify-center overflow-hidden bg-background px-4 py-12\">\n      <LiquidBackground />\n\n      <motion.div\n        initial=\"hidden\"\n        animate=\"visible\"\n        variants={fadeUp}\n        className=\"relative z-10 w-full max-w-md\"\n      >\n        <div className=\"relative rounded-3xl border border-white/10 bg-white/5 p-[1px] shadow-2xl backdrop-blur-xl dark:bg-white/[0.03]\">\n          <div className=\"rounded-[calc(1.5rem-1px)] bg-background/70 p-8 backdrop-blur-xl sm:p-10\">\n            <motion.div variants={fadeUp} custom={0} className=\"mb-8 flex flex-col items-center text-center\">\n              <Link href=\"/\" aria-label=\"HEY Home\" className=\"group inline-flex items-center gap-2\">\n                <span className=\"relative text-4xl font-bold tracking-tight\">\n                  <span className=\"bg-gradient-to-r from-primary via-fuchsia-500 to-sky-500 bg-clip-text text-transparent\">\n                    HEY\n                  </span>\n                  <Sparkles className=\"absolute -right-5 -top-1 h-4 w-4 text-primary/70 transition-transform group-hover:rotate-12\" />\n                </span>\n              </Link>\n              <h1 className=\"mt-4 text-2xl font-semibold tracking-tight\">Welcome back</h1>\n              <p className=\"mt-1.5 text-sm text-muted-foreground\">\n                Sign in to your account to continue\n              </p>\n            </motion.div>\n\n            <AnimatePresence>\n              {globalError && (\n                <motion.div\n                  initial={{ opacity: 0, height: 0 }}\n                  animate={{ opacity: 1, height: 'auto' }}\n                  exit={{ opacity: 0, height: 0 }}\n                  className=\"mb-5 overflow-hidden\"\n                >\n                  <div\n                    role=\"alert\"\n                    className=\"flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive\"\n                  >\n                    <AlertCircle className=\"mt-0.5 h-4 w-4 shrink-0\" />\n                    <span>{globalError}</span>\n                  </div>\n                </motion.div>\n              )}\n            </AnimatePresence>\n\n            <motion.div variants={fadeUp} custom={1} className=\"grid grid-cols-2 gap-3\">\n              <Button\n                type=\"button\"\n                variant=\"outline\"\n                onClick={() => handleOAuthSignIn('github')}\n                disabled={isLoading}\n                loading={isOAuthLoading === 'github'}\n                className=\"h-11 gap-2 border-white/10 bg-white/5 backdrop-blur transition-all hover:bg-white/10 active:scale-[0.98]\"\n              >\n                <Github className=\"h-4 w-4\" />\n                GitHub\n              </Button>\n              <Button\n                type=\"button\"\n                variant=\"outline\"\n                onClick={() => handleOAuthSignIn('google')}\n                disabled={isLoading}\n                loading={isOAuthLoading === 'google'}\n                className=\"h-11 gap-2 border-white/10 bg-white/5 backdrop-blur transition-all hover:bg-white/10 active:scale-[0.98]\"\n              >\n                <GoogleIcon className=\"h-4 w-4\" />\n                Google\n              </Button>\n            </motion.div>\n\n            <motion.div variants={fadeUp} custom={2} className=\"relative my-6\">\n              <div className=\"absolute inset-0 flex items-center\">\n                <span className=\"w-full border-t border-border/60\" />\n              </div>\n              <div className=\"relative flex justify-center text-[11px] uppercase tracking-wider\">\n                <span className=\"bg-background/70 px-3 text-muted-foreground backdrop-blur-sm\">\n                  Or continue with email\n                </span>\n              </div>\n            </motion.div>\n\n            <form onSubmit={handleSubmit(handleCredentialsSignIn)} className=\"space-y-4\" noValidate>\n              <motion.div variants={fadeUp} custom={3}>\n                <Input\n                  {...register('email')}\n                  type=\"email\"\n                  label=\"Email\"\n                  placeholder=\"you@example.com\"\n                  error={errors.email?.message}\n                  autoComplete=\"email\"\n                  inputMode=\"email\"\n                  disabled={isLoading}\n                />\n              </motion.div>\n\n              <motion.div variants={fadeUp} custom={4} className=\"relative\">\n                <Input\n                  {...register('password')}\n                  type={showPassword ? 'text' : 'password'}\n                  label=\"Password\"\n                  placeholder=\"********\"\n                  error={errors.password?.message}\n                  autoComplete=\"current-password\"\n                  disabled={isLoading}\n                  className=\"pr-11\"\n                />\n                <button\n                  type=\"button\"\n                  onClick={() => setShowPassword((v) => !v)}\n                  className=\"absolute right-1 top-1 flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\"\n                  aria-label={showPassword ? 'Hide password' : 'Show password'}\n                  aria-pressed={showPassword}\n                  tabIndex={-1}\n                  disabled={isLoading}\n                >\n                  {showPassword ? <EyeOff className=\"h-4 w-4\" /> : <Eye className=\"h-4 w-4\" />}\n                </button>\n              </motion.div>\n\n              <motion.div variants={fadeUp} custom={5} className=\"flex items-center justify-between\">\n                <label className=\"flex cursor-pointer select-none items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground\">\n                  <span className=\"relative inline-flex h-4 w-4 items-center justify-center\">\n                    <input\n                      type=\"checkbox\"\n                      checked={rememberMe}\n                      onChange={(e) => setRememberMe(e.target.checked)}\n                      disabled={isLoading}\n                      className=\"peer h-4 w-4 cursor-pointer appearance-none rounded border border-input bg-background transition-all checked:border-primary checked:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\"\n                    />\n                    <svg\n                      className=\"pointer-events-none absolute h-3 w-3 scale-0 text-primary-foreground transition-transform peer-checked:scale-100\"\n                      viewBox=\"0 0 24 24\"\n                      fill=\"none\"\n                      stroke=\"currentColor\"\n                      strokeWidth=\"3\"\n                      strokeLinecap=\"round\"\n                      strokeLinejoin=\"round\"\n                      aria-hidden=\"true\"\n                    >\n                      <polyline points=\"20 6 9 17 4 12\" />\n                    </svg>\n                  </span>\n                  Remember me\n                </label>\n                <Link\n                  href=\"/forgot-password\"\n                  className=\"text-sm font-medium text-primary underline-offset-4 transition-colors hover:underline\"\n                >\n                  Forgot password?\n                </Link>\n              </motion.div>\n\n              <motion.div variants={fadeUp} custom={6}>\n                <Button\n                  type=\"submit\"\n                  size=\"lg\"\n                  loading={isCredentialsLoading || isSubmitting}\n                  disabled={isLoading}\n                  className=\"group w-full gap-2 bg-gradient-to-r from-primary via-primary to-primary/80 shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.99]\"\n                >\n                  Sign in\n                  <ArrowRight className=\"h-4 w-4 transition-transform group-hover:translate-x-0.5\" />\n                </Button>\n              </motion.div>\n            </form>\n\n            <motion.div\n              variants={fadeUp}\n              custom={7}\n              className=\"mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground\"\n            >\n              <ShieldCheck className=\"h-3.5 w-3.5 text-emerald-500\" />\n              Secured with end-to-end encryption\n            </motion.div>\n\n            <motion.p variants={fadeUp} custom={8} className=\"mt-6 text-center text-sm text-muted-foreground\">\n              Don&apos;t have an account?{' '}\n              <Link\n                href=\"/signup\"\n                className=\"font-medium text-primary underline-offset-4 transition-colors hover:underline\"\n              >\n                Sign up\n              </Link>\n            </motion.p>\n          </div>\n        </div>\n      </motion.div>\n    </div>\n  );\n}\n"}]
+Actually fadeUp typed as Variants would work. Let me do:
+
+ts
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+  }),
+};
+
+Hmm, ease array as [0.16, 1, 0.3, 1] - TypeScript infers number[], which might not satisfy Easing. Actually framer-motion's Easing type includes BezierDefinition which is [number, number, number, number]. A plain array literal in a typed context should be inferred as tuple if target requires it. Since fadeUp is typed as Variants, the literal will be contextually typed and might work. Alternatively as const on the array. To be safe, I could use a named cubic bezier string like "easeOut" or [0.16, 1, 0.3, 1] as [number, number, number, number]. Let me use the latter or keep as const. Actually with Variants typing, ease: [0.16, 1, 0.3, 1] might error because it infers number[]. Contextual typing should coerce to tuple though. Hmm.
+
+Safest: ease: [0.16, 1, 0.3, 1] as const may fail because readonly. Use ease: [0.16, 1, 0.3, 1] as [number, number, number, number]. Let me do that.
+
+Actually, many codebases use ease: [0.16, 1, 0.3, 1] inside a Variants typed object without issue because contextual typing handles it. But custom function variant returns an object not contextually typed as Variant? It is - the function type is (custom: any, current, velocity) => TargetAndTransition. So return is contextually typed. Should be fine. Still, I'll use the cast to be safe.
+
+remember passed to signIn credentials - NextAuth authorize callback would need to accept it. Fine, extra params passed.
+
+GoogleIcon SVG - fine.
+
+The password toggle button: top-1 positioning. Since Input has a label above, the input box is not at top of container. The button positioned absolute right-1 top-1 relative to the motion.div wrapper which contains the Input including label. So top-1 would place it over the label area. That's a bug. Better position relative to input. Hmm. The Input component likely renders label then input. The toggle button should be positioned relative to the input field, not the whole component.
+
+Better approach: wrap only the input in a relative container. But Input is a component; we can't easily. Alternative: position the button lower, e.g., bottom-2.5 right-1 or use top-[calc(...)]. Hmm.
+
+Actually let me reconsider: the Input component with label renders something like:
+
+text
+<div>
+  {label && <label>...</label>}
+  <input ... />
+  {error && ...}
+</div>
+
+The height of label + gap maybe ~24px. Input height h-10 = 40px. So input starts around 24px from top. Positioning the button top-1 puts it at 4px from top - over the label. Bad.
+
+Better: place the button with top-9 or calculate. Fragile. Alternatively, restructure to not use the label prop and render label manually with relative wrapper. But then we lose Input's label styling.
+
+Alternative: Use right-1 bottom-2.5 if error text below... error would push it. Hmm.
+
+Simplest robust: don't pass label to Input; instead build a custom field with relative wrapper containing label and input and toggle. But that changes design.
+
+Or: position button using top-[2.15rem]? The label line-height maybe 20px + margin 6px = 26px. So top ~ 26px. Hmm inconsistent.
+
+Actually, maybe better to keep Input's label but wrap the whole motion.div with relative and position the button vertically centered over the input area using bottom-.... If there's an error message below, bottom offset would shift.
+
+Hmm. Let me think about what's cleanest. I could render:
+
+tsx
+<div className="space-y-1.5">
+  <label className="text-sm font-medium">Password</label>
+  <div className="relative">
+    <Input {...register('password')} type=... error={...} className="pr-11" />
+    <button className="absolute right-1 top-1/2 -translate-y-1/2 ...">...</button>
+  </div>
+  {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+</div>
+
+But then Input's error prop also renders error, duplicating. Could pass no error to Input and render manually. But Input styling for error border... The Input component likely applies error border when error prop set. So pass error to Input but not render our own message. However error message appears below input inside Input component, and our button is inside relative wrapper around just the input - fine, button centered in input.
+
+But we'd render label manually, losing consistency. Hmm.
+
+Alternatively, keep using Input with label and error, and position button with top-1/2 relative to... no, the wrapper includes label and error.
+
+Maybe the cleanest: modify to not use Input's label but pass label manually. But the instruction says preserve existing logic; it's fine to restructure.
+
+Actually, let me reconsider: In the original current code, they used className="pr-11" and button top-1. Given Input renders label above, this is buggy. Since this is an "upgrade" task, I should fix it.
+
+Let me build a custom password field:
+
+tsx
+<motion.div variants={fadeUp} custom={4} className="space-y-1.5">
+  <label htmlFor="password" className="text-sm font-medium leading-none">Password</label>
+  <div className="relative">
+    <Input
+      id="password"
+      {...register('password')}
+      type={showPassword ? 'text' : 'password'}
+      placeholder="********"
+      error={errors.password?.message}
+      autoComplete="current-password"
+      disabled={isLoading}
+      className="pr-11"
+    />
+    <button
+      type="button"
+      ...
+      className="absolute right-1 top-1/2 -translate-y-1/2 ..."
+    >
+
+But wait: if error is rendered by Input below, and the relative wrapper only wraps the Input (which includes label? no, we removed label). Input without label renders just input + error. So the relative wrapper includes input and error message. Then top-1/2 centers over input+error combined, which is slightly off. Hmm.
+
+To avoid, wrap only the input portion. But Input renders error internally. Could not pass error to Input, and render error manually, and apply error styling via a prop? Input might accept error for styling. If we don't pass error, no red border. Could pass aria-invalid and className conditionally.
+
+This is getting complicated. Alternative simpler: keep the label prop, and position the toggle button using a calculated top that lands on the input. The Input component from shadcn typically: label with text-sm font-medium leading-none and mb-1.5? Unknown. Fragile.
+
+Alternative: change Input usage to not include label, render label + relative wrapper around just input, render error manually. Let's just do:
+
+tsx
+<div className="space-y-1.5">
+  <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Password</label>
+  <div className="relative">
+    <Input
+      id="password"
+      {...register('password')}
+      type={showPassword ? 'text' : 'password'}
+      placeholder="********"
+      autoComplete="current-password"
+      disabled={isLoading}
+      aria-invalid={!!errors.password}
+      aria-describedby={errors.password ? 'password-error' : undefined}
+      className={cn('pr-11', errors.password && 'border-destructive focus-visible:ring-destructive')}
+    />
+    <button ... className="absolute right-1 top-1/2 -translate-y-1/2 ..." />
+  </div>
+  {errors.password && (
+    <p id="password-error" className="text-xs text-destructive">{errors.password.message}</p>
+  )}
+</div>
+
+But this depends on Input's error styling. Since I don't know Input fully, using error prop is safer for the red border. But then duplicate error text. Could pass error to Input and not render manual error - but then button centering issue with error included.
+
+Hmm, actually the error text is small; top-1/2 of input+error would be slightly below center of input. Not ideal but acceptable? The error only appears after blur. When error shows, button shifts slightly. Meh.
+
+Better: Use Input's label and error props but wrap only the input in relative by... can't.
+
+Actually, you know what, let me look at the Input dependency more carefully. It's truncated at helperText?: strin. Typical shadcn custom Input:
+
+tsx
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, error, label, helperText, id, ...props }, ref) => {
+    const inputId = id || React.useId();
+    return (
+      <div className="w-full space-y-1.5">
+        {label && <label htmlFor={inputId} className="text-sm font-medium leading-none">{label}</label>}
+        <input id={inputId} type={type} className={cn('flex h-10 w-full rounded-md border ...', error && 'border-destructive ...', className)} ref={ref} {...props} />
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        {helperText && !error && <p className="text-xs text-muted-foreground">{helperText}</p>}
+      </div>
+    );
+  }
+);
+
+If that's the structure, then positioning a button relative to a wrapper that includes label + input + error: to center on input we need top offset equal to label height (~20px) plus half input (~20px) = 40px? Hmm. With top-1/2 over entire container including error, it'd be off.
+
+Simplest reliable: don't use label/error props. Render manually with a relative wrapper around only the input. Let me just do that. And for error styling, pass error prop but... no.
+
+OK here's a clean approach: Use Input WITHOUT label and WITHOUT error props, then handle label and error manually. But then no red border. To add red border, use className={cn(errors.password && 'border-destructive focus-visible:ring-destructive')}. That's acceptable—shadcn input uses border-input; adding border-destructive overrides.
+
+But without knowing Input's exact class merge, cn would handle it. border-destructive later in class list should override border-input if both present? Tailwind: both border colors, later in CSS wins, not class order. Both border-input and border-destructive are utilities; the one defined later in the generated CSS wins. Tailwind's border color order... generally destructive might be defined after input? Not guaranteed. Safer to use a data attribute or just trust. Many shadcn patterns use aria-invalid:border-destructive via CSS. Hmm.
+
+Alternative: Keep using error prop on Input for proper styling, but don't pass label. Then Input renders input + error. Wrap the relative container around Input, and position the button relative to the input by using top-5 -translate-y-1/2 (since label absent, input starts at top). If label absent, input is the first element, h-10 (40px). top-5 = 20px, which is center of the 40px input. 
+-translate
+-y-1/2
+ centers the button. But if error appears, it's below input, doesn't affect button.
+
+So:
+
+tsx
+<div className="space-y-1.5">
+  <label htmlFor="password" className="text-sm font-medium leading-none">Password</label>
+  <div className="relative">
+    <Input
+      id="password"
+      {...register('password')}
+      type={showPassword ? 'text' : 'password'}
+      placeholder="********"
+      error={errors.password?.message}
+      autoComplete="current-password"
+      disabled={isLoading}
+      className="pr-11
