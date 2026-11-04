@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\guidance\GuidanceOverlay.jsx
+CURRENT CODE:
 /**
  * HEY Guidance Overlay
  *
@@ -168,207 +266,6 @@ export function GuidanceOverlay({
       });
       setDismissal(record);
       if (onDismiss) onDismiss(record);
-      setStepsModel((prev) => ({ ...prev, isActive: false }));
-    },
-    [currentStep, progressInfo, onDismiss]
-  );
-
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Escape") handleDismiss("user_dismissed");
-      else if (e.key === "ArrowRight" && e.ctrlKey) handleAdvance();
-      else if (e.key === "ArrowLeft" && e.ctrlKey) handleUndo();
-    },
-    [handleDismiss, handleAdvance, handleUndo]
-  );
-
-  useEffect(() => {
-    if (isVisible) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isVisible, handleKeyDown]);
-
-  if (!isVisible || !stepsModel.isActive) return null;
-
-  const observeInfo = useMemo(() => getObserveMode(navigator.userAgent.toLowerCase().includes("iphone") ? "ios" : "web"), []);
-
-  return (
-    <div
-      className={`guidance-overlay ${className}`}
-      style={{
-        position: "fixed",
-        zIndex: 9990,
-        pointerEvents: "auto",
-        ...getOverlayStyle(position),
-      }}
-      role="dialog"
-      aria-label="HEY Guidance"
-      aria-modal="false"
-      onKeyDown={handleKeyDown}
-    >
-      <div
-        className="guidance-card"
-        style={getCardStyle(position)}
-        {...dragHandlers}
-      >
-        <div className="guidance-spine" style={getSpineStyle()} />
-
-        <div className="guidance-header">
-          <div className="guidance-title">
-            <span className="guidance-icon" aria-hidden="true">▸</span>
-            <span>Guidance</span>
-          </div>
-          <div className="guidance-step-counter" aria-live="polite">
-            {currentStep ? (
-              <>
-                Step {currentStep.stepNumber} of {currentStep.totalSteps}
-              </>
-            ) : (
-              "Ready"
-            )}
-          </div>
-          <button
-            className="guidance-close"
-            onClick={() => handleDismiss("user_dismissed")}
-            aria-label="Dismiss guidance"
-            title="Dismiss (Esc)"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div className="guidance-content">
-          {currentStep ? (
-            <>
-              <div className="guidance-step-title">{currentStep.title}</div>
-              {currentStep.description && (
-                <div className="guidance-step-description">{currentStep.description}</div>
-              )}
-              <div className="guidance-progress" role="progressbar" aria-valuenow={progressInfo.percent} aria-valuemin={0} aria-valuemax={100}>
-                <div className="guidance-progress-bar" style={{ width: `${progressInfo.percent}%` }} />
-              </div>
-            </>
-          ) : (
-            <div className="guidance-empty">
-              <p>No active guidance. Start a lesson or ask HEY for help.</p>
-              {observeInfo.canObserve === false && (
-                <p className="guidance-unavailable">{observeInfo.honestCopy}</p>
-              )}
-            </div>
-          )}
-        </div>
-
-        <div className="guidance-actions">
-          {currentStep && !currentStep.isFirst && (
-            <button
-              className="guidance-btn guidance-btn-undo"
-              onClick={handleUndo}
-              disabled={progressInfo.completed === 0}
-              aria-label="Undo last step"
-            >
-              ← Undo
-            </button>
-          )}
-          {currentStep && !currentStep.isLast && (
-            <button
-              className="guidance-btn guidance-btn-next"
-              onClick={handleAdvance}
-              aria-label="Next step"
-            >
-              Next →
-            </button>
-          )}
-          {currentStep && currentStep.isLast && (
-            <button
-              className="guidance-btn guidance-btn-finish"
-              onClick={() => handleDismiss("plan_ended")}
-              aria-label="Finish guidance"
-            >
-              Finish
-            </button>
-          )}
-        </div>
-
-        {dismissal && (
-          <div className="guidance-dismissed" role="status" aria-live="polite">
-            Guidance dismissed. <button onClick={() => setDismissal(null)}>Undo</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function getOverlayStyle(position) {
-  const { anchor, offsetX = 16, offsetY = 16 } = position;
-  const styles = { width: `${position.width || OVERLAY_WIDTH}px` };
-
-  switch (anchor) {
-    case "inline-start":
-      styles.left = `${offsetX}px`;
-      styles.top = `${offsetY}px`;
-      break;
-    case "inline-end":
-      styles.right = `${offsetX}px`;
-      styles.top = `${offsetY}px`;
-      break;
-    case "block-start":
-      styles.left = "50%";
-      styles.top = `${offsetY}px`;
-      styles.transform = "translateX(-50%)";
-      break;
-    case "block-end":
-      styles.left = "50%";
-      styles.bottom = `${offsetY}px`;
-      styles.transform = "translateX(-50%)";
-      break;
-    case "center":
-      styles.left = "50%";
-      styles.top = "50%";
-      styles.transform = "translate(-50%, -50%)";
-      break;
-    case "free":
-      styles.left = `${position.offsetX}px`;
-      styles.top = `${position.offsetY}px`;
-      styles.transform = "none";
-      break;
-    default:
-      styles.right = `${offsetX}px`;
-      styles.top = `${offsetY}px`;
-  }
-
-  return styles;
-}
-
-function getCardStyle(position) {
-  return {
-    width: "100%",
-    minWidth: `${OVERLAY_MIN_WIDTH}px`,
-    maxWidth: `${OVERLAY_MAX_WIDTH}px`,
-    background: "rgba(10, 13, 17, 0.82)",
-    backdropFilter: "blur(24px)",
-    border: "1px solid rgba(255, 255, 255, 0.08)",
-    borderRadius: "16px",
-    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset",
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-    cursor: position.anchor === "free" ? "move" : "default",
-    userSelect: position.isDragging ? "none" : "auto",
-  };
-}
-
-function getSpineStyle() {
-  return {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: "1px",
-    background: "linear-gradient(180deg, var(--hey-accent, #00d4aa), transparent 60%)",
-    opacity: 0.8,
-  };
-}
-
-export default GuidanceOverlay;
+      
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
