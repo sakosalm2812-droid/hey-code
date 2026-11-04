@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\cockpit\TeacherCockpit.module.css
+CURRENT CODE:
 /**
  * Teacher Cockpit Styles
  */
@@ -252,300 +350,6 @@
 }
 
 .cockpit-approval-risk {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.cockpit-risk-badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-  background: rgba(220,38,38,0.2);
-  color: var(--hey-danger, #dc2626);
-  border: 1px solid rgba(220,38,38,0.3);
-}
-
-.cockpit-approval-reason {
-  font-size: 13px;
-  color: var(--hey-text-secondary, #aaa);
-}
-
-.cockpit-approval-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.cockpit-btn-approve {
-  flex: 1;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 600;
-  min-height: 48px;
-  background: var(--hey-success, #00d47e);
-  color: #05080a;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: filter 120ms ease, transform 80ms ease;
-}
-
-.cockpit-btn-approve:hover {
-  filter: brightness(1.1);
-}
-
-.cockpit-btn-approve:active {
-  transform: scale(0.98);
-}
-
-.cockpit-btn-approve:focus-visible {
-  outline: 2px solid var(--hey-focus, #00d4aa);
-  outline-offset: 2px;
-}
-
-.cockpit-btn-deny {
-  flex: 1;
-  padding: 12px 24px;
-  font-size: 15px;
-  font-weight: 600;
-  min-height: 48px;
-  background: rgba(220,38,38,0.2);
-  color: var(--hey-danger, #dc2626);
-  border: 1px solid rgba(220,38,38,0.3);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 120ms ease, transform 80ms ease;
-}
-
-.cockpit-btn-deny:hover {
-  background: rgba(220,38,38,0.3);
-}
-
-.cockpit-btn-deny:active {
-  transform: scale(0.98);
-}
-
-.cockpit-btn-deny:focus-visible {
-  outline: 2px solid var(--hey-focus, #00d4aa);
-  outline-offset: 2px;
-}
-
-.cockpit-running-empty {
-  font-size: clamp(18px, 3vw, 22px);
-  color: var(--hey-text-tertiary, #888);
-  text-align: center;
-  padding: 40px;
-}
-
-.cockpit-three-buttons {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.cockpit-btn-primary {
-  flex: 1 1 200px;
-  max-width: 280px;
-  padding: 18px 32px;
-  font-size: clamp(24px, 4vw, 32px);
-  font-weight: 700;
-  min-height: 64px;
-  background: var(--hey-accent, #00d4aa);
-  color: var(--hey-accent-text, #05080a);
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: transform 80ms ease, filter 120ms ease;
-}
-
-.cockpit-btn-primary:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-.cockpit-btn-primary:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
-}
-
-.cockpit-btn-primary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.cockpit-btn-primary:focus-visible {
-  outline: 2px solid var(--hey-focus, #00d4aa);
-  outline-offset: 2px;
-}
-
-.cockpit-btn-secondary {
-  flex: 1 1 180px;
-  max-width: 220px;
-  padding: 18px 32px;
-  font-size: clamp(18px, 3vw, 22px);
-  font-weight: 600;
-  min-height: 64px;
-  background: rgba(255,255,255,0.06);
-  color: var(--hey-text-primary, #e8e8e8);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: background 120ms ease, transform 80ms ease;
-}
-
-.cockpit-btn-secondary:hover {
-  background: rgba(255,255,255,0.12);
-  transform: translateY(-1px);
-}
-
-.cockpit-btn-secondary:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.cockpit-btn-secondary:focus-visible {
-  outline: 2px solid var(--hey-focus, #00d4aa);
-  outline-offset: 2px;
-}
-
-.cockpit-btn-icon {
-  font-size: clamp(20px, 3vw, 24px);
-  line-height: 1;
-}
-
-.cockpit-speech-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 16px;
-  padding: 16px;
-  background: rgba(255,184,0,0.1);
-  border: 1px solid rgba(255,184,0,0.3);
-  border-radius: 12px;
-  color: var(--hey-warning, #ffb800);
-  font-size: clamp(14px, 2vw, 16px);
-  font-weight: 500;
-}
-
-.cockpit-speech-fallback-text {
-  flex: 1;
-  text-align: center;
-}
-
-.cockpit-btn-dismiss {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--hey-warning, #ffb800);
-  font-size: 18px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 120ms ease;
-}
-
-.cockpit-btn-dismiss:hover {
-  background: rgba(255,184,0,0.1);
-}
-
-.cockpit-hints {
-  margin-top: 16px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--hey-text-tertiary, #888);
-}
-
-.cockpit-hints kbd {
-  display: inline-block;
-  padding: 2px 6px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 4px;
-  font-family: var(--hey-font-mono, 'JetBrains Mono', monospace);
-  font-size: 11px;
-  margin: 0 2px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cockpit-timer-bar,
-  .cockpit-btn-open,
-  .cockpit-btn-primary,
-  .cockpit-btn-secondary,
-  .cockpit-btn-approve,
-  .cockpit-btn-deny {
-    transition: none;
-  }
-}
-
-@media (max-width: 480px) {
-  .cockpit-three-buttons {
-    flex-direction: column;
-  }
-
-  .cockpit-btn-primary,
-  .cockpit-btn-secondary {
-    max-width: none;
-    width: 100%;
-  }
-
-  .cockpit-approval-actions {
-    flex-direction: column;
-  }
-}
-
-/* High contrast mode */
-@media (prefers-contrast: more) {
-  .teacher-cockpit {
-    background: #000;
-    color: #fff;
-  }
-
-  .cockpit-scrim {
-    background: #000;
-  }
-
-  .cockpit-btn-primary {
-    background: #fff;
-    color: #000;
-    border: 2px solid #fff;
-  }
-
-  .cockpit-btn-secondary {
-    background: transparent;
-    color: #fff;
-    border: 2px solid #fff;
-  }
-
-  .cockpit-btn-approve {
-    background: #0f0;
-    color: #000;
-    border: 2px solid #0f0;
-  }
-
-  .cockpit-btn-deny {
-    background: transparent;
-    color: #f00;
-    border: 2px solid #f00;
-  }
-
-  .cockpit-status-badge--awaiting_permission {
-    background: #ff0;
-    color: #000;
-    border: 2px solid #ff0;
-  }
-
-  .cockpit-status-badge--running {
-    background: #0ff;
-    color: #000;
-    border: 2px solid #0ff;
-  }
-}
+  display
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
