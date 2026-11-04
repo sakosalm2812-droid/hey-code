@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\cookies\page.tsx
+CURRENT CODE:
 import { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -103,80 +201,6 @@ export default function CookiesPage() {
                   <tr>
                     <td className="py-2 pr-4 align-top">__stripe_sid</td>
                     <td className="py-2 pr-4 align-top">Payment session</td>
-                    <td className="py-2 align-top">30 minutes</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <h3 className="font-semibold mb-2 mt-6">Local Storage (Not Cookies)</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              HEY stores preferences such as your color theme and sidebar state in your browser&apos;s local
-              storage rather than in cookies. This data never leaves your device.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mb-3">4. Analytics and Error Monitoring</h2>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>
-                <strong>In-product usage:</strong> HEY measures usage such as message counts and token usage in
-                our own systems. These metrics tie to your account for quota enforcement and are not sent to
-                third-party analytics vendors, and no tracking cookies are involved.
-              </li>
-              <li>
-                <strong>Error monitoring:</strong> When an error occurs, technical error data may be sent to our
-                error-monitoring provider (Sentry) to help us fix problems. This does not require cookies.
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mb-3">5. Your Choices</h2>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Essential cookies:</strong> Cannot be disabled while the service needs them for sign-in and security.</li>
-              <li><strong>Local storage:</strong> Preferences are stored on your device only; clear them via your browser settings.</li>
-              <li><strong>All cookies:</strong> Clearing cookies in your browser signs you out until you sign in again.</li>
-            </ul>
-            <p className="text-muted-foreground leading-relaxed mt-3">
-              For any questions about our data practices, see our{' '}
-              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> or contact{' '}
-              <a href="mailto:privacy@hey.ai" className="text-primary hover:underline">privacy@hey.ai</a>.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mb-3">6. Do Not Track</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              We do not use third-party tracking or advertising cookies, so there are no tracking cookies to
-              disable in response to a Do Not Track signal. The preferences and error data described above are
-              controlled through this policy and your account settings.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mb-3">7. Changes</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              We may update this policy from time to time. Changes are posted on this page with an updated
-              date, and material changes are announced on the{' '}
-              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link> page.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mb-3">8. Contact</h2>
-            <p className="text-muted-foreground leading-relaxed">Questions about cookies? Email privacy@hey.ai</p>
-          </section>
-        </div>
-
-        <footer className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} HEY. All rights reserved.</p>
-          <div className="flex justify-center gap-6 mt-4">
-            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
-            <Link href="/terms" className="hover:underline">Terms of Service</Link>
-          </div>
-        </footer>
-      </div>
-    </div>
-  );
-}
+                    
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
