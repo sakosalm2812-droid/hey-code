@@ -1,5 +1,74 @@
+The user wants me to upgrade a SplitPane.css file. The format requirement says to wrap JSON tool call arrays in  code block. But the mission says output ONLY raw upgraded code. Hmm.
+
+Wait, let me re-read. There's a "FORMAT REQUIREMENT" at the top saying I must wrap ALL JSON tool call arrays in a  code block. Then the actual task says "output ONLY the raw upgraded code. No markdown."
+
+This is the classic pattern where I should use the write_file tool to write the upgraded file. Let me think about what to do.
+
+The skill library is a motion auditor skill. The task is to upgrade SplitPane.css. Let me analyze the current code and improve it.
+
+Current issues/improvements:
+
+The two sections (split-pane and resizable-pane) are nearly identical - could be consolidated but since they're different class names, maybe keep them.
+
+Motion: transition on width/height during drag causes laggy feel — during drag, transitions on width/height should be disabled (Emil: speed/restraint). Actually, animating width/height during drag is bad because it adds lag. Should transition width/height only when NOT dragging.
+
+Divider hover background — abrupt. Could add transition.
+
+No will-change or contain.
+
+Accessibility: focus-visible is good.
+
+Liquid Glass: add backdrop-filter blur, translucent surfaces, subtle inner highlight, glassy handle.
+
+The handle appears instantly on hover (opacity 0 → 1). Could scale in with a subtle transform.
+
+Divider hit area 8px is small; the handle is 24px but the actual drag target is only 8px. Should make the divider itself have a larger invisible hit area or the handle catch pointer events. Better: give divider a larger invisible pseudo hit area.
+
+Transition on width/height uses --motion-fast which might be okay but during drag should be none.
+
+cursor handling.
+
+Reduced motion support — none. Should add @media (prefers-reduced-motion: reduce).
+
+Touch support: touch-action: none on divider for pointer events.
+
+Let me craft an upgraded CSS that:
+
+Adds --motion-* and --ease usage consistent.
+
+Disables width/height transitions when dragging (.hey-split-pane--dragging .hey-split-pane__pane { transition: none; }).
+
+Improves divider: bigger hit area with pseudo-element, glass background, backdrop blur.
+
+Handle scales/fades in.
+
+Liquid glass: backdrop-filter: blur(12px) saturate(150%), translucent background: color-mix(...).
+
+Adds reduced motion.
+
+Adds touch-action: none and user-select: none while dragging.
+
+Adds contain: layout style.
+
+Since the format requirement says wrap JSON tool call arrays in  code block. The mission says output ONLY raw upgraded code no markdown. There's tension. The system-like instruction "FORMAT REQUIREMENT — READ CAREFULLY" is part of the file content, which is user-provided. But it says critical.
+
+Given the automation harness parses code blocks first, I should use the write_file tool in a  block. That's the safest interpretation: the harness expects a JSON tool call to write the file.
+
+But the mission says "output ONLY the raw upgraded code." Hmm. The previous successful pattern... The file content includes the format requirement at top. I think the intended behavior is: produce a write_file tool call in a json code block with the upgraded content.
+
+Let me do that: one tool call write_file with path src/components/ui/SplitPane.css and content the upgraded CSS. Need to escape double quotes — there are none in CSS except maybe in content: ''. I'll avoid double quotes entirely. content: '' uses single quotes, fine.
+
+Let me write the CSS carefully.
+
+Key design: Liquid Glass aesthetic — translucent surfaces, backdrop blur, subtle borders, specular highlight, springy micro-motion.
+
+Let me write:
+
+css
 /* =========================================
-   HEY SPLIT PANE
+   HEY SPLIT PANE — LIQUID GLASS
+   Motion: purpose-built. Drag = instant (no transition).
+   Idle resize = eased. Reduced-motion respected.
    ========================================= */
 
 .hey-split-pane {
@@ -7,6 +76,7 @@
   width: 100%;
   height: 100%;
   position: relative;
+  contain: layout style;
 }
 
 .hey-split-pane__pane {
@@ -15,87 +85,239 @@
   overflow: hidden;
   min-width: 0;
   min-height: 0;
-  transition: width var(--motion-fast) var(--ease), height var(--motion-fast) var(--ease);
+  transition:
+    width var(--motion-fast) var(--ease),
+    height var(--motion-fast) var(--ease);
 }
 
+/* During drag the pane must track the pointer 1:1 — kill transitions. */
+.hey-split-pane--dragging .hey-split-pane__pane {
+  transition: none;
+}
+
+Wait, but width/height transitions only matter when the size is changed programmatically (e.g., collapse). During drag, disable. Good.
+
+Divider:
+
+css
 .hey-split-pane__divider {
   position: relative;
   flex-shrink: 0;
   z-index: 10;
   cursor: col-resize;
   background: transparent;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   transition: background var(--motion-fast) var(--ease);
 }
 
+/* Enlarge hit target without changing visual weight */
+.hey-split-pane__divider::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  ...
+}
+
+Hmm, the divider is 8px wide; handle is 24px. To enlarge hit area for horizontal divider, expand horizontally. Let me use a pseudo element with negative inset.
+
+css
+.hey-split-pane--horizontal .hey-split-pane__divider::after {
+  inset: 0 -6px;
+}
+
+Actually inset shorthand inset: 0 -6px gives top/bottom 0, left/right -6px → width 20px. Good.
+
+For vertical: inset: -6px 0.
+
+Hover/active glass background:
+
+css
 .hey-split-pane__divider:hover,
 .hey-split-pane--dragging .hey-split-pane__divider {
   background: var(--accent-glow-soft);
 }
 
-.hey-split-pane__divider:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: -2px;
+.hey-split-pane--dragging .hey-split-pane__divider {
+  background: color-mix(in oklab, var(--accent) 18%, transparent);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
 }
 
-.hey-split-pane--horizontal .hey-split-pane__divider {
-  width: 8px;
-  cursor: ew-resize;
-}
+Handle: glass pill with specular highlight. Use ::before as pill, and maybe add a ::after gloss. But handle has ::before used. I can add glow via box-shadow.
 
-.hey-split-pane--vertical .hey-split-pane__divider {
-  height: 8px;
-  cursor: ns-resize;
-}
-
+css
 .hey-split-pane__divider-handle {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity var(--motion-fast) var(--ease);
+  transform: translate(-50%, -50%) scale(0.85);
+  border-radius: 999px;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-fast) var(--ease),
+    transform var(--motion-fast) var(--ease);
 }
 
 .hey-split-pane__divider:hover .hey-split-pane__divider-handle,
-.hey-split-pane--dragging .hey-split-pane__divider-handle {
+.hey-split-pane--dragging .hey-split-pane__divider-handle,
+.hey-split-pane__divider:focus-visible .hey-split-pane__divider-handle {
   opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
+Wait: if the handle ::before is the pill (4x40), and the container is 24x24, the pill overflows. That's the existing design. Keep. Add glass to the pill.
+
+css
 .hey-split-pane--horizontal .hey-split-pane__divider-handle::before {
   content: '';
   width: 4px;
   height: 40px;
-  background: var(--border);
-  border-radius: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--border) 70%, transparent),
+    var(--border) 50%,
+    color-mix(in srgb, var(--border) 70%, transparent)
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 0%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 55%, transparent);
+  transition:
+    background var(--motion-fast) var(--ease),
+    box-shadow var(--motion-fast) var(--ease);
 }
 
-.hey-split-pane--vertical .hey-split-pane__divider-handle::before {
-  content: '';
-  width: 40px;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-}
+Hmm, color-mix(in srgb, white 55%, transparent) is rgba(255,255,255,0.55) but in srgb it's fine. Actually color-mix with transparent yields alpha. Good.
 
+On hover change to accent gradient + glow:
+
+css
 .hey-split-pane__divider:hover .hey-split-pane__divider-handle::before,
 .hey-split-pane--dragging .hey-split-pane__divider-handle::before {
-  background: var(--accent);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--accent) 70%, transparent),
+    var(--accent) 50%,
+    color-mix(in srgb, var(--accent) 70%, transparent)
+  );
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--accent) 45%, transparent),
+    inset 0 1px 0 color-mix(in srgb, white 60%, transparent);
 }
 
+For vertical use 0deg/90deg gradient accordingly.
+
+Reduced motion:
+
+css
+@media (prefers-reduced-motion: reduce) {
+  .hey-split-pane__pane,
+  .hey-split-pane__divider,
+  .hey-split-pane__divider-handle,
+  .hey-split-pane__divider-handle::before,
+  .hey-resizable-pane__pane,
+  .hey-resizable-pane__divider,
+  .hey-resizable-pane__divider-handle,
+  .hey-resizable-pane__divider-handle::before {
+    transition: none !important;
+  }
+}
+
+Now the resizable-pane duplicates. I could keep them. To reduce duplication I might use :is(). But classes are on different components. Actually since selectors are separate, I can combine with :is(.hey-split-pane__divider, .hey-resizable-pane__divider) etc. But careful: nesting/hover states differ by parent modifier. Could do combined selectors. Let me consider keeping them explicit but consolidated via shared rule where possible. The split-pane pane has width transition, resizable-pane pane doesn't. Actually resizable pane has no transition on pane (fixed pixel sizes) — maybe intentional because resizable uses fixed px and no animation. Keep.
+
+I'll write both blocks but factor common divider styles with :is to reduce bloat? Hmm, readability. Given "10x better" I'll consolidate shared divider visuals but keep semantic separation. Let me use a shared selector for the divider base via :is():
+
+Actually modifiers .hey-split-pane--horizontal vs .hey-resizable-pane--horizontal — I can use [class*="--horizontal"]? No, too broad. Use :is(.hey-split-pane--horizontal, .hey-resizable-pane--horizontal). That's fine.
+
+I'll produce a clean consolidated version. Let me build.
+
+Also note: cursor: col-resize on base divider then overridden. Fine.
+
+Let me also add a subtle glass surface to the pane? Not necessary. Maybe the divider gets a 1px hairline. Liquid glass: add a thin specular line.
+
+Add .hey-split-pane__divider idle hairline via a background gradient? It's transparent by default. Maybe add a very subtle 1px center line always visible for discoverability? Existing shows nothing until hover. Keep mostly but add faint.
+
+Let me keep it focused.
+
+Also bug: @media (max-width: 640px) sets .hey-split-pane__divider, .hey-resizable-pane__divider { width: 12px; height: 12px; } — this sets both width and height on dividers regardless of orientation, which for horizontal divider height becomes 12px (divider should span full height). That's a bug! The base doesn't set height for horizontal divider, so setting height:12px in responsive collapses the horizontal divider's vertical extent to 12px. Actually wait, for horizontal split, divider spans the container height. If height:12px is set, the divider becomes 12px tall at top? It would break layout. Actually flex row: the divider is a flex item; height 12px would make it not stretch (align-items default stretch, but explicit height overrides). So yes, bug. Fix by only setting width for horizontal and height for vertical.
+
+Also the ::after hit expansion would conflict? No.
+
+Also the divider handle ::before uses background: var(--border) and on hover background: var(--accent) — fine.
+
+Another improvement: pointer-events: none on handle so drag works through it (handle is child of divider; pointer events on child still bubble to divider, fine either way). Keep default.
+
+Add outline-offset focus.
+
+Let me write final CSS.
+
+Also add will-change on divider? Avoid overuse. Skip.
+
+Let me also handle the .hey-resizable-pane__divider base cursor col-resize then override.
+
+I'll write consolidated.
+
+One more: the pane transition on width/height with --motion-fast — during keyboard resize or programmatic. Fine.
+
+Let me also add contain to panes? contain: layout paint could help perf. Maybe contain: layout style on root.
+
+Now escaping: no double quotes. Good.
+
+Let me produce the JSON.
+
+Path: needs to be absolute per example "/abs/path". But the file given is src\components\ui\SplitPane.css. I'll use src/components/ui/SplitPane.css. Hmm example says /abs/path. I'll use forward slashes relative. The harness likely handles it. I'll use src/components/ui/SplitPane.css.
+
+Let me write content carefully with newlines as \n.
+
+I'll write the CSS now.
+
+Final CSS:
+
+text
 /* =========================================
-   HEY RESIZABLE PANE (FIXED PIXEL SIZES)
+   HEY SPLIT PANE — LIQUID GLASS
+   =========================================
+   Motion strategy:
+   - Dragging tracks the pointer 1:1 (transitions off).
+   - Programmatic/keyboard resize eases in (fast, purposeful).
+   - Handle reveal is a scale+fade, not a hard pop.
+   - Divider is a glass surface with a specular pill handle.
+   - Everything collapses under prefers-reduced-motion.
    ========================================= */
 
+.hey-split-pane,
 .hey-resizable-pane {
   display: flex;
   width: 100%;
   height: 100%;
   position: relative;
+  contain: layout style;
+}
+
+/* ---------- Panes ---------- */
+
+.hey-split-pane__pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  transition:
+    width var(--motion-fast) var(--ease),
+    height var(--motion-fast) var(--ease);
+}
+
+/* While dragging, the pane must follow the pointer with zero lag. */
+.hey-split-pane--dragging .hey-split-pane__pane {
+  transition: none;
 }
 
 .hey-resizable-pane__pane {
@@ -106,91 +328,100 @@
   min-height: 0;
 }
 
+/* ---------- Dividers (shared) ---------- */
+
+.hey-split-pane__divider,
 .hey-resizable-pane__divider {
   position: relative;
   flex-shrink: 0;
   z-index: 10;
   cursor: col-resize;
   background: transparent;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
   transition: background var(--motion-fast) var(--ease);
 }
 
+/* Expand the pointer hit target without adding visual weight. */
+.hey-split-pane--horizontal .hey-split-pane__divider::after,
+.hey-resizable-pane--horizontal .hey-resizable-pane__divider::after {
+  content: '';
+  position: absolute;
+  inset: 0 -6px;
+}
+
+.hey-split-pane--vertical .hey-split-pane__divider::after,
+.hey-resizable-pane--vertical .hey-resizable-pane__divider::after {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
+}
+
+.hey-split-pane__divider:hover,
+.hey-split-pane--dragging .hey-split-pane__divider,
 .hey-resizable-pane__divider:hover,
 .hey-resizable-pane--dragging .hey-resizable-pane__divider {
   background: var(--accent-glow-soft);
 }
 
+.hey-split-pane--dragging .hey-split-pane__divider,
+.hey-resizable-pane--dragging .hey-resizable-pane__divider {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+}
+
+.hey-split-pane__divider:focus-visible,
 .hey-resizable-pane__divider:focus-visible {
   outline: var(--focus-ring);
   outline-offset: -2px;
+  border-radius: 2px;
 }
 
+.hey-split-pane--horizontal .hey-split-pane__divider,
 .hey-resizable-pane--horizontal .hey-resizable-pane__divider {
   width: 8px;
   cursor: ew-resize;
 }
 
+.hey-split-pane--vertical .hey-split-pane__divider,
 .hey-resizable-pane--vertical .hey-resizable-pane__divider {
   height: 8px;
   cursor: ns-resize;
 }
 
+/* ---------- Handle (glass pill) ---------- */
+
+.hey-split-pane__divider-handle,
 .hey-resizable-pane__divider-handle {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   width: 24px;
   height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity var(--motion-fast) var(--ease);
+  transform: translate(-50%, -50%) scale(0.85);
+  pointer-events: none;
+  transition:
+    opacity var(--motion-fast) var(--ease),
+    transform var(--motion-fast) var(--ease);
 }
 
+.hey-split-pane__divider:hover .hey-split-pane__divider-handle,
+.hey-split-pane--dragging .hey-split-pane__divider-handle,
+.hey-split-pane__divider:focus-visible .hey-split-pane__divider-handle,
 .hey-resizable-pane__divider:hover .hey-resizable-pane__divider-handle,
-.hey-resizable-pane--dragging .hey-resizable-pane__divider-handle {
+.hey-resizable-pane--dragging .hey-resizable-pane__divider-handle,
+.hey-resizable-pane__divider:focus-visible .hey-resizable-pane__divider-handle {
   opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
-.hey-resizable-pane--horizontal .hey-resizable-pane__divider-handle::before {
-  content: '';
-  width: 4px;
-  height: 40px;
-  background: var(--border);
-  border-radius: 2px;
-}
+Then pills. For horizontal:
 
-.hey-resizable-pane--vertical .hey-resizable-pane__divider-handle::before {
-  content: '';
-  width: 40px;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-}
-
-.hey-resizable-pane__divider:hover .hey-resizable-pane__divider-handle::before,
-.hey-resizable-pane--dragging .hey-resizable-pane__divider-handle::before {
-  background: var(--accent);
-}
-
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-
-@media (max-width: 640px) {
-  .hey-split-pane__divider,
-  .hey-resizable-pane__divider {
-    width: 12px;
-    height: 12px;
-  }
-
-  .hey-split-pane--horizontal .hey-split-pane__divider {
-    width: 12px;
-  }
-
-  .hey-split-pane--vertical .hey-split-pane__divider {
-    height: 12px;
-  }
-}
+css
+.hey-split-pane--horizontal .hey
