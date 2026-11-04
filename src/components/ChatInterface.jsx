@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\ChatInterface.jsx
+CURRENT CODE:
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -128,311 +226,6 @@ export default function ChatInterface({ subject = "chem", themeColor = "#00F0FF"
           role: "assistant",
           mode: "council",
           debate: debateResult,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        };
-        setMessages((prev) => [...prev, councilMessage]);
-      } else {
-        // Standard AI Mode
-        const aiResponseText = await executeStandardAI(prompt);
-        const standardMessage = {
-          id: `ast_${Date.now()}`,
-          role: "assistant",
-          mode: "standard",
-          content: aiResponseText,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        };
-        setMessages((prev) => [...prev, standardMessage]);
-      }
-    } catch (err) {
-      console.error("Chat failure:", err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `err_${Date.now()}`,
-          role: "assistant",
-          mode: "standard",
-          content: `⚠️ Request error: ${err.message}. Rotating key pool or fallback active.`,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const clearChat = () => {
-    setMessages([
-      {
-        id: `welcome_${Date.now()}`,
-        role: "assistant",
-        mode: "standard",
-        content: `Chat session reset. You are in **${mode === "council" ? "Mentor Council" : "Standard AI"}** mode for **${subject.toUpperCase()}**.`,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      },
-    ]);
-  };
-
-  return (
-    <div className="flex flex-col h-full w-full relative overflow-hidden bg-[#0A0B0F]/90 text-[#F5F6F8]">
-      {/* Top Controls Bar: Toggle Switch Standard AI vs Mentor Council */}
-      <div
-        className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-[#131419]/80 backdrop-blur-[24px] z-20 flex-shrink-0"
-        style={{ backdropFilter: "blur(24px)" }}
-      >
-        <div className="flex items-center gap-3">
-          {/* Mode Switcher Pills */}
-          <div className="flex items-center p-1 rounded-2xl bg-[#0A0B0F]/90 border border-white/10 shadow-inner">
-            <button
-              type="button"
-              onClick={() => setMode("standard")}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                mode === "standard"
-                  ? "bg-[#131419] text-[#F5F6F8] shadow-md border border-white/10"
-                  : "text-white/50 hover:text-white"
-              }`}
-            >
-              <Bot className="w-3.5 h-3.5" style={{ color: mode === "standard" ? themeColor : undefined }} />
-              <span>Standard AI</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setMode("council")}
-              className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                mode === "council"
-                  ? "bg-gradient-to-r from-[#00F0FF]/20 to-[#8B5CF6]/20 text-white shadow-md border border-[#00F0FF]/40"
-                  : "text-white/50 hover:text-white"
-              }`}
-            >
-              <Users className="w-3.5 h-3.5 text-[#00F0FF]" />
-              <span>Mentor Council</span>
-              <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-[#00F0FF]/20 text-[#00F0FF] uppercase tracking-wider font-bold">
-                Jobs × Buffett
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Clear & Options */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={clearChat}
-            className="p-2 rounded-xl text-xs bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 transition-all"
-            title="Clear conversation"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 select-text">
-        {messages.map((msg) => (
-          <motion.div
-            key={msg.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex gap-3 md:gap-4 max-w-4xl mx-auto ${
-              msg.role === "user" ? "justify-end" : "justify-start"
-            }`}
-          >
-            {/* Avatar for Assistant */}
-            {msg.role !== "user" && (
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/10 shadow-md text-xs font-bold"
-                style={{
-                  backgroundColor: "#131419",
-                  color: themeColor,
-                }}
-              >
-                {msg.mode === "council" ? <Users className="w-4 h-4 text-[#00F0FF]" /> : <Sparkles className="w-4 h-4" />}
-              </div>
-            )}
-
-            {/* Message Body */}
-            <div className={`space-y-2 max-w-[85%] md:max-w-[78%] ${msg.role === "user" ? "items-end" : ""}`}>
-              {/* If Council Debate Message */}
-              {msg.mode === "council" && msg.debate ? (
-                <div
-                  className="rounded-3xl border border-white/10 bg-[#131419]/90 backdrop-blur-[24px] p-5 md:p-6 shadow-xl space-y-5"
-                  style={{ backdropFilter: "blur(24px)" }}
-                >
-                  <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-[#00F0FF]" />
-                      <span className="text-xs font-bold tracking-wider uppercase text-white/80">
-                        Mentor Council Deliberation
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-white/40">{msg.timestamp}</span>
-                  </div>
-
-                  {/* Steve Jobs Persona Argument */}
-                  <div className="rounded-2xl border border-[#00F0FF]/25 bg-[#00F0FF]/5 p-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🍎</span>
-                      <span className="text-xs font-bold text-[#00F0FF] uppercase tracking-wider">Steve Jobs</span>
-                      <span className="text-[11px] text-white/40">• Vision &amp; Radical Simplicity</span>
-                    </div>
-                    <p className="text-sm text-white/90 leading-relaxed italic">
-                      &ldquo;{msg.debate.jobsArgument}&rdquo;
-                    </p>
-                  </div>
-
-                  {/* Warren Buffett Persona Argument */}
-                  <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📈</span>
-                      <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Warren Buffett</span>
-                      <span className="text-[11px] text-white/40">• Compounding Fundamentals &amp; Discipline</span>
-                    </div>
-                    <p className="text-sm text-white/90 leading-relaxed italic">
-                      &ldquo;{msg.debate.buffettArgument}&rdquo;
-                    </p>
-                  </div>
-
-                  {/* Synthesis / Executive Consensus */}
-                  <div className="rounded-2xl border border-purple-500/30 bg-purple-500/10 p-5 space-y-2.5">
-                    <div className="flex items-center gap-2 text-purple-300">
-                      <Award className="w-4 h-4 text-purple-400" />
-                      <span className="text-xs font-bold uppercase tracking-wider">Executive Synthesis &amp; Action Plan</span>
-                    </div>
-                    <p className="text-sm text-[#F5F6F8] leading-relaxed font-medium">
-                      {msg.debate.synthesis}
-                    </p>
-                    {msg.debate.verdict && (
-                      <div className="pt-2 border-t border-purple-500/20 text-xs font-semibold text-purple-300 flex items-center gap-1.5">
-                        <Flame className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                        <span>Verdict: {msg.debate.verdict}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                /* Standard AI or User Bubble */
-                <div
-                  className={`rounded-3xl p-4 md:p-5 text-sm md:text-base leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-[#00F0FF] text-[#0A0B0F] font-medium shadow-lg shadow-[#00F0FF]/20"
-                      : "bg-[#131419]/90 border border-white/10 text-[#F5F6F8] backdrop-blur-[24px] shadow-xl"
-                  }`}
-                  style={msg.role !== "user" ? { backdropFilter: "blur(24px)" } : undefined}
-                >
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
-                </div>
-              )}
-
-              {/* Timestamp & Copy Action */}
-              <div
-                className={`flex items-center gap-2 text-[10px] text-white/40 px-2 ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
-                <span>{msg.timestamp}</span>
-                {msg.role !== "user" && msg.content && (
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(msg.id, msg.content)}
-                    className="hover:text-white transition-colors flex items-center gap-1"
-                    title="Copy message"
-                  >
-                    {copiedId === msg.id ? (
-                      <Check className="w-3 h-3 text-emerald-400" />
-                    ) : (
-                      <Copy className="w-3 h-3" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Avatar for User */}
-            {msg.role === "user" && (
-              <div className="w-8 h-8 rounded-xl bg-[#00F0FF]/20 border border-[#00F0FF]/40 flex items-center justify-center flex-shrink-0 text-[#00F0FF]">
-                <User className="w-4 h-4" />
-              </div>
-            )}
-          </motion.div>
-        ))}
-
-        {/* Loading Indicator */}
-        {isLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 max-w-4xl mx-auto"
-          >
-            <div className="w-8 h-8 rounded-xl bg-[#131419] border border-white/10 flex items-center justify-center text-[#00F0FF]">
-              <Sparkles className="w-4 h-4 animate-spin" />
-            </div>
-            <div
-              className="px-4 py-3 rounded-2xl bg-[#131419]/80 border border-white/10 backdrop-blur-[24px] text-xs text-white/70 flex items-center gap-2"
-              style={{ backdropFilter: "blur(24px)" }}
-            >
-              <div className="flex gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-bounce" style={{ animationDelay: "0ms" }} />
-                <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-bounce" style={{ animationDelay: "150ms" }} />
-                <span className="w-2 h-2 rounded-full bg-[#00F0FF] animate-bounce" style={{ animationDelay: "300ms" }} />
-              </div>
-              <span className="text-[#00F0FF] font-medium">
-                {mode === "council" ? "Convening Jobs & Buffett Council..." : "Synthesizing master response..."}
-              </span>
-            </div>
-          </motion.div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Floating Glass Composer */}
-      <div className="p-4 md:p-6 flex-shrink-0 max-w-4xl mx-auto w-full z-20">
-        <div
-          className="relative rounded-3xl border border-white/15 bg-[#131419]/90 backdrop-blur-[24px] p-2 md:p-3 shadow-2xl transition-all focus-within:border-[#00F0FF]/70 focus-within:shadow-[0_0_30px_rgba(0,240,255,0.15)]"
-          style={{ backdropFilter: "blur(24px)" }}
-        >
-          <textarea
-            ref={textareaRef}
-            rows={2}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              mode === "council"
-                ? `Prompt Jobs & Buffett for a curriculum debate on ${subject}...`
-                : `Ask HEY Teacher Engine anything about ${subject}...`
-            }
-            className="w-full bg-transparent text-[#F5F6F8] font-['Inter',sans-serif] text-sm md:text-base px-4 py-2 outline-none resize-none placeholder:text-white/30"
-          />
-
-          <div className="flex items-center justify-between px-3 pt-1 border-t border-white/5">
-            <div className="flex items-center gap-2 text-[11px] text-white/40">
-              <span className="hidden sm:inline">Press</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[10px] text-white/70">Enter ↵</kbd>
-              <span className="hidden sm:inline">to send •</span>
-              <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[10px] text-white/70">Shift + Enter</kbd>
-              <span className="hidden sm:inline">for newline</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handleSend()}
-              disabled={!input.trim() || isLoading}
-              className="px-4 py-2 rounded-2xl font-bold text-xs md:text-sm bg-[#00F0FF] text-[#0A0B0F] hover:bg-[#00F0FF]/90 disabled:opacity-30 disabled:hover:bg-[#00F0FF] transition-all flex items-center gap-1.5 shadow-md shadow-[#00F0FF]/25 hover:scale-105 active:scale-95"
-            >
-              <span>Send</span>
-              <Send className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+          timestamp: new Date().toLocaleTimeString
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
