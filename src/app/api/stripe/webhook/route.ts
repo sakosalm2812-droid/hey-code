@@ -1,3 +1,107 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Catalog Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+id: 00-andruia-consultant
+name: 00-andruia-consultant
+description: "Usar al iniciar o mejorar un proyecto de IA: diagnostica código y restricciones, propone skills existentes y redacta tareas y un plan de implementación en español."
+category: andruia
+risk: safe
+source: personal
+date_added: "2026-02-27"
+---
+
+## When to Use
+Use this skill at the very beginning of a project to diagnose the workspace, determine whether it's a "Pure Engine" (new) or "Evolution" (existing) project, and to set the initial technical roadmap and expert squad.
+
+# 🤖 Andru.ia Solutions Architect - Hybrid Engine (v2.0)
+
+## Description
+
+Diagnóstico y planificación de Andru.ia para un proyecto nuevo o existente. Las propuestas se justifican con el código y las restricciones observadas; no se promete una arquitectura óptima universal.
+
+## 📋 General Instructions (El Estándar Maestro)
+
+- **Idioma Mandatorio:** La comunicación y los artefactos se redactan en **ESPAÑOL** por defecto; una instrucción explícita del usuario sobre idioma o formato tiene prioridad.
+- **Análisis de Entorno:** Al iniciar, mi primera acción es inspeccionar únicamente el proyecto autorizado y detectar código y documentación existentes; una carpeta con solo metadatos de Git o una plantilla no demuestra que exista un producto.
+- **Persistencia:** Materializo el diagnóstico en archivos .md locales cuando la tarea autoriza guardarlos. Leo los archivos existentes antes de editar y conservo trabajo ajeno; si solo se solicita asesoría, entrego el diagnóstico en la conversación.
+
+## 🛠️ Workflow: Bifurcación de Diagnóstico
+
+### ESCENARIO A: Lienzo Blanco (Carpeta Vacía)
+
+Si no detecto archivos, activo el protocolo **"Pure Engine"**:
+
+1. **Entrevista de Diagnóstico**: Solicito responder:
+   - ¿QUÉ vamos a desarrollar?
+   - ¿PARA QUIÉN es?
+   - ¿QUÉ RESULTADO esperas? (Objetivo y estética premium).
+
+### ESCENARIO B: Proyecto Existente (Código Detectado)
+
+Si detecto archivos (src, package.json, etc.), actúo como **Consultor de Evolución**:
+
+1. **Escaneo Técnico**: Analizo el Stack actual, la arquitectura y posibles deudas técnicas.
+2. **Entrevista de Prescripción**: Solicito responder:
+   - ¿QUÉ queremos mejorar o añadir sobre lo ya construido?
+   - ¿CUÁL es el mayor punto de dolor o limitación técnica actual?
+   - ¿A QUÉ estándar de calidad queremos elevar el proyecto?
+3. **Diagnóstico**: Entrego una breve "Prescripción Técnica" antes de proceder.
+
+## 🚀 Fase de Sincronización de Squad y Materialización
+
+Para ambos escenarios, tras recibir las respuestas:
+
+1. **Mapear Skills**: Consulto el registro disponible y leo las skills pertinentes antes de proponer 3-5 competencias con IDs que existan. Si falta una competencia, declaro el hueco en vez de inventar un ID. Proponer competencias no crea agentes ni autoriza delegación.
+2. **Generar Artefactos (En Español)**:
+   - `tareas.md`: Backlog con tarea, objetivo, dependencias y criterio observable de finalización.
+   - `plan_implementacion.md`: Fases con alcance, archivos previstos, comprobaciones y supuestos pendientes.
+
+3. **Verificar Entrega**: Releer el diagnóstico y los artefactos. Confirmar que responden al objetivo y restricciones del usuario, que las skills citadas existen y que cada fase tiene una comprobación concreta. Separar observaciones verificadas de hipótesis y conservar los puntos pendientes; generar un archivo no prueba que la implementación funcione.
+
+## ⚠️ Reglas de Oro
+
+1. **Contexto Inteligente**: No mezcles datos de proyectos anteriores. Cada carpeta es una entidad única.
+2. **Estándar de Diamante**: Prioriza siempre soluciones escalables, seguras y estéticamente superiores.
+
+## Example
+
+**User request:**
+
+> Diagnostica este proyecto de IA existente y propone una mejora; entrega primero el diagnóstico en la conversación.
+
+**Respuesta ilustrativa:** Se observa una aplicación con interfaz y API, pero no hay pruebas del flujo de autenticación. 
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Catalog Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+id: 00-andruia-consultant
+name: 00-andruia-consultant
+description: "Usar al iniciar o mejorar un proyecto de IA: diagnostica código y restricciones, propone skills existentes y redacta tareas y un plan de implementación en español."
+category: andruia
+risk: safe
+source: personal
+date_added: "2026-02-27"
+---
+
+## When to Use
+Use this skill at the very beginning of a project to diagnose the workspace, determine
+
+FILE TO UPGRADE: src\app\api\stripe\webhook\route.ts
+CURRENT CODE:
 The user wants me to upgrade the file. But there's a format requirement: wrap JSON tool call arrays in  code block. The mission says "output ONLY the raw upgraded code. No markdown." But the format requirement says to wrap in code blocks for tool calls.
 
 Actually, the format requirement is about tool calls. The mission says output raw upgraded code. There's tension. But given the harness parses code blocks, I should probably output the code inside a json code block as a write_file tool call. Wait — but the mission says "output ONLY the raw upgraded code."
@@ -99,250 +203,6 @@ Let's keep it simple but add a processing lock? Overkill. Keep current approach,
 
 Also prisma.webhookEvent.upsert with update: { processed: false } — if event was previously failed and is retried, this resets. Good.
 
-Let me also guard: if event.id already processed, return 200.
-
-Signature: use request.headers.get('stripe-signature').
-
-If missing, return 400.
-
-Now stripe.webhooks.constructEvent — pass body.
-
-Let me code it out fully.
-
-Type for event.data.object — use Stripe.Event types.
-
-For subscription.status.toUpperCase() as any — Stripe statuses are lowercase like active, trialing, canceled, past_due, unpaid, incomplete, incomplete_expired, paused. Mapping to prisma enum likely uppercase. Keep but handle edge cases.
-
-Add invoice.payment_succeeded? Not in original. Skip to minimize changes.
-
-Now write.
-
-Also need to fix: sendBillingEmail(user.email, 'canceled', ...) — pattern appears to be (email, template, data). For checkout currently sendBillingEmail(userId, 'invoice', ...) — should be email. Fix.
-
-For failed payment: sendBillingEmail(user.email, 'failed', {amount: '$20.00'}) — use actual amount.
-
-Let me build.
-
-ts
-import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { stripe } from '@/lib/stripe';
-import { prisma } from '@/lib/prisma';
-import { sendBillingEmail } from '@/lib/email';
-import { auditLog } from '@/lib/audit';
-
-// Stripe requires the raw body for signature verification.
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
-
-const PLAN_BY_PRICE: Record<string, 'PRO' | 'TEAM'> = {
-  [process.env.STRIPE_PRICE_PRO_MONTHLY ?? '__pro_m']: 'PRO',
-  [process.env.STRIPE_PRICE_PRO_YEARLY ?? '__pro_y']: 'PRO',
-  [process.env.STRIPE_PRICE_TEAM_MONTHLY ?? '__team_m']: 'TEAM',
-  [process.env.STRIPE_PRICE_TEAM_YEARLY ?? '__team_y']: 'TEAM',
-};
-
-function resolvePlan(priceId?: string | null) { ... }
-
-Careful: if env vars undefined, the record would have key "__pro_m" etc. Guard:
-
-ts
-function resolvePlan(priceId?: string | null): 'FREE'|'PRO'|'TEAM' {
-  if (!priceId) return 'FREE';
-  const pro = [process.env.STRIPE_PRICE_PRO_MONTHLY, process.env.STRIPE_PRICE_PRO_YEARLY].filter(Boolean);
-  const team = [process.env.STRIPE_PRICE_TEAM_MONTHLY, process.env.STRIPE_PRICE_TEAM_YEARLY].filter(Boolean);
-  if (pro.includes(priceId)) return 'PRO';
-  if (team.includes(priceId)) return 'TEAM';
-  return 'FREE';
-}
-
-Better.
-
-Also add helper to find user by customer id.
-
-ts
-async function findUserByCustomerId(customerId: string) {
-  return prisma.user.findFirst({
-    where: { subscription: { stripeCustomerId: customerId } },
-    select: { id: true, email: true },
-  });
-}
-
-Format currency helper:
-
-ts
-function formatAmount(amount: number | null | undefined, currency: string | null | undefined) {
-  if (amount == null) return undefined;
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: (currency ?? 'usd').toUpperCase() }).format(amount / 100);
-}
-
-Now full handler.
-
-Also note auditLog is imported but unused — include an audit call for important events.
-
-sendBillingEmail for trial_ending with daysLeft.
-
-Let me write final code. Keep it focused.
-
-One more: subscription.current_period_end — in newer Stripe API it's on subscription items, but keep as is for compatibility.
-
-Let's write.
-
-Length check — keep reasonable.
-
-For invoice.upcoming, invoice.subscription may be string or object. Handle:
-
-ts
-const subId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription?.id;
-if (!subId) break;
-const sub = await stripe.subscriptions.retrieve(subId);
-if (!sub.trial_end) break;
-const daysLeft = Math.ceil((sub.trial_end * 1000 - Date.now()) / 86400000);
-if (daysLeft > 0 && daysLeft <= 3) await sendBillingEmail(user.email, 'trial_ending', { daysLeft });
-
-Good.
-
-Checkout session amount: session.amount_total, currency session.currency.
-
-Now the JSON tool call. Path: src/app/api/stripe/webhook/route.ts — but requirement says absolute path. Let me use /app/src/app/api/stripe/webhook/route.ts? Hmm, ambiguous. The file path given is src\app\api\stripe\webhook\route.ts. I'll use absolute-ish /src/app/api/stripe/webhook/route.ts. Actually without knowing project root, safest is the path as given but with forward slashes and leading... The example shows /abs/path. I'll use /src/app/api/stripe/webhook/route.ts.
-
-Hmm, but the harness might expect the same path. I'll go with the given relative path with forward slashes: src/app/api/stripe/webhook/route.ts. But it says absolute. I'll use /src/app/api/stripe/webhook/route.ts.
-
-Let me just use the path as given but normalized: /src/app/api/stripe/webhook/route.ts.
-
-Now escape everything properly for JSON.
-
-Write the code content carefully. I need to escape " as \" and newlines as \n. That's tedious but manageable. Actually in JSON content strings, I must escape quotes and newlines.
-
-Let me write the code first, then JSON-encode mentally.
-
-ts
-import { NextRequest, NextResponse } from 'next/server';
-import type Stripe from 'stripe';
-import { stripe } from '@/lib/stripe';
-import { prisma } from '@/lib/prisma';
-import { sendBillingEmail } from '@/lib/email';
-import { auditLog } from '@/lib/audit';
-
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
-
-type Plan = 'FREE' | 'PRO' | 'TEAM';
-
-const PRICE_TO_PLAN: Record<string, Plan> = (() => {
-  const map: Record<string, Plan> = {};
-  const pro = [process.env.STRIPE_PRICE_PRO_MONTHLY, process.env.STRIPE_PRICE_PRO_YEARLY];
-  const team = [process.env.STRIPE_PRICE_TEAM_MONTHLY, process.env.STRIPE_PRICE_TEAM_YEARLY];
-  for (const id of pro) if (id) map[id] = 'PRO';
-  for (const id of team) if (id) map[id] = 'TEAM';
-  return map;
-})();
-
-function resolvePlan(priceId?: string | null): Plan {
-  if (!priceId) return 'FREE';
-  return PRICE_TO_PLAN[priceId] ?? 'FREE';
-}
-
-function formatAmount(amount: number | null | undefined, currency: string | null | undefined): string {
-  if (amount == null) return '—';
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: (currency ?? 'usd').toUpperCase(),
-    }).format(amount / 100);
-  } catch {
-    return `${(amount / 100).toFixed(2)} ${(currency ?? 'usd').toUpperCase()}`;
-  }
-}
-
-async function findUserByCustomerId(customerId: string) {
-  return prisma.user.findFirst({
-    where: { subscription: { stripeCustomerId: customerId } },
-    select: { id: true, email: true },
-  });
-}
-
-function toDate(seconds?: number | null): Date | null {
-  return seconds ? new Date(seconds * 1000) : null;
-}
-
-export async function POST(request: NextRequest) {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    console.error('[stripe:webhook] STRIPE_WEBHOOK_SECRET is not configured');
-    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
-  }
-
-  const signature = request.headers.get('stripe-signature');
-  if (!signature) {
-    return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 });
-  }
-
-  const body = await request.text();
-
-  let event: Stripe.Event;
-  try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'unknown error';
-    console.error('[stripe:webhook] signature verification failed:', message);
-    return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 400 });
-  }
-
-  const existing = await prisma.webhookEvent.findUnique({
-    where: { stripeEventId: event.id },
-    select: { processed: true },
-  });
-
-  if (existing?.processed) {
-    return NextResponse.json({ received: true, duplicate: true });
-  }
-
-  await prisma.webhookEvent.upsert({
-    where: { stripeEventId: event.id },
-    create: {
-      stripeEventId: event.id,
-      type: event.type,
-      payload: event.data.object as unknown as object,
-    },
-    update: { processed: false },
-  });
-
-  try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.metadata?.userId;
-        if (!userId) {
-          console.warn('[stripe:webhook] checkout.session.completed missing metadata.userId', session.id);
-          break;
-        }
-
-        const user = await prisma.user.findUnique({
-          where: { id: userId },
-          select: { email: true },
-        });
-
-        await prisma.subscription.update({
-          where: { userId },
-          data: {
-            stripeCustomerId: typeof session.customer === 'string' ? session.customer : session.customer?.id,
-            stripeSubscriptionId: typeof session.subscription === 'string' ? session.subscription : session.subscription?.id,
-            status: 'ACTIVE',
-          },
-        });
-
-        if (user?.email) {
-          await sendBillingEmail(user.email, 'invoice', {
-            amount: formatAmount(session.amount_total, session.currency),
-          });
-        }
-
-        await auditLog('billing.checkout_completed', { userId, sessionId: session.id });
-        break;
-      }
-
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
+Let me also guard: if event.id already pr
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
