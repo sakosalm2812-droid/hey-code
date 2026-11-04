@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\relay\RelayPanel.jsx
+CURRENT CODE:
 /**
  * HEY Relay Panel — Pairing, Status, Trust, Revoke
  *
@@ -147,205 +245,6 @@ function SafeActionsList() {
       <summary>Safe actions allowed via relay ({SAFE_ACTIONS.length})</summary>
       <ul>
         {SAFE_ACTIONS.map(action => (
-          <li key={action}>
-            <code>{action}</code>
-          </li>
-        ))}
-      </ul>
-      <p className="safe-actions-note">
-        Destructive actions (file delete, permission grant, spend budget, etc.) always require
-        explicit approval through the Trust Kernel on the controlling device.
-      </p>
-    </details>
-  );
-}
-
-export function RelayPanel({ className = '', onClose }) {
-  const [deviceFabricState, setDeviceFabricState] = useState(null);
-  const [gatewayState, setGatewayState] = useState(null);
-  const [localDeviceId] = useState(() => getDeviceId());
-  const [viewModel, setViewModel] = useState(() => deriveRelayViewModel(null, null, { localDeviceId }));
-  const [pairCodeInput, setPairCodeInput] = useState('');
-  const [revokingId, setRevokingId] = useState(null);
-  const [error, setError] = useState(null);
-
-  // Subscribe to device fabric
-  useEffect(() => {
-    const unsubscribeFabric = subscribeToDeviceFabric((event, data) => {
-      setDeviceFabricState(prev => {
-        // In a real implementation, we'd get the full state from the engine
-        // For now, trigger a re-derivation
-        return { ...prev, _trigger: Date.now() };
-      });
-    });
-
-    const unsubscribeGateway = subscribeToDeviceGateway((event, data) => {
-      setGatewayState(prev => ({ ...prev, _trigger: Date.now() }));
-    });
-
-    return () => {
-      unsubscribeFabric();
-      unsubscribeGateway();
-    };
-  }, []);
-
-  // Derive view model when state changes
-  useEffect(() => {
-    const vm = deriveRelayViewModel(deviceFabricState, gatewayState, {
-      localDeviceId,
-      now: Date.now(),
-    });
-    setViewModel(vm);
-  }, [deviceFabricState, gatewayState, localDeviceId]);
-
-  const handleStartPairing = useCallback(async () => {
-    try {
-      // In real implementation, call deviceFabric.producePairCode()
-      // For now, simulate
-      const request = createPairingRequest({
-        id: localDeviceId,
-        name: navigator.platform.includes('Mac') ? 'Mac' : 'PC',
-        platform: navigator.platform.includes('Mac') ? 'macos' : 'windows',
-        deviceType: 'desktop',
-      });
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, [localDeviceId]);
-
-  const handleCancelPairing = useCallback(async () => {
-    try {
-      // In real implementation, clear pair code
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, []);
-
-  const handleConfirmPairing = useCallback(async () => {
-    if (!validatePairCode(pairCodeInput)) {
-      setError('Invalid pair code format');
-      return;
-    }
-    try {
-      // In real implementation, call deviceFabric.registerPairCode()
-      setPairCodeInput('');
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, [pairCodeInput]);
-
-  const handleRevoke = useCallback(async (deviceId) => {
-    setRevokingId(deviceId);
-    try {
-      // In real implementation, call deviceFabric.revokeDevice(deviceId)
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setRevokingId(null);
-    }
-  }, []);
-
-  const handleScopeChange = useCallback(async (deviceId, scope) => {
-    try {
-      // In real implementation, update device scope
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, []);
-
-  const summary = useMemo(() => createStatusSummary(viewModel), [viewModel]);
-
-  return (
-    <div className={`relay-panel ${className}`}>
-      <div className="relay-panel-header">
-        <h2>HEY Relay</h2>
-        <p className="relay-panel-description">
-          HEY Relay lets other devices (like your phone) securely access HEY on this machine
-          when the app is closed. Pair devices to enable global hotkeys, quick capture, and more.
-        </p>
-      </div>
-
-      {error && (
-        <div className="relay-error" role="alert">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-          </svg>
-          <span>{error}</span>
-          <button type="button" onClick={() => setError(null)} aria-label="Dismiss">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      <div className="relay-status-card">
-        <div className="relay-status-main">
-          <StatusBadge status={viewModel.status} label={summary.statusLabel} />
-          <div className="relay-status-meta">
-            <span className="relay-scope">
-              <span className="scope-label">Scope:</span>
-              <span className="scope-value">{summary.scopeLabel}</span>
-            </span>
-            <span className="relay-devices">
-              <span className="devices-label">Devices:</span>
-              <span className="devices-value">{summary.onlineCount}/{summary.deviceCount} online</span>
-            </span>
-          </div>
-        </div>
-        {viewModel.lastActivity && (
-          <div className="relay-last-activity">
-            Last activity: {new Date(viewModel.lastActivity).toLocaleString()}
-          </div>
-        )}
-      </div>
-
-      <PairingCard
-        viewModel={viewModel}
-        onStartPairing={handleStartPairing}
-        onCancelPairing={handleCancelPairing}
-        onConfirmPairing={handleConfirmPairing}
-        pairCodeInput={pairCodeInput}
-        setPairCodeInput={setPairCodeInput}
-      />
-
-      <div className="relay-paired-devices">
-        <h3>Paired Devices ({summary.deviceCount})</h3>
-        {viewModel.pairedDevices.length === 0 ? (
-          <p className="relay-empty">No devices paired yet. Generate a pair code to get started.</p>
-        ) : (
-          <div className="paired-devices-grid">
-            {viewModel.pairedDevices.map(device => (
-              <PairedDeviceCard
-                key={device.id}
-                device={device}
-                onRevoke={handleRevoke}
-                onScopeChange={handleScopeChange}
-                revoking={revokingId === device.id}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      <SafeActionsList />
-
-      <div className="relay-panel-footer">
-        <p className="relay-footer-note">
-          The relay runs locally on this machine. No data leaves your device.
-          Pairing codes expire in 5 minutes. Tokens rotate every 24 hours.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-export default RelayPanel;
+     
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
