@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\Tools\ChemTools.jsx
+CURRENT CODE:
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import {
@@ -71,476 +169,6 @@ const SDS_DATABASE = [
     ghs: ["Flammable", "Irritant"],
     signalWord: "WARNING",
     ppe: "Nitrile gloves, safety glasses, flame-resistant lab coat",
-    spill: "Eliminate all ignition sources. Absorb with universal spill pillows. Ventilate room.",
-    firstAid: "Inhalation: Provide fresh air. Eye contact: Rinse thoroughly with lukewarm water.",
-  },
-];
-
-export default function ChemTools({ activeToolName = "Periodic Table" }) {
-  const [activeTab, setActiveTab] = useState(() => {
-    if (activeToolName.includes("Equation")) return "equation";
-    if (activeToolName.includes("Safety")) return "safety";
-    if (activeToolName.includes("Worksheet")) return "worksheet";
-    return "periodic";
-  });
-
-  // Periodic Table State
-  const [selectedElement, setSelectedElement] = useState(ELEMENTS[0]);
-  const [elementFilter, setElementFilter] = useState("all");
-
-  // Equation Editor State
-  const [reactionInput, setReactionInput] = useState("H2 + O2 -> H2O");
-  const [balancedResult, setBalancedResult] = useState({
-    balanced: "2H₂ + O₂ → 2H₂O",
-    latex: "2\\text{H}_2 + \\text{O}_2 \\longrightarrow 2\\text{H}_2\\text{O}",
-    enthalpy: "ΔH = -572 kJ/mol (Exothermic)",
-    type: "Synthesis / Combustion",
-  });
-
-  // Lab Safety State
-  const [sdsSearch, setSdsSearch] = useState("");
-  const [selectedSds, setSelectedSds] = useState(SDS_DATABASE[0]);
-
-  // Worksheet Generator State
-  const [worksheetTopic, setWorksheetTopic] = useState("Stoichiometry & Molar Mass");
-  const [worksheetLevel, setWorksheetLevel] = useState("AP Chemistry");
-  const [showAnswerKey, setShowAnswerKey] = useState(false);
-  const [worksheetData, setWorksheetData] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  const handleBalanceEquation = () => {
-    const raw = reactionInput.trim().toLowerCase();
-    if (raw.includes("ch4") || raw.includes("methane")) {
-      setBalancedResult({
-        balanced: "CH₄ + 2O₂ → CO₂ + 2H₂O",
-        latex: "\\text{CH}_4 + 2\\text{O}_2 \\longrightarrow \\text{CO}_2 + 2\\text{H}_2\\text{O}",
-        enthalpy: "ΔH = -891 kJ/mol (Exothermic)",
-        type: "Hydrocarbon Combustion",
-      });
-    } else if (raw.includes("fe") && raw.includes("o2")) {
-      setBalancedResult({
-        balanced: "4Fe + 3O₂ → 2Fe₂O₃",
-        latex: "4\\text{Fe} + 3\\text{O}_2 \\longrightarrow 2\\text{Fe}_2\\text{O}_3",
-        enthalpy: "ΔH = -1648 kJ/mol (Oxidation)",
-        type: "Redox / Synthesis",
-      });
-    } else {
-      setBalancedResult({
-        balanced: "2H₂ + O₂ → 2H₂O",
-        latex: "2\\text{H}_2 + \\text{O}_2 \\longrightarrow 2\\text{H}_2\\text{O}",
-        enthalpy: "ΔH = -572 kJ/mol (Exothermic)",
-        type: "Gas Phase Synthesis",
-      });
-    }
-  };
-
-  const handleGenerateWorksheet = () => {
-    setIsGenerating(true);
-    setTimeout(() => {
-      setWorksheetData({
-        title: `${worksheetLevel}: ${worksheetTopic} Problem Set`,
-        date: new Date().toLocaleDateString(),
-        problems: [
-          {
-            q: "1. Calculate the theoretical yield in grams of water when 8.00 g of H₂ gas reacts completely with excess O₂ according to 2H₂ + O₂ → 2H₂O.",
-            a: "8.00 g H₂ × (1 mol H₂ / 2.016 g) × (2 mol H₂O / 2 mol H₂) × (18.015 g / 1 mol H₂O) = 71.5 g H₂O.",
-          },
-          {
-            q: "2. If a student collects 64.2 g of H₂O in the laboratory experiment, calculate the percent yield.",
-            a: "Percent Yield = (Actual Yield / Theoretical Yield) × 100% = (64.2 g / 71.5 g) × 100% = 89.8%.",
-          },
-          {
-            q: "3. Identify the limiting reactant when 10.0 moles of Fe react with 6.00 moles of O₂ to produce Fe₂O₃.",
-            a: "Molar ratio Fe:O₂ is 4:3. 10.0 mol Fe requires 7.5 mol O₂. Since only 6.00 mol O₂ is present, O₂ is the limiting reactant.",
-          },
-        ],
-      });
-      setIsGenerating(false);
-    }, 500);
-  };
-
-  const filteredElements = ELEMENTS.filter((e) => {
-    if (elementFilter === "all") return true;
-    return e.cat === elementFilter;
-  });
-
-  return (
-    <div
-      className="h-full flex flex-col rounded-3xl border border-white/10 bg-[#131419]/90 backdrop-blur-[24px] text-[#F5F6F8] overflow-hidden"
-      style={{ backdropFilter: "blur(24px)" }}
-    >
-      {/* Tool Navigation Bar */}
-      <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-black/20 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Atom className="w-5 h-5 text-[#00F0FF]" />
-          <span className="text-sm font-bold tracking-tight text-[#F5F6F8]">Chemistry Laboratory Suite</span>
-        </div>
-
-        {/* Tab Switchers */}
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#0A0B0F]/80 border border-white/10 text-xs">
-          {[
-            { id: "periodic", label: "Periodic Table" },
-            { id: "equation", label: "Equation Editor" },
-            { id: "safety", label: "Lab Safety & SDS" },
-            { id: "worksheet", label: "Worksheet Generator" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-[#00F0FF] text-[#0A0B0F] font-bold shadow-md shadow-[#00F0FF]/20"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Tool Content Area */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* TAB 1: PERIODIC TABLE */}
-        {activeTab === "periodic" && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-bold text-[#F5F6F8]">Interactive Periodic Elements</h3>
-                <p className="text-xs text-white/50">Click any element to inspect atomic structure and electron orbital shell configuration.</p>
-              </div>
-
-              {/* Category Filter */}
-              <div className="flex flex-wrap gap-1.5 text-xs">
-                {["all", "alkali", "alkaline", "transition", "nonmetal", "halogen", "noble"].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setElementFilter(cat)}
-                    className={`px-2.5 py-1 rounded-lg capitalize border transition-all ${
-                      elementFilter === cat
-                        ? "bg-[#00F0FF]/20 border-[#00F0FF] text-[#00F0FF]"
-                        : "bg-white/5 border-white/10 text-white/60 hover:text-white"
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Elements Grid & Detail Card Split */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Element Grid */}
-              <div className="lg:col-span-2 grid grid-cols-4 sm:grid-cols-7 gap-2">
-                {filteredElements.map((el) => {
-                  const isSelected = selectedElement.num === el.num;
-                  return (
-                    <button
-                      key={el.num}
-                      type="button"
-                      onClick={() => setSelectedElement(el)}
-                      className={`p-2 rounded-xl border flex flex-col items-center justify-center transition-all ${
-                        isSelected
-                          ? "bg-[#00F0FF] text-[#0A0B0F] border-[#00F0FF] shadow-lg shadow-[#00F0FF]/30 scale-105"
-                          : "bg-white/5 border-white/10 hover:border-white/30 text-[#F5F6F8]"
-                      }`}
-                    >
-                      <span className={`text-[10px] ${isSelected ? "text-black/70" : "text-white/40"}`}>{el.num}</span>
-                      <span className="text-base font-bold tracking-tight">{el.sym}</span>
-                      <span className={`text-[9px] truncate max-w-[50px] ${isSelected ? "text-black/80" : "text-white/50"}`}>
-                        {el.mass.toFixed(1)}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Inspector Card */}
-              <div className="p-5 rounded-2xl border border-white/10 bg-black/40 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div>
-                    <span className="text-3xl font-extrabold text-[#00F0FF]">{selectedElement.sym}</span>
-                    <h4 className="text-base font-bold text-[#F5F6F8]">{selectedElement.name}</h4>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs text-white/40 font-mono">Atomic #{selectedElement.num}</div>
-                    <div className="text-xs text-[#00F0FF] font-mono">{selectedElement.mass} u</div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="text-white/50">Category</span>
-                    <span className="capitalize font-semibold text-white/90">{selectedElement.cat}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="text-white/50">Electron Config</span>
-                    <span className="font-mono text-[#00F0FF]">{selectedElement.config}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="text-white/50">Oxidation States</span>
-                    <span className="font-mono text-emerald-400">{selectedElement.ox}</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="text-white/50">Period / Group</span>
-                    <span>Period {selectedElement.period}, Group {selectedElement.group}</span>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <button
-                    onClick={() => setReactionInput(`${selectedElement.sym} + O2 ->`)}
-                    className="w-full py-2 rounded-xl text-xs font-semibold bg-white/10 hover:bg-[#00F0FF]/20 hover:text-[#00F0FF] border border-white/10 transition-all text-center"
-                  >
-                    Insert Into Equation Editor &rarr;
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: EQUATION EDITOR */}
-        {activeTab === "equation" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Chemical Equation &amp; Stoichiometry Editor</h3>
-              <p className="text-xs text-white/50">Type reactants and products. Renders LaTeX formulas, thermodynamic enthalpy, and balancing coefficients.</p>
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={reactionInput}
-                onChange={(e) => setReactionInput(e.target.value)}
-                placeholder="e.g. H2 + O2 -> H2O or CH4 + O2 -> CO2 + H2O"
-                className="flex-1 px-4 py-3 rounded-2xl bg-[#0A0B0F] border border-white/10 text-sm font-mono text-[#F5F6F8] focus:border-[#00F0FF] outline-none"
-              />
-              <button
-                type="button"
-                onClick={handleBalanceEquation}
-                className="px-5 py-3 rounded-2xl bg-[#00F0FF] text-[#0A0B0F] font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md shadow-[#00F0FF]/20"
-              >
-                Balance &amp; Render
-              </button>
-            </div>
-
-            {/* Quick Presets */}
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="text-white/40 py-1">Presets:</span>
-              {["H2 + O2 -> H2O", "CH4 + O2 -> CO2 + H2O", "Fe + O2 -> Fe2O3"].map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => {
-                    setReactionInput(preset);
-                    handleBalanceEquation();
-                  }}
-                  className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 font-mono"
-                >
-                  {preset}
-                </button>
-              ))}
-            </div>
-
-            {/* Rendered Equation Card */}
-            {balancedResult && (
-              <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4">
-                <div className="text-xs uppercase tracking-wider text-white/40 font-semibold">LaTeX Rendered Output</div>
-                <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 flex items-center justify-center text-center">
-                  <span className="text-xl md:text-2xl font-mono text-[#00F0FF] tracking-wide">
-                    {balancedResult.balanced}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-white/50">Reaction Classification</span>
-                    <div className="font-semibold text-white/90">{balancedResult.type}</div>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-white/50">Thermochemical Enthalpy</span>
-                    <div className="font-semibold text-emerald-400">{balancedResult.enthalpy}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between text-xs text-white/50 pt-2 border-t border-white/5">
-                  <span className="font-mono text-[11px] truncate max-w-sm">{balancedResult.latex}</span>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(balancedResult.latex)}
-                    className="flex items-center gap-1 text-[#00F0FF] hover:underline"
-                  >
-                    <Copy className="w-3.5 h-3.5" /> Copy LaTeX
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 3: LAB SAFETY & SDS */}
-        {activeTab === "safety" && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Laboratory Safety Protocols &amp; SDS Lookup</h3>
-              <p className="text-xs text-white/50">Instant safety protocols, personal protective equipment (PPE), and emergency neutralizer checklists.</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Chemical Selector */}
-              <div className="space-y-3">
-                <div className="text-xs uppercase tracking-wider text-white/40 font-semibold">Safety Data Sheets</div>
-                {SDS_DATABASE.map((sds) => (
-                  <button
-                    key={sds.chemical}
-                    onClick={() => setSelectedSds(sds)}
-                    className={`w-full p-3.5 rounded-2xl border text-left transition-all ${
-                      selectedSds.chemical === sds.chemical
-                        ? "bg-[#00F0FF]/15 border-[#00F0FF] text-white shadow-md shadow-[#00F0FF]/10"
-                        : "bg-white/5 border-white/10 hover:border-white/20 text-white/70"
-                    }`}
-                  >
-                    <div className="font-semibold text-xs md:text-sm">{sds.chemical}</div>
-                    <div className="text-[11px] text-white/40 font-mono mt-0.5">CAS: {sds.cas}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Safety Protocol Details */}
-              <div className="lg:col-span-2 p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                  <div>
-                    <h4 className="text-base font-bold text-[#F5F6F8]">{selectedSds.chemical}</h4>
-                    <span className="text-xs text-white/50 font-mono">CAS #{selectedSds.cas}</span>
-                  </div>
-                  <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                    {selectedSds.signalWord}
-                  </span>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <span className="text-white/40 font-semibold uppercase tracking-wider block mb-1">GHS Hazards</span>
-                    <div className="flex gap-2">
-                      {selectedSds.ghs.map((h) => (
-                        <span key={h} className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 font-medium">
-                          ⚠️ {h}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-white/40 font-semibold uppercase tracking-wider block">Required PPE</span>
-                    <p className="text-white/90">{selectedSds.ppe}</p>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-white/40 font-semibold uppercase tracking-wider block">Spill Neutralization</span>
-                    <p className="text-white/90">{selectedSds.spill}</p>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-white/40 font-semibold uppercase tracking-wider block">First Aid Measures</span>
-                    <p className="text-white/90">{selectedSds.firstAid}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: WORKSHEET GENERATOR */}
-        {activeTab === "worksheet" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Automated Chemistry Worksheet Generator</h3>
-              <p className="text-xs text-white/50">Synthesize customized problem sets with difficulty gradations and automated answer keys.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-white/70">Topic</label>
-                <select
-                  value={worksheetTopic}
-                  onChange={(e) => setWorksheetTopic(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0A0B0F] border border-white/10 text-xs text-[#F5F6F8] outline-none"
-                >
-                  <option>Stoichiometry & Molar Mass</option>
-                  <option>Acid-Base Equilibrium & Titration</option>
-                  <option>Gas Laws & Partial Pressure</option>
-                  <option>Thermochemistry & Hess Law</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-white/70">Level</label>
-                <select
-                  value={worksheetLevel}
-                  onChange={(e) => setWorksheetLevel(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0A0B0F] border border-white/10 text-xs text-[#F5F6F8] outline-none"
-                >
-                  <option>AP Chemistry</option>
-                  <option>Honors Chemistry</option>
-                  <option>Introductory Chemistry</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={handleGenerateWorksheet}
-                disabled={isGenerating}
-                className="px-6 py-3 rounded-2xl bg-[#00F0FF] text-[#0A0B0F] font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md shadow-[#00F0FF]/25 flex items-center gap-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                {isGenerating ? "Synthesizing Problems..." : "Generate Worksheet"}
-              </button>
-
-              {worksheetData && (
-                <button
-                  type="button"
-                  onClick={() => setShowAnswerKey(!showAnswerKey)}
-                  className="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-semibold text-[#F5F6F8] transition-all"
-                >
-                  {showAnswerKey ? "Hide Answer Key" : "Show Answer Key"}
-                </button>
-              )}
-            </div>
-
-            {/* Generated Worksheet Paper Preview */}
-            {worksheetData && (
-              <div className="p-6 rounded-2xl border border-white/10 bg-[#0A0B0F] space-y-6 shadow-2xl">
-                <div className="border-b border-white/10 pb-4 flex justify-between items-start">
-                  <div>
-                    <h4 className="text-base font-bold text-[#00F0FF]">{worksheetData.title}</h4>
-                    <div className="text-xs text-white/50 mt-1">Date: {worksheetData.date} • Name: _______________________</div>
-                  </div>
-                  <button
-                    onClick={() => window.print()}
-                    className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 text-xs flex items-center gap-1.5"
-                  >
-                    <Printer className="w-3.5 h-3.5" /> Print
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  {worksheetData.problems.map((p, idx) => (
-                    <div key={idx} className="space-y-2 text-xs md:text-sm">
-                      <p className="font-medium text-white/90">{p.q}</p>
-                      {showAnswerKey && (
-                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-mono text-xs">
-                          <strong>Solution:</strong> {p.a}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+    spill: "Eliminate all igniti
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
