@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\terminal.tsx
+CURRENT CODE:
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -140,127 +238,6 @@ export function VirtualTerminal() {
                 : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800'
             )}
             aria-pressed={pipeline.enabled}
-          >
-            {pipeline.status === 'loading' ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : pipeline.enabled ? (
-              <Hand className="h-3.5 w-3.5" />
-            ) : (
-              <HandMetal className="h-3.5 w-3.5" />
-            )}
-            gesture: {pipeline.enabled ? 'on' : 'off'}
-          </button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 px-2 text-zinc-300 hover:text-green-400"
-            onClick={() => {
-              useTerminalStore.getState().clear();
-              useTerminalStore.getState().append({
-                level: 'system',
-                source: 'system',
-                text: 'Terminal cleared manually.',
-              });
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="sr-only">Clear</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 px-2 text-zinc-300 hover:text-red-400"
-            onClick={() => useTerminalStore.getState().requestExit()}
-          >
-            <Power className="h-3.5 w-3.5" aria-hidden="true" />
-            <span className="sr-only">Exit</span>
-          </Button>
-        </div>
-      </div>
-
-      <div className="relative flex-1 overflow-hidden">
-        <div
-          ref={paneRef}
-          onScroll={onScroll}
-          className="h-full overflow-y-auto px-4 py-3 font-mono text-[13px] leading-relaxed"
-        >
-          {outputs.length === 0 ? (
-            <p className="text-zinc-500">
-              Type an app name (e.g. &quot;notepad&quot;), &quot;launch spotify&quot;, &quot;clear&quot;, &quot;exit&quot;, or &quot;help&quot;.
-            </p>
-          ) : (
-            outputs.map((line) => (
-              <div key={line.id} className="whitespace-pre-wrap break-all">
-                <span className="mr-2 text-zinc-600">
-                  {new Date(line.ts).toLocaleTimeString([], { hour12: false })}
-                </span>
-                <span className={formatLevel(line.level)}>{line.text}</span>
-              </div>
-            ))
-          )}
-        </div>
-
-        <div
-          className={cn(
-            'absolute right-3 top-3 w-40 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-xl',
-            cameraActive ? '' : 'hidden'
-          )}
-        >
-          <video
-            ref={videoRef}
-            muted
-            playsInline
-            className="h-28 w-full -scale-x-100 object-cover"
-          />
-            <div className="px-2 py-1 font-mono text-[10px] text-zinc-400">
-              {pipeline.permissionDenied ? (
-                <span className="text-amber-400">camera blocked</span>
-              ) : pipeline.status === 'loading' ? (
-                <span>loading model…</span>
-              ) : pipeline.status === 'error' ? (
-                <span className="text-red-400">engine error</span>
-              ) : gesture.lastSnapshot ? (
-                <span>
-                  {gesture.lastSnapshot.gesture.replaceAll('_', ' ')}
-                  {' · '}
-                  d_idx {(gesture.lastSnapshot.distances.index ?? 0).toFixed(2)}
-                </span>
-              ) : (
-                <span>waiting for hand</span>
-              )}
-            </div>
-          </div>
-        </div>
-
-      <div className="border-t border-zinc-800 bg-zinc-950 px-4 py-3">
-        <div className="flex items-center gap-3 rounded-lg bg-black/60 px-3 py-2 ring-1 ring-zinc-800 focus-within:ring-emerald-700">
-          <CircleDot className="h-4 w-4 shrink-0 text-emerald-500" aria-hidden="true" />
-          <span className="font-mono text-sm text-green-400">&gt;&nbsp;</span>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => useTerminalStore.getState().setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder="command…"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            className="h-6 w-full bg-transparent font-mono text-sm text-zinc-100 outline-none placeholder:text-zinc-600"
-            aria-label="Terminal input"
-          />
-          <button
-            type="button"
-            onClick={() => useTerminalStore.getState().submitInput()}
-            className="text-zinc-400 transition-colors hover:text-emerald-400"
-            aria-label="Send command"
-          >
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
-        <p className="mt-2 text-[10px] text-zinc-600">
-          ↑/↓ history · Enter runs · open palm clears · fist exits · index finger scrolls when gesture is on
-        </p>
-      </div>
-    </div>
-  );
-}
+        
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
