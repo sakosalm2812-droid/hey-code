@@ -1,113 +1,381 @@
-The user wants an upgraded signup page. But there's no actual current code provided — only the skill library repeated. The file to upgrade is src\app\(auth)\signup\page.tsx. No current code given.
+The user wants an upgraded signup page. No current code provided. I need to output a write_file JSON tool call wrapped in a  code block, per the format requirement. The mission says "output ONLY the raw upgraded code" but the format requirement (which is stated as critical, READ CAREFULLY) says wrap ALL JSON tool call arrays in a json code block. The harness parses code blocks. So I'll output a json code block with a write_file tool call.
 
-Hmm. The format requirement says wrap JSON tool call arrays in a  code block. The mission says "output ONLY the raw upgraded code". But format requirement says use write_file tool calls in JSON blocks.
+Let me write a complete, high-quality Next.js signup page with Liquid Glass UI and purposeful motion.
 
-Given the harness parses code blocks with JSON tool calls, I should output a write_file call. But I don't have the current code... I need to produce a complete upgraded Next.js signup page.
+I'll write plain CSS in a <style> tag to avoid Tailwind dependency issues. Need to escape double quotes inside the JSON string content.
 
-Let me just write a really good signup page with Liquid Glass UI, motion principles (restraint, purposeful motion), validation logic, etc.
+Let me be careful about escaping. In JSON, all " inside the content string must be \". Also newlines as \n. That's tedious but let me do it — actually I can write the content with real newlines? No, JSON strings can't contain literal newlines. They must be \n.
 
-Let me design it properly:
+Hmm, that's a huge amount of escaping for a ~600 line file. But it's what's required. Let me minimize by using single quotes in JS/TSX where possible, and be careful with CSS (no quotes needed mostly, except font names and content).
 
-Next.js App Router client component
+Actually, I'll write it carefully. Let me draft the actual file first, then escape.
 
-Liquid Glass aesthetic: backdrop-blur, layered gradients, subtle borders, specular highlights
-
-Motion: enter animations staggered, reduced-motion respect, input focus micro-interactions, button press feedback, error shake (subtle), password strength meter
-
-Logic: form validation, password confirmation, show/hide password, async submit, loading state, accessibility
-
-Emil's principles: fast (150-250ms), purposeful, no gratuitous animation
-
-Jakub: production polish
-
-Jhey: a touch of delight in the success state
-
-Let me write clean code. Use CSS modules? Better to keep self-contained with a <style> block or inline styles + tailwind? Unknown project setup. Safer: use plain CSS-in-component via a <style jsx>? That requires styled-jsx. Hmm.
-
-Given "Liquid Glass", I'll write it with Tailwind classes since most Next projects have Tailwind, but add a scoped <style> tag for keyframes and glass specifics. Actually mixing is fine — a plain <style> tag with keyframes works anywhere.
-
-Let me be careful: Tailwind arbitrary values with quotes inside JSON need escaping. That's a lot of escaping risk. Maybe better to use CSS modules... but a single file. I'll use a <style> block with plain CSS classes to avoid tons of escaping, and it's guaranteed to work. Actually a <style> inside JSX in a client component is fine in React 18/19 (React hoists style tags). Yes, React 19 supports <style> in components. React 18 also renders it fine (just not hoisted). It works.
-
-I'll write semantic class names and a scoped style block. That avoids Tailwind dependency entirely. Good.
-
-Let me write the code.
-
-Structure:
+Let me design the component.
 
 tsx
 'use client';
 
-import { useState, useRef, useEffect, useId, useCallback } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react';
 
-Form fields: full name, email, password, confirm password. Or keep simple: name, email, password. Add terms checkbox.
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
-Features:
+type FieldName = 'name' | 'email' | 'password' | 'confirm';
+type Errors = Partial<Record<FieldName | 'terms', string>>;
+type Touched = Partial<Record<FieldName | 'terms', boolean>>;
+type Status = 'idle' | 'submitting' | 'success';
 
-Progressive validation on blur, not on every keystroke (Emil: don't nag).
+/* ------------------------------------------------------------------ */
+/*  Validation                                                         */
+/* ------------------------------------------------------------------ */
 
-Password strength meter with 4 segments, animated width.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-Show/hide password with icon.
+function scorePassword(pw: string): { score: 0|1|2|3|4; label: string } {
+  if (!pw) return { score: 0, label: '' };
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^\w\s]/.test(pw)) score++;
+  const clamped = Math.min(4, score) as 0|1|2|3|4;
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  return { score: clamped, label: labels[clamped] };
+}
 
-Submit button with loading spinner and success morph.
+function validate(values: Record<FieldName, string>, terms: boolean): Errors {
+  const errors: Errors = {};
+  if (values.name.trim().length < 2) errors.name = 'Enter your full name.';
+  if (!EMAIL_RE.test(values.email.trim())) errors.email = 'Enter a valid email address.';
+  if (values.password.length < 8) errors.password = 'Use at least 8 characters.';
+  else if (scorePassword(values.password).score < 2) errors.password = 'Add a number or symbol to strengthen it.';
+  if (values.confirm !== values.password) errors.confirm = 'Passwords do not match.';
+  if (!terms) errors.terms = 'Please accept the terms to continue.';
+  return errors;
+}
 
-Caps lock detection — nice touch.
+Then component.
 
-Reduced motion support.
+I'll build the JSX with icons as inline SVGs.
 
-Focus ring animation.
+Structure:
 
-Staggered entrance of fields.
+shell (aurora background)
 
-Error message animation (subtle slide+fade, not shake — but shake could be OK; Emil would say subtle).
+card
 
-Accessibility: aria-invalid, aria-describedby, role=alert, live regions.
+header (title, subtitle)
 
-Liquid glass visuals:
+form
 
-Background with animated aurora blobs
+field name
 
-Card: backdrop-filter blur(24px) saturate(180%), background gradient white/10, border 1px rgba(255,255,255,0.18), inset highlight via box-shadow inset 0 1px 0 rgba(255,255,255,0.4)
+field email
 
-Inputs: glass inset
+field password (with strength meter, caps lock hint)
 
-Specular sheen that follows pointer (Jhey touch) — maybe subtle, on the button.
+field confirm
 
-Let's include a subtle pointer-tracked sheen on the primary button. Keep it performant with CSS vars.
+terms checkbox
 
-Motion timings:
+submit button with sheen
 
-Enter: 400ms with cubic-bezier(0.16, 1, 0.3, 1) staggered 40ms
+success overlay
 
-Field focus: 160ms
+footer link to sign in
 
-Button press: scale(0.985) 100ms
+Let me handle the success state: after submit, morph form into success panel.
 
-Error: 180ms fade+4px slide
+Motion: staggered entrance using CSS animation-delay via inline style --i.
 
-Success: morph to checkmark 320ms
+Let me write CSS carefully.
 
-Reduced motion: disable transforms, keep opacity.
+Key CSS bits:
 
-Validation logic:
+css
+.hx-shell {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 20px;
+  overflow: hidden;
+  background: #05060a;
+  color: #f4f5f7;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 
-email regex
+Aurora:
 
-password: min 8 chars, and strength scoring
+css
+.hx-aurora { position: absolute; inset: -20%; pointer-events: none; filter: blur(70px); }
+.hx-aurora span { position: absolute; display: block; border-radius: 50%; opacity: .55; mix-blend-mode: screen; }
+.hx-aurora span:nth-child(1) { width: 46vmax; height: 46vmax; left: -8vmax; top: -6vmax; background: radial-gradient(circle at 30% 30%, #6d5efc, transparent 62%); animation: hx-drift-a 26s ease-in-out infinite alternate; }
+...
 
-name: min 2 chars
+Card:
 
-confirm match
+css
+.hx-card {
+  position: relative;
+  width: min(440px, 100%);
+  border-radius: 26px;
+  padding: 34px 30px 30px;
+  background:
+    linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.045) 42%, rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.35) inset,
+    0 -1px 0 rgba(255,255,255,0.06) inset,
+    0 30px 70px -30px rgba(0,0,0,0.85),
+    0 0 0 1px rgba(0,0,0,0.3);
+  backdrop-filter: blur(26px) saturate(170%);
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  animation: hx-card-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
 
-terms accepted
+Add a specular highlight pseudo-element:
 
-Submit: simulated async, then success state.
+css
+.hx-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(140deg, rgba(255,255,255,0.6), rgba(255,255,255,0) 38%, rgba(255,255,255,0) 62%, rgba(255,255,255,0.22));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
 
-Let me write it.
+Hmm -webkit-mask-composite: xor — fine.
 
-Also useId for ids.
+Fields:
 
-I'll write the code now carefully.
+css
+.hx-field { display: grid; gap: 7px; animation: hx-rise 520ms cubic-bezier(0.16,1,0.3,1) both; animation-delay: calc(var(--i, 0) * 55ms + 90ms); }
+.hx-label { font-size: 12.5px; font-weight: 560; letter-spacing: 0.01em; color: rgba(244,245,247,0.72); }
+.hx-input-wrap { position: relative; display: flex; align-items: center; }
+.hx-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  color: inherit;
+  font-size: 14.5px;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 200ms ease, transform 160ms ease;
+  outline: none;
+}
+
+Focus state: border-color rgba(150,140,255,.55), box-shadow 0 0 0 4px rgba(120,110,255,.16).
+
+Error state: border-color rgba(255,110,120,.55).
+
+Transitions: 160-200ms — Emil-approved.
+
+Button:
+
+css
+.hx-submit {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 50px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.22);
+  background: linear-gradient(180deg, #7b6bf5, #5b4be0);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 160ms ease, box-shadow 200ms ease;
+  box-shadow: 0 10px 30px -12px rgba(108,92,240,0.9), inset 0 1px 0 rgba(255,255,255,0.34);
+}
+.hx-submit:hover { filter: brightness(1.07); }
+.hx-submit:active { transform: scale(0.986); }
+
+Sheen:
+
+css
+.hx-submit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.35), transparent 65%);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+.hx-submit:hover::after { opacity: 1; }
+
+Strength meter:
+
+css
+.hx-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 2px; }
+.hx-meter i { height: 3px; border-radius: 99px; background: rgba(255,255,255,0.12); transition: background 260ms ease; }
+
+Set colors via data-score on parent.
+
+Caps lock hint: small text.
+
+Checkbox: custom.
+
+Error text:
+
+css
+.hx-error {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: #ff9aa4;
+  animation: hx-error-in 200ms cubic-bezier(0.16,1,0.3,1) both;
+}
+
+Keyframes:
+
+css
+@keyframes hx-card-in { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
+@keyframes hx-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes hx-error-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+
+Reduced motion:
+
+css
+@media (prefers-reduced-motion: reduce) {
+  .hx-shell *, .hx-shell *::before, .hx-shell *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+Success panel: checkmark draw animation.
+
+Now the JSX. Let me write it.
+
+I also need useId for ids, but the base id derived. Fine.
+
+Handle blur validation, submit validation, and clearing errors on change once touched.
+
+Let me write the component body.
+
+tsx
+export default function SignUpPage() {
+  const uid = useId();
+  const [values, setValues] = useState<Record<FieldName, string>>({ name: '', email: '', password: '', confirm: '' });
+  const [terms, setTerms] = useState(false);
+  const [touched, setTouched] = useState<Touched>({});
+  const [errors, setErrors] = useState<Errors>({});
+  const [status, setStatus] = useState<Status>('idle');
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [capsLock, setCapsLock] = useState(false);
+  const submitRef = useRef<HTMLButtonElement>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  ...
+}
+
+Recompute errors live once a field has been touched — better: on submit all touched.
+
+tsx
+const liveErrors = useMemo(() => validate(values, terms), [values, terms]);
+
+Then displayed error for field = touched[field] ? liveErrors[field] : errors[field] (from submit attempt). Simpler: keep attempted boolean; show error if touched[field] || attempted.
+
+Let me use that.
+
+tsx
+const shownErrors = (field: FieldName | 'terms') =>
+  (touched[field] || attempted) ? liveErrors[field] : undefined;
+
+But we want error to disappear when corrected. Yes, liveErrors handles it.
+
+But we also want a small animation trigger on change. Using key={message} on the error element re-triggers animation. Good.
+
+Handle submit:
+
+tsx
+async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  setAttempted(true);
+  if (Object.keys(liveErrors).length > 0) {
+    const first = (['name','email','password','confirm'] as FieldName[]).find(f => liveErrors[f]) ?? (liveErrors.terms ? 'terms' : null);
+    if (first) document.getElementById(`${uid}-${first}`)?.focus();
+    return;
+  }
+  setStatus('submitting');
+  // TODO: replace with your real signup call
+  await new Promise(r => setTimeout(r, 1100));
+  setStatus('success');
+}
+
+Actually real code should call an API. I'll keep a clearly marked fetch to /api/signup with a fallback? Better to keep it honest: a commented placeholder with a simulated await. Hmm, "fix bugs, optimize logic". I'll do a fetch to '/api/auth/signup' but that would break in a demo. I'll keep the simulated await with a clear TODO comment. That's safest.
+
+Now let's write JSX.
+
+tsx
+return (
+  <main className="hx-shell">
+    <div className="hx-aurora" aria-hidden="true">
+      <span /><span /><span /><span />
+    </div>
+
+    <section className="hx-card" aria-labelledby={`${uid}-title`}>
+      <header className="hx-head">
+        <div className="hx-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" ...>
+        </div>
+        <h1 id={`${uid}-title`} className="hx-title">Create your account</h1>
+        <p className="hx-sub">Start building in under a minute.</p>
+      </header>
+
+      {status === 'success' ? (
+        <div className="hx-success" role="status">
+          ...
+        </div>
+      ) : (
+        <form className="hx-form" onSubmit={handleSubmit} noValidate>
+          ...
+        </form>
+      )}
+    </section>
+  </main>
+);
+
+Field markup (repeated 4x, I'll just write it out; or create a small inner component — but keeping in one file with a helper function is fine).
+
+Let me write a Field component inside the file for cleanliness? Inline repeated is more verbose but avoids prop complexity. I'll make a small local component Field — cleaner. But it needs many props. Let me just repeat the markup; it's clearer for the reader and safer.
+
+Actually, let me use a small internal component to reduce bugs. Hmm, hooks inside... no hooks needed. Fine.
+
+I'll write it out inline for the 4 fields to keep control of details (password has extras).
+
+Let me finalize the code and then escape for JSON.
+
+Actually — significant escaping effort. Let me use single quotes in JS strings and avoid double quotes in JSX attributes? JSX attributes require double quotes... in JSX you can use single quotes for attributes: <div className='x'> is valid JSX. But className is camelCase and value can be single-quoted in JSX? Yes: <div className='foo' /> is valid JSX. But standard style is double quotes. In JSON I must escape them anyway. It's mechanical.
+
+Alternatively — I could avoid the JSON escaping issue... no, requirement is explicit.
+
+OK. Let me just write the file content with double quotes as normal and escape them all in the JSON. I'll be systematic.
+
+Let me write the final file content now.
 
 tsx
 'use client';
@@ -120,199 +388,97 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type KeyboardEvent,
 } from 'react';
 
-Types:
+/* ------------------------------------------------------------------ */
+/*  Types                                                              */
+/* ------------------------------------------------------------------ */
 
-tsx
 type FieldName = 'name' | 'email' | 'password' | 'confirm';
-type Errors = Partial<Record<FieldName | 'terms', string>>;
+type FieldKey = FieldName | 'terms';
+type Errors = Partial<Record<FieldKey, string>>;
+type Touched = Partial<Record<FieldKey, boolean>>;
+type Status = 'idle' | 'submitting' | 'success';
 
-Strength calc function.
+const FIELDS: FieldName[] = ['name', 'email', 'password', 'confirm'];
 
-Let me write out the whole thing.
+/* ------------------------------------------------------------------ */
+/*  Validation                                                         */
+/* ------------------------------------------------------------------ */
 
-For the "caps lock" detection: onKeyUp/onKeyDown getModifierState('CapsLock').
-
-For the sheen: onPointerMove set CSS vars --mx, --my.
-
-Let me write CSS.
-
-css
-.hx-shell {
-  --glass-bg: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
-  ...
-}
-
-Full CSS:
-
-css
-.hx-shell {
-  position: relative;
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  overflow: hidden;
-  background: #06060a;
-  color: #f5f5f7;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
-
-.hx-aurora { position:absolute; inset:-20%; filter: blur(80px); opacity: .55; pointer-events:none; }
-.hx-blob { position:absolute; border-radius:50%; }
-
-I'll do three blobs with different colors, animated slowly.
-
-Careful with filter: blur(80px) perf — fine.
-
-Actually to keep it clean, use radial gradients on a single div + two animated blobs.
-
-Card:
-
-css
-.hx-card {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  padding: 32px 28px 28px;
-  border-radius: 28px;
-  background: linear-gradient(160deg, rgba(255,255,255,.13), rgba(255,255,255,.045) 46%, rgba(255,255,255,.03));
-  border: 1px solid rgba(255,255,255,.16);
-  box-shadow:
-    0 1px 0 0 rgba(255,255,255,.28) inset,
-    0 -1px 0 0 rgba(255,255,255,.06) inset,
-    0 24px 60px -12px rgba(0,0,0,.6),
-    0 8px 24px -8px rgba(0,0,0,.4);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-}
-
-Note backdrop-filter with heavy blur — fine.
-
-Add a top-edge specular line pseudo-element.
-
-Field:
-
-css
-.hx-field { display: grid; gap: 6px; }
-.hx-input-wrap { position: relative; }
-.hx-input {
-  width: 100%;
-  height: 48px;
-  padding: 0 44px 0 14px;
-  border-radius: 14px;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.12);
-  color: inherit;
-  font-size: 15px;
-  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
-  outline: none;
-}
-.hx-input:hover { background: rgba(255,255,255,.07); }
-.hx-input:focus {
-  background: rgba(255,255,255,.09);
-  border-color: rgba(140,170,255,.6);
-  box-shadow: 0 0 0 3px rgba(110,140,255,.18);
-}
-
-Error state border red.
-
-Label small, uppercase-ish, letterspacing.
-
-Error message: height animation? Use grid-template-rows trick or just fade/slide with max-height. Simpler: .hx-error { animation: errIn .18s ease both } and keep it in the DOM conditionally.
-
-Password strength meter: 4 bars.
-
-Submit button:
-
-css
-.hx-submit {
-  position: relative;
-  width: 100%;
-  height: 50px;
-  border-radius: 15px;
-  border: 1px solid rgba(255,255,255,.22);
-  background: linear-gradient(180deg, #6f8cff, #4a63f0);
-  ...
-}
-
-Hmm, maybe make button a glass-white primary? Liquid glass typically uses a tinted glass. I'll do a soft blue-violet gradient with inset highlight.
-
-Sheen: ::after with radial-gradient at var(--mx) var(--my).
-
-Loading spinner: conic gradient or SVG.
-
-Success state: replace form with a check + message, animated with a stroke-dashoffset draw.
-
-Let's write the check SVG with stroke-dasharray animation.
-
-OK, write it.
-
-Also add "Continue with Google" button? Keep it — a divider + ghost button. That adds realism. Maybe keep it minimal to reduce risk. I'll include one social button — it's a signup page; fine.
-
-Hmm, keep file manageable. I'll include it.
-
-Let me now write the full component.
-
-tsx
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function scorePassword(pw: string) {
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (pw.length >= 12) score++;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
-  if (/\d/.test(pw)) score++;
-  if (/[^\w\s]/.test(pw)) score++;
-  return Math.min(4, score);
+  if (!pw) return { score: 0, label: '' };
+  let raw = 0;
+  if (pw.length >= 8) raw += 1;
+  if (pw.length >= 12) raw += 1;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) raw += 1;
+  if (/\d/.test(pw)) raw += 1;
+  if (/[^\w\s]/.test(pw)) raw += 1;
+  const score = Math.min(4, raw) as 0 | 1 | 2 | 3 | 4;
+  return { score, label: ['', 'Weak', 'Fair', 'Good', 'Strong'][score] };
 }
 
-Hmm scoring: return 0..4.
+function validate(values: Record<FieldName, string>, terms: boolean): Errors {
+  const errors: Errors = {};
 
-Labels: 'Too short', 'Weak', 'Fair', 'Good', 'Strong'.
+  if (values.name.trim().length < 2) {
+    errors.name = 'Enter your full name.';
+  }
 
-validate function:
+  if (!values.email.trim()) errors.email = 'Enter your email address.';
+  else if (!EMAIL_RE.test(values.email.trim())) errors.email = 'That email doesn’t look right.';
 
-tsx
-function validate(values, touched)...
+  if (values.password.length < 8) {
+    errors.password = 'Use at least 8 characters.';
+  } else if (scorePassword(values.password).score < 2) {
+    errors.password = 'Add a number or symbol to strengthen it.';
+  }
 
-I'll do per-field validators:
+  if (!values.confirm) errors.confirm = 'Re-enter your password.';
+  else if (values.confirm !== values.password) errors.confirm = 'Passwords don’t match.';
 
-tsx
-const validators = {
-  name: (v) => v.trim().length < 2 ? 'Enter your full name.' : '',
-  email: (v) => !v ? 'Email is required.' : EMAIL_RE.test(v.trim()) ? '' : 'That email doesn’t look right.',
-  password: (v) => v.length < 8 ? 'Use at least 8 characters.' : '',
-  confirm: (v) => v !== password ? 'Passwords don’t match.' : '',
+  if (!terms) errors.terms = 'Please accept the terms to continue.';
+
+  return errors;
 }
 
-I'll implement inside component with useCallback.
+Careful: I used doesn’t with a curly apostrophe — fine in JSON.
 
-State: values, errors, touched, submitting, submitted, capsLock, showPassword.
+Now the component.
 
-On submit: mark all touched, compute errors, if any -> focus first invalid. Else submit.
+I'll include icons: mail, lock, eye, eye-off, check, alert.
 
-Simulated submit with await new Promise(r => setTimeout(r, 900)).
+Let me write.
 
-Cleanup: guard against unmount with ref.
+For the field inputs, aria-invalid, aria-describedby.
 
-Let's write it.
+Let me write out the whole JSX now mentally and then produce.
 
-For the staggered entrance, use CSS variable --i on each row and animation-delay: calc(var(--i) * 50ms).
+I'll include an Icon map object at module level.
 
-Alright, writing the final file.
+Writing:
 
-Also respect prefers-reduced-motion in CSS via media query.
+tsx
+const ICON = {
+  user: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.6" />
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
+    </svg>
+  ),
+  ...
+};
 
-Also @media (prefers-reduced-motion: reduce) → animation: none.
+That's fine but verbose in JSON. Keep it modest.
 
-Let me write out.
+Alternatively inline the SVG in each field. Same length. I'll use the map.
 
-One more: the "liquid glass" specular top highlight — .hx-card::before with a 1px gradient line at top.
+Let me now produce final code.
 
-Final code:
+I'll write it out fully:
 
 tsx
 'use client';
@@ -321,171 +487,12 @@ import {
   useCallback,
   useEffect,
   useId,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
-  type PointerEvent as ReactPointerEvent,
+  type KeyboardEvent,
 } from 'react';
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
 type FieldName = 'name' | 'email' | 'password' | 'confirm';
-type Values = Record<FieldName, string>;
-type Errors = Partial<Record<FieldName | 'terms', string>>;
-
-const INITIAL: Values = { name: '', email: '', password: '', confirm: '' };
-
-strength:
-
-tsx
-function passwordStrength(pw: string) {
-  if (!pw) return 0;
-  let s = 0;
-  if (pw.length >= 8) s += 1;
-  if (pw.length >= 12) s += 1;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s += 1;
-  if (/\d/.test(pw)) s += 1;
-  if (/[^A-Za-z0-9]/.test(pw)) s += 1;
-  return Math.min(4, s);
-}
-const STRENGTH_LABEL = ['Too short', 'Weak', 'Fair', 'Good', 'Strong'];
-
-Note score 0 when empty or <8 chars → label 'Too short'. But if pw is 10 chars lowercase only, s = 1 → 'Weak'. Fine.
-
-Component.
-
-tsx
-export default function SignupPage() {
-  const [values, setValues] = useState<Values>(INITIAL);
-  const [errors, setErrors] = useState<Errors>({});
-  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
-  const [terms, setTerms] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [capsLock, setCapsLock] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'done'>('idle');
-  const formRef = useRef<HTMLFormElement>(null);
-  const alive = useRef(true);
-  const uid = useId();
-  const strength = passwordStrength(values.password);
-
-alive cleanup effect.
-
-validateField callback:
-
-tsx
-const validateField = useCallback((field: FieldName, v: Values, checked: boolean): string => {
-  switch (field) {
-    case 'name':
-      return v.name.trim().length < 2 ? 'Enter your full name.' : '';
-    case 'email':
-      return !v.email.trim() ? 'Email is required.' : EMAIL_RE.test(v.email.trim()) ? '' : 'That email doesn’t look right.';
-    case 'password':
-      return v.password.length < 8 ? 'Use at least 8 characters.' : '';
-    case 'confirm':
-      return v.confirm !== v.password ? 'Passwords don’t match.' : '';
-  }
-}, []);
-
-Hmm the checked param unused — drop it.
-
-runValidation returns Errors.
-
-tsx
-const collectErrors = useCallback((v: Values, accepted: boolean): Errors => {
-  const next: Errors = {};
-  (['name','email','password','confirm'] as FieldName[]).forEach((f) => {
-    const msg = validateField(f, v);
-    if (msg) next[f] = msg;
-  });
-  if (!accepted) next.terms = 'Please accept the terms to continue.';
-  return next;
-}, [validateField]);
-
-handleChange:
-
-tsx
-const setField = (field: FieldName) => (e: ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  setValues((prev) => {
-    const next = { ...prev, [field]: value };
-    setErrors((prevErr) => {
-      const copy = { ...prevErr };
-      if (touched[field]) { // live-correct only after blur
-        const msg = validateField(field, next);
-        if (msg) copy[field] = msg; else delete copy[field];
-      }
-      if (field === 'password' && touched.confirm) {
-        const msg = validateField('confirm', next);
-        if (msg) copy.confirm = msg; else delete copy.confirm;
-      }
-      return copy;
-    });
-    return next;
-  });
-};
-
-Calling setErrors inside setValues updater is a side-effect in a reducer — not ideal in StrictMode (updater may run twice). Better compute outside:
-
-tsx
-const handleChange = (field: FieldName) => (e) => {
-  const value = e.target.value;
-  const next = { ...values, [field]: value };
-  setValues(next);
-  if (touched[field]) {
-    setErrors((prev) => {
-      const copy = { ...prev };
-      const msg = validateField(field, next);
-      if (msg) copy[field] = msg; else delete copy[field];
-      return copy;
-    });
-  }
-  if (field === 'password' && touched.confirm) {
-    setErrors((prev) => {
-      const copy = { ...prev };
-      const msg = validateField('confirm', next);
-      if (msg) copy.confirm = msg; else delete copy.confirm;
-      return copy;
-    });
-  }
-};
-
-Slightly duplicative but safe. Could merge but fine — merge into one setErrors call:
-
-tsx
-  const patch: Errors = {};
-  ...
-
-Let me just do a single setErrors with a helper. I'll write:
-
-tsx
-const revalidate = (field: FieldName, next: Values) => {
-  if (!touched[field]) return;
-  ...
-}
-
-Meh. I'll keep the merged version:
-
-tsx
-const handleChange = (field: FieldName) => (e: ChangeEvent<HTMLInputElement>) => {
-  const value = e.target.value;
-  const next = { ...values, [field]: value };
-  setValues(next);
-  setErrors((prev) => {
-    const copy = { ...prev };
-    const fieldsToCheck: FieldName[] = [];
-    if (touched[field]) fieldsToCheck.push(field);
-    if (field === 'password' && touched.confirm) fieldsToCheck.push('confirm');
-    for (const f of fieldsToCheck) {
-      const msg = validateField(f, next);
-      if (msg) copy[f] = msg; else delete copy[f];
-    }
-    return copy;
-  });
-};
-
-Good.
-
-handleBlur:
-
-tsx
-const handleBlur = (field: FieldName
+type FieldKey = FieldName | 'terms
