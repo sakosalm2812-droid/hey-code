@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\chat\file-upload.tsx
+CURRENT CODE:
 'use client';
 
 import { useState, useRef } from 'react';
@@ -177,92 +275,6 @@ export function FileUpload({
       onDrop={handleDrop}
     >
       <input
-        ref={fileInputRef}
-        type="file"
-        multiple
-        accept={accept.join(',')}
-        onChange={handleInputChange}
-        className="hidden"
-        id="file-upload"
-        disabled={disabled || files.length >= maxFiles}
-      />
-
-      <div className="text-center">
-        <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <p className="text-lg font-medium mb-1">
-          {dragActive ? 'Drop files here...' : 'Drag & drop files here, or click to browse'}
-        </p>
-        <p className="text-sm text-muted-foreground mb-4">
-          Supports: PDF, images, text, JSON, CSV (max 10MB each, {maxFiles} files max)
-        </p>
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={disabled || files.length >= maxFiles}
-          className="gap-2"
-        >
-          <FileText className="h-4 w-4" />
-          Browse Files
-        </Button>
-      </div>
-
-      {files.length > 0 && (
-        <div className="mt-6 space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium">Selected Files ({files.length}/{maxFiles})</h4>
-            {files.some(f => f.status === 'pending') && (
-              <Button size="sm" onClick={uploadFiles} disabled={files.every(f => f.status !== 'pending')}>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Upload All
-              </Button>
-            )}
-          </div>
-          
-          <div className="space-y-2 max-h-60 overflow-y-auto">
-            {files.map((file) => (
-              <div 
-                key={file.id} 
-                className={cn(
-                  'flex items-center gap-3 p-3 rounded-lg border',
-                  file.status === 'error' && 'border-destructive bg-destructive/5',
-                  file.status === 'completed' && 'border-green-500/50 bg-green-500/5'
-                )}
-              >
-                <div className="p-2 rounded bg-muted">{getFileIcon(file.file.type)}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{file.file.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(file.file.size / 1024).toFixed(1)} KB • {file.file.type}
-                  </p>
-                  {file.status === 'uploading' && (
-                    <div className="mt-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary rounded-full transition-all" 
-                        style={{ width: `${file.progress}%` }} 
-                      />
-                    </div>
-                  )}
-                  {file.status === 'error' && (
-                    <p className="mt-1 text-xs text-destructive">{file.error}</p>
-                  )}
-                  {file.status === 'completed' && (
-                    <p className="mt-1 text-xs text-green-600">Uploaded successfully</p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={() => removeFile(file.id)}
-                  disabled={file.status === 'uploading'}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+        ref={f
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
