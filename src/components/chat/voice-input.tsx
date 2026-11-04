@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\chat\voice-input.tsx
+CURRENT CODE:
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -177,311 +275,6 @@ export function VoiceInput({
         setIsListening(false);
         return;
       }
-      if (RECOGNITION_RETRIABLE_ERRORS.includes(event.error) && !isMuted) {
-        setError(event.error);
-        scheduleRestart(400);
-      } else if (event.error === 'no-speech') {
-        setError('No speech detected');
-      }
-    };
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      if (isMuted) return;
-      let finalText = '';
-      let interim = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalText += result[0].transcript;
-        } else {
-          interim += result[0].transcript;
-        }
-      }
-
-      const combined = (finalText + ' ' + interim).trim();
-      if (combined) onInterim?.(combined);
-
-      if (finalText.trim()) {
-        handleFinal(finalText);
-      }
-    };
-
-    const startListening = () => {
-      if (isMuted) return;
-      try {
-        recognition.start();
-        startRequested = true;
-      } catch (e) {
-        setError('Failed to start recognition');
-      }
-    };
-
-    const stopListening = () => {
-      stopRecognition();
-      onInterim?.('');
-    };
-
-    (window as any).__voiceStart = startListening;
-    (window as any).__voiceStop = stopListening;
-
-    return () => {
-      disposed = true;
-      if (restartTimer) clearTimeout(restartTimer);
-      try {
-        recognition.abort();
-      } catch {}
-      recognitionRef.current = null;
-      (window as any).__voiceStart = undefined;
-      (window as any).__voiceStop = undefined;
-    };
-  }, [language, isMuted, handleFinal, applyWakeWord, onInterim, onTranscript]);
-
-  useEffect(() => {
-    setIsMuted(muted);
-  }, [muted]);
-
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
-
-    const setup = async () => {
-      try {
-        const monitor = await startMicMonitor();
-        if (monitorRef.current) monitorRef.current.cleanup();
-        monitorRef.current = monitor;
-
-        interval = setInterval(() => {
-          const rms = monitor.level();
-          rmsRef.current = rms;
-          setLevel(rms);
-          const freq = monitor.getFrequencyData();
-          const step = Math.max(1, Math.floor(freq.length / 16));
-          const nextBars: number[] = [];
-          for (let i = 0; i < 16; i++) {
-            const slice = Array.from(freq.slice(i * step, (i + 1) * step));
-            nextBars.push(
-              Math.min(1, (slice.reduce((a, b) => a + b, 0) / Math.max(1, slice.length)) / 255)
-            );
-          }
-          setBars(nextBars);
-        }, 80);
-      } catch {
-        setError('Microphone unavailable');
-      }
-    };
-
-    setup();
-
-    return () => {
-      if (interval) clearInterval(interval);
-      monitorRef.current?.cleanup();
-      monitorRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isMuted || !onSpeech) return;
-    const poll = setInterval(() => {
-      if (isEnergyAbove(monitorRef.current, 0.12)) onSpeech();
-    }, 180);
-    return () => clearInterval(poll);
-  }, [isMuted, onSpeech]);
-
-  const setCurrentLevelRms = (v: number) => {
-    rmsRef.current = v;
-  };
-
-  useEffect(() => {
-    if (isMuted) {
-      setLevel(0);
-      setBars(Array(16).fill(0));
-      onInterim?.('');
-      try {
-        recognitionRef.current?.stop();
-      } catch {}
-    }
-    if (!isHandsFree && !isMuted) {
-      try {
-        recognitionRef.current?.stop();
-      } catch {}
-    }
-  }, [isMuted, isHandsFree, onInterim]);
-
-  if (!isSupported) {
-    return (
-      <Button
-        variant="outline"
-        size="icon"
-        className="h-10 w-10"
-        disabled
-        title="Voice input not supported in this browser"
-      >
-        <MicOff className="h-5 w-5 text-muted-foreground" />
-      </Button>
-    );
-  }
-
-  const toggleMute = () => {
-    setIsMuted(m => !m);
-    if (!isMuted) {
-      try {
-        recognitionRef.current?.stop();
-      } catch {}
-    }
-  };
-
-  const toggleHandsFree = () => {
-    setIsHandsFree(hf => {
-      const next = !hf;
-      if (next && !isMuted) {
-        try {
-          recognitionRef.current?.start();
-        } catch {}
-      }
-      return next;
-    });
-  };
-
-  const endSession = () => {
-    setIsMuted(true);
-    try {
-      recognitionRef.current?.abort();
-    } catch {}
-    monitorRef.current?.cleanup();
-    monitorRef.current = null;
-    setLevel(0);
-    setBars(Array(16).fill(0));
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant={isListening ? 'default' : 'outline'}
-          size="icon"
-          className={cn('h-10 w-10 transition-colors', isListening && 'bg-primary text-primary-foreground animate-pulse')}
-          onClick={() => {
-            if (isListening) {
-              try {
-                recognitionRef.current?.stop();
-              } catch {}
-            } else {
-              try {
-                recognitionRef.current?.start();
-                setIsMuted(false);
-              } catch {
-                setError('Failed to start recognition');
-              }
-            }
-          }}
-          disabled={disabled}
-          aria-label={isListening ? 'Stop listening' : 'Start voice input'}
-          aria-pressed={isListening}
-        >
-          {isListening ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mic className="h-5 w-5" />}
-        </Button>
-
-        <Button
-          variant={isMuted ? 'default' : 'outline'}
-          size="icon"
-          className="h-10 w-10"
-          onClick={toggleMute}
-          disabled={disabled}
-          aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
-          aria-pressed={isMuted}
-        >
-          {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
-        </Button>
-
-        <Button
-          variant={isHandsFree ? 'default' : 'outline'}
-          size="sm"
-          className="h-10 gap-1.5"
-          onClick={toggleHandsFree}
-          disabled={disabled}
-          aria-pressed={isHandsFree}
-        >
-          <Radio className={cn('h-4 w-4', isHandsFree && 'animate-pulse')} />
-          Hands-free
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-10 gap-1.5 select-none touch-none"
-          disabled={disabled}
-          aria-label="Push to talk (hold)"
-          onPointerDown={() => {
-            if (!isHandsFree && !isMuted) {
-              try {
-                recognitionRef.current?.start();
-              } catch {}
-            }
-          }}
-          onPointerUp={() => {
-            if (!isListening) return;
-            try {
-              recognitionRef.current?.stop();
-            } catch {}
-          }}
-          onPointerLeave={() => {
-            if (isListening) {
-              try {
-                recognitionRef.current?.stop();
-              } catch {}
-            }
-          }}
-        >
-          <Mic className="h-4 w-4" />
-          Push-to-talk
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-10 w-10"
-          onClick={endSession}
-          disabled={disabled}
-          aria-label="End voice session"
-        >
-          <Square className="h-4 w-4" />
-        </Button>
-      </div>
-
-      <div className="flex items-end h-10 gap-[3px]">
-        {bars.map((b, i) => (
-          <div
-            key={i}
-            className="flex-1 rounded-sm bg-primary/70 transition-all duration-75"
-            style={{ height: `${Math.max(6, b * 100)}%` }}
-          />
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-primary/40 to-primary transition-all duration-75"
-            style={{ width: `${Math.min(100, Math.max(2, level * 180))}%` }}
-          />
-        </div>
-        <span className="text-[10px] text-muted-foreground tabular-nums">{Math.round(level * 100)}%</span>
-      </div>
-
-      {isListening && (
-        <div className="rounded-lg border border-border bg-popover px-3 py-2 text-xs text-popover-foreground animate-fade-in">
-          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-destructive animate-pulse align-middle" />
-          Listening...
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-lg bg-destructive/10 border border-destructive px-3 py-2 text-xs text-destructive animate-fade-in">
-          Error: {error}
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default VoiceInput;
+      if (RECOGNI
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
