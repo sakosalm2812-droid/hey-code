@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\about\page.tsx
+CURRENT CODE:
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -124,217 +222,6 @@ export default function AboutPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-from)_0%,_transparent_65%)] from-primary/10 to-transparent" />
           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-4xl mx-auto">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8">
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                About HEY
-              </div>
-              <h1
-                id="about-heading"
-                className="mb-6 text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl text-balance"
-              >
-                Your AI Assistant{' '}
-                <span className="gradient-text">Like Jarvis</span>
-              </h1>
-              <p className="mb-10 text-lg text-muted-foreground sm:text-xl max-w-2xl mx-auto text-balance">
-                HEY brings frontier models, your memories, your files, your voice, and your team
-                into one calm, focused conversation surface — so the best assistant feels less like
-                another tab and more like a teammate.
-              </p>
-              <p
-                className="mb-10 text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground"
-                aria-label="HEY brand line"
-              >
-                No limits to the sky.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button asChild size="xl" variant="gradient">
-                  <Link href="/signup">
-                    Start Free — No Credit Card
-                  </Link>
-                </Button>
-                <Button asChild size="xl" variant="outline">
-                  <Link href="/dashboard/chats/new">
-                    Open Your Conversations
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 lg:py-28" aria-labelledby="story-heading">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 id="story-heading" className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                Our story
-              </h2>
-              <p className="text-lg text-muted-foreground text-balance">
-                HEY grew out of a simple frustration: powerful AI was scattered across tabs, apps,
-                and providers — none of it remembering you. We built HEY as the single surface where
-                the best available models, your knowledge, and your team can meet, without the noise.
-              </p>
-            </div>
-            <div className="grid gap-6 md:grid-cols-3">
-              {pillars.map((value) => (
-                <Card key={value.title} className="text-center p-8">
-                  <value.icon className="h-10 w-10 mx-auto text-primary mb-4" aria-hidden="true" />
-                  <h3 className="text-lg font-semibold mb-2">{value.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{value.body}</p>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 lg:py-28 bg-muted/30 border-y border-border" aria-labelledby="capabilities-heading">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 id="capabilities-heading" className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                What HEY does
-              </h2>
-              <p className="text-lg text-muted-foreground text-balance">
-                A few of the things you can do with HEY today. More is on the way.
-              </p>
-            </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              {capabilities.map((feature) => (
-                <Card key={feature.title} className="p-8 transition-colors hover:border-primary/40">
-                  <div className="flex items-start gap-4">
-                    <div className="rounded-lg bg-primary/10 p-3 shrink-0" aria-hidden="true">
-                      <feature.icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold mb-1.5">{feature.title}</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{feature.body}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="py-20 lg:py-28" aria-labelledby="privacy-heading">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-              <div>
-                <h2 id="privacy-heading" className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                  How we think about privacy
-                </h2>
-                <p className="text-lg text-muted-foreground text-balance mb-8">
-                  Privacy is a product decision, not a policy footnote. Here is what HEY is built
-                  around today — and the full details live in our{' '}
-                  <Link href="/privacy" className="text-primary hover:underline font-medium">
-                    Privacy Policy
-                  </Link>
-                  .
-                </p>
-                <Button asChild variant="outline">
-                  <Link href="/privacy">
-                    Read the Privacy Policy
-                    <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-                  </Link>
-                </Button>
-              </div>
-              <ul className="space-y-4" role="list">
-                {privacyCommitments.map((commitment) => (
-                  <li
-                    key={commitment}
-                    className="flex items-start gap-3 rounded-lg border border-border bg-card p-4"
-                  >
-                    <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" aria-hidden="true" />
-                    <span className="text-sm text-muted-foreground leading-relaxed">{commitment}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section className="pb-20 lg:pb-28" aria-labelledby="team-heading">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 id="team-heading" className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                The team
-              </h2>
-              <p className="text-lg text-muted-foreground text-balance">
-                HEY is built by a small, focused team of engineers, designers, and AI researchers
-                who believe the next interface worth building is the one that gets out of your way.
-                We would love to hear from you.
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild variant="gradient">
-                <Link href="/contact">
-                  <Code className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Get in touch
-                </Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link href="/status">
-                  <Terminal className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Check service status
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        <section className="pb-24 lg:pb-32" aria-labelledby="cta-heading">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative rounded-2xl bg-gradient-to-br from-primary via-primary/85 to-primary/60 p-8 md:p-16 lg:p-20 text-center overflow-hidden">
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] from-primary-foreground/10 to-transparent" />
-              <div className="relative z-10 max-w-3xl mx-auto">
-                <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary-foreground/90 mb-4">
-                  No limits to the sky.
-                </p>
-                <h2
-                  id="cta-heading"
-                  className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-foreground mb-6 text-balance"
-                >
-                  Start with a hello.
-                </h2>
-                <p className="text-lg text-primary-foreground/85 mb-10 max-w-xl mx-auto text-balance">
-                  Create your free account and begin the conversation. No credit card required.
-                </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Button
-                    asChild
-                    size="xl"
-                    className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 w-full sm:w-auto"
-                  >
-                    <Link href="/signup">
-                      Get Started Free
-                      <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="xl"
-                    variant="outline"
-                    className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 w-full sm:w-auto"
-                  >
-                    <Link href="/contact">Contact Sales</Link>
-                  </Button>
-                </div>
-                <p className="mt-6 text-sm text-primary-foreground/70">
-                  By signing up, you agree to our{' '}
-                  <Link href="/terms" className="underline hover:text-primary-foreground">
-                    Terms
-                  </Link>{' '}
-                  and{' '}
-                  <Link href="/privacy" className="underline hover:text-primary-foreground">
-                    Privacy Policy
-                  </Link>
-                  .
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <Footer />
-    </div>
-  );
-}
+            <div className="text-center 
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
