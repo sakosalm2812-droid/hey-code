@@ -1,340 +1,207 @@
-We need answer with JSON code block write_file. Need produce upgraded BaseAgent.ts content. Need ensure valid JSON. Must not include markdown outside. We can output only json .... Need content string with escaped newlines. Need ensure no unescaped double quotes. Use single quotes in TS. Need no backslashes in content? We can avoid. But JSON string content needs \n for newlines. We can include \n. Content has no double quotes if we avoid. Need check TypeScript code for double quotes. We'll use single quotes and backticks. Comments no quotes. We can use typeof etc. Need no double quotes. Great.
+We need answer only JSON code block with write_file. Need complete file content. Need escape JSON. Need produce entire BaseAgent.ts. Need ensure no markdown outside? User says output only raw code but format requirement says wrap JSON in code block. We must obey format requirement. Final should be json ... only. Need include one write_file array. Need content string valid JSON. Need avoid double quotes in TS. Need complete file. Need not truncate. Need craft fully. Need include all code. Need ensure JSON valid. Need escape path backslashes. Need escape newlines as \n. Need no actual newline inside content string. Need avoid double quotes in content. Need maybe content includes backticks? Fine. Need ensure no double quotes. Let's design code carefully and then encode.
 
-Need craft full file. Must be entire file. Let's write TS with single quotes. Need be valid. We'll include imports? No imports? For types, we can define. But maybe need import from elsewhere? The original had none. We'll define all local interfaces. But MemoryStore etc. Need export interfaces. Could be long. We need provide a complete abstract class. Need include type aliases.
+Need produce complete BaseAgent.ts with upgrades. We can include no imports? Might be okay. Need complete file content. Let's write TS code using only single quotes. Need avoid double quotes everywhere. Comments no double quotes. Strings single quotes. Need avoid double quotes in template? no templates. Need avoid backslashes. Need include maybe type definitions. Need ensure syntactically valid. Need not include " in content. Need no \" either because no quotes. But JSON content string has \n escapes. The final code block will have JSON array with content string containing \n. This is acceptable. Need no raw newlines inside content. But final answer can have line breaks outside JSON? The code block can contain array one line. Fine.
 
-Need be careful with JSON content: If code contains \n? We'll avoid backslash characters. We can use newlines represented by \n in JSON. No actual newlines inside content string. In final, the JSON string will be enormous one line with \n. That's okay. Need ensure content has no ". We'll avoid all double quotes. Single quotes. Backticks no issue. But JSON string delimited by double quotes, so any double quote in content invalid. Avoid. Need maybe in comments "don't" has apostrophe, fine. No double quotes. Use => etc.
+Need ensure content string doesn't contain unescaped backslash. We may write path only in JSON path, not content. Content no backslashes. Good.
 
-Need include ReturnType<typeof setTimeout> no quotes. Good.
+Need include complete code. Need check TS for possible errors. Let's craft robust code. Need maybe include export type etc. Use AbortSignal built-in. Good.
 
-Potential issue: JSON content string includes backtick? fine. Includes backslash? We might write Array<...> no. => no. ? no. | no. & no. # no. Good.
+Potential issue: private readonly circuit = new Map<string, CircuitBreakerState>(); okay.
 
-Need final answer only code block. We'll craft content with \n escapes. This is tedious. Need ensure entire content is one JSON string. We can write code with explicit \n after each line. Need escape any backslash? None. Need escape double quotes? None. Need not escape single quotes. Good. Need include path with double backslashes. In JSON, path C:\Users\.... The final code block can have actual newline after array? Outside string okay. Need one line for content? We can format array with content string across one line. Good.
+Potential issue: protected readonly config: AgentConfigNormalized; with AgentConfigNormalized type. Good.
 
-Let's compose TS code. Need avoid ' inside string literals? Single-quoted strings can include apostrophe? Avoid. Use no apostrophes in string literals. Comments can have apostrophes but okay. Need use this.config.id + ':' + ... etc.
+Potential issue: AgentContext<TInput> with emit?: (event: AgentStreamEvent) => void; references AgentStreamEvent declared later? We'll declare AgentStreamEvent before AgentContext. Need order. Let's order:
 
-Need define types:
+AgentStatus
 
-export type AgentStatus = 'idle' | 'running' | 'completed' | 'failed' | 'cancelled';
+AgentErrorShape
 
-export interface AgentErrorShape { code: string; message: string; retryable: boolean; details?: unknown; }
+AgentError class
 
-export class AgentError extends Error { public readonly code: string; public readonly retryable: boolean; public readonly details?: unknown; constructor(code: string, message: string, retryable = false, details?: unknown) { super(message); this.name = 'AgentError'; this.code = code; this.retryable = retryable; this.details = details; } }
+Logger etc
 
-Need Error built-in. Good.
+RateLimitConfig
 
-export interface Logger { debug(message: string, meta?: Record<string, unknown>): void; info(...): void; warn(...): void; error(...): void; }
+Model types
 
-export interface TelemetrySpan { end(): void; recordException(error: unknown): void; setAttribute(key: string, value: unknown): void; }
+MemoryStore
 
-export interface Telemetry { startSpan(name: string, attributes?: Record<string, unknown>): TelemetrySpan; recordMetric(name: string, value: number, attributes?: Record<string, unknown>): void; }
+AgentDependencies
 
-export interface RateLimiter { check(key: string, config: RateLimitConfig): Promise<boolean>; }
+AgentConfig
 
-export interface RateLimitConfig { limit: number; windowMs: number; }
+AgentResult? Actually AgentResult uses AgentStatus, AgentErrorShape. Define before AgentStreamEvent. Then AgentStreamEvent uses AgentResult. Then AgentContext uses AgentStreamEvent. Good. AgentPlan etc. ToolDefinition uses AgentContext, so after AgentContext. Good.
 
-export interface ModelMessage { role: 'system' | 'user' | 'assistant' | 'tool'; content: string; }
+Order:
+export type AgentStatus...
+export interface AgentErrorShape...
+export class AgentError...
+Logger, TelemetrySpan, Telemetry, RateLimitConfig, RateLimiter, ModelMessage, ModelRouteRequest, ModelRouteResponse, ModelRouter, MemoryStore, AgentDependencies, AgentConfig, AgentResult, AgentStreamEvent, AgentContext, AgentExecutionOptions, AgentPlanStep, AgentPlan, ToolDefinition, CircuitBreakerState, AgentConfigNormalized. Then class.
 
-export interface ModelRouteRequest { model: string; messages: ModelMessage[]; temperature?: number; signal?: AbortSignal; }
+Need AgentResult uses AgentErrorShape. Good.
 
-export interface ModelRouteResponse { content: string; usage?: { inputTokens: number; outputTokens: number; }; }
+Need AgentStreamEvent uses AgentResult. Good.
 
-export interface ModelRouter { route(request: ModelRouteRequest): Promise<ModelRouteResponse>; }
+Need AgentContext uses AgentStreamEvent. Good.
 
-export interface MemoryStore { get<T = unknown>(namespace: string, key: string): Promise<T | undefined>; set<T = unknown>(namespace: string, key: string, value: T, ttlMs?: number): Promise<void>; delete(namespace: string, key: string): Promise<void>; }
+Need AgentDependencies uses ModelRouter etc. Good.
 
-export interface AgentDependencies { logger: Logger; telemetry: Telemetry; memory: MemoryStore; modelRouter: ModelRouter; rateLimiter?: RateLimiter; }
+Need AgentConfigNormalized type. Good.
 
-export interface AgentConfig { id: string; name: string; description?: string; model: string; systemPrompt?: string; temperature?: number; maxRetries?: number; timeoutMs?: number; memoryNamespace?: string; tools?: string[]; permissions?: string[]; rateLimit?: RateLimitConfig; }
+Need class constructor. Good.
 
-export interface AgentContext<TInput = unknown> { input: TInput; userId: string; tenantId: string; traceId?: string; signal?: AbortSignal; memory?: MemoryStore; logger?: Logger; emit?: (event: AgentStreamEvent) => void; metadata?: Record<string, unknown>; }
+Need methods. Need check this.config.rateLimit property: AgentConfigNormalized extends AgentConfig, so rateLimit optional. Good.
 
-export interface AgentExecutionOptions { signal?: AbortSignal; timeoutMs?: number; maxRetries?: number; metadata?: Record<string, unknown>; }
-
-export interface AgentPlanStep { id: string; tool?: string; args?: unknown; description?: string; dependsOn?: string[]; }
-
-export interface AgentPlan { id: string; goal: string; steps: AgentPlanStep[]; metadata?: Record<string, unknown>; }
-
-export interface AgentResult<TOutput = unknown> { status: AgentStatus; agentId: string; output?: TOutput; error?: AgentErrorShape; durationMs: number; traceId: string; }
-
-export type AgentStreamEvent =
-| { type: 'status'; status: AgentStatus; at: number }
-| { type: 'token'; token: string; at: number }
-| { type: 'tool_start'; tool: string; args: unknown; at: number }
-| { type: 'tool_result'; tool: string; result: unknown; at: number }
-| { type: 'error'; error: string; at: number }
-| { type: 'done'; result: AgentResult; at: number };
-
-Need AgentResult in union before declared? Type aliases can refer forward? In TS, yes. But AgentStreamEvent uses AgentResult declared later? We declared AgentResult before? We'll declare AgentResult before AgentStreamEvent. Good.
-
-export interface ToolDefinition<TArgs = unknown, TResult = unknown> { name: string; description: string; permissions: string[]; execute(args: TArgs, context: AgentContext): Promise<TResult>; }
-
-interface CircuitBreakerState { failures: number; state: 'closed' | 'open' | 'half-open'; openedAt: number; }
-
-export abstract class BaseAgent {
-protected readonly config: Required<Pick<AgentConfig, 'id' | 'name' | 'model' | 'temperature' | 'maxRetries' | 'timeoutMs' | 'memoryNamespace'>> & AgentConfig;
-protected readonly deps: AgentDependencies;
-protected status: AgentStatus = 'idle';
-protected readonly tools = new Map<string, ToolDefinition>();
-protected readonly listeners = new Set<(event: AgentStreamEvent) => void>();
-protected abortController: AbortController | null = null;
-private readonly circuit = new Map<string, CircuitBreakerState>();
-private readonly circuitFailureThreshold = 5;
-private readonly circuitResetMs = 30000;
-
-constructor(config: AgentConfig, deps: AgentDependencies) {
-this.config = {
-...config,
-temperature: config.temperature ?? 0.2,
-maxRetries: config.maxRetries ?? 3,
-timeoutMs: config.timeoutMs ?? 60000,
-memoryNamespace: config.memoryNamespace ?? config.id,
-tools: config.tools ?? [],
-permissions: config.permissions ?? [],
-} as BaseAgent['config'];
-this.deps = deps;
-}
-
-Need BaseAgent['config'] inside class constructor type? In TS, can use class name before fully declared? Probably yes? Maybe avoid. Use as typeof this.config? Not allowed before? Simpler remove cast. Assign object to this.config; TS may complain because Required<Pick> & AgentConfig. But config has optional fields. We can define protected readonly config: AgentConfig & { temperature: number; maxRetries: number; timeoutMs: number; memoryNamespace: string; tools: string[]; permissions: string[]; }; Then assignment object includes all. Good.
-
-Let's define type AgentConfigNormalized = AgentConfig & { temperature: number; maxRetries: number; timeoutMs: number; memoryNamespace: string; tools: string[]; permissions: string[]; };
-protected readonly config: AgentConfigNormalized;
-
-Constructor:
-this.config = {
-...config,
-temperature: config.temperature ?? 0.2,
-maxRetries: config.maxRetries ?? 3,
-timeoutMs: config.timeoutMs ?? 60000,
-memoryNamespace: config.memoryNamespace ?? config.id,
-tools: config.tools ?? [],
-permissions: config.permissions ?? [],
-};
-
-Good.
-
-Need methods.
-
-Potential issue AgentContext emit optional. In execute, effectiveContext has emit required? We can define effectiveContext as AgentContext & { emit: (event: AgentStreamEvent) => void; memory: MemoryStore; logger: Logger; traceId: string; }. Good.
-
-const effectiveContext: AgentContext<TInput> & { traceId: string; memory: MemoryStore; logger: Logger; emit: (event: AgentStreamEvent) => void } = { ...context, traceId, memory: context.memory ?? this.deps.memory, logger: context.logger ?? this.deps.logger, emit: context.emit ?? ((event) => this.emit(event)) };
-
-Need AgentContext<TInput> input. Good.
-
-In execute, call this.validateInput(effectiveContext.input); before beforeExecute.
-
-Need withRetry uses context? It might not use. Fine.
-
-Need toAgentError:
-protected toAgentError(error: unknown): AgentError {
-if (error instanceof AgentError) return error;
-if (error instanceof Error) {
-const code = error.name === 'AbortError' ? 'AGENT_CANCELLED' : 'AGENT_INTERNAL';
-return new AgentError(code, error.message, code !== 'AGENT_CANCELLED');
-}
-return new AgentError('AGENT_INTERNAL', String(error), false);
-}
-
-Need String(error) may include double quotes? Not in code content. Fine.
-
-Need newId:
-protected newId(prefix: string): string { return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10); }
-
-Need assertPermission:
-protected assertPermission(permission: string, context?: AgentContext): void {
-if (this.config.permissions.includes('*') || this.config.permissions.includes(permission)) return;
-throw new AgentError('PERMISSION_DENIED', 'Missing permission: ' + permission, false, { agentId: this.config.id, tenantId: context?.tenantId });
-}
-
-Need plan abstract, act abstract. Could provide default act? Abstract class can have abstract methods. Subclasses implement. Good.
-
-Need executeTool:
-protected async executeTool<TArgs = unknown, TResult = unknown>(toolName: string, args: TArgs, context: AgentContext): Promise<TResult> {
-this.assertPermission('tool:' + toolName, context);
-const tool = this.tools.get(toolName) as ToolDefinition<TArgs, TResult> | undefined;
-if (!tool) throw new AgentError('TOOL_NOT_FOUND', 'Tool not registered: ' + toolName, false, { agentId: this.config.id });
-for (const permission of tool.permissions) this.assertPermission(permission, context);
-const circuit = this.getCircuit(toolName);
-if (circuit.state === 'open') throw new AgentError('CIRCUIT_OPEN', 'Tool circuit is open: ' + toolName, true);
-this.emit({ type: 'tool_start', tool: toolName, args, at: Date.now() });
-try {
-const result = await tool.execute(args, context);
-this.emit({ type: 'tool_result', tool: toolName, result, at: Date.now() });
-this.recordToolSuccess(toolName);
-return result;
-} catch (error) {
-this.recordToolFailure(toolName);
-throw this.toAgentError(error);
-}
-}
-
-Need callModel:
-protected async callModel(prompt: string, context: AgentContext, options: { temperature?: number; signal?: AbortSignal } = {}): Promise<string> {
-const messages: ModelMessage[] = [];
-if (this.config.systemPrompt) messages.push({ role: 'system', content: this.config.systemPrompt });
-messages.push({ role: 'user', content: prompt });
-const response = await this.deps.modelRouter.route({
-model: this.config.model,
-messages,
-temperature: options.temperature ?? this.config.temperature,
-signal: options.signal ?? context.signal,
-});
-return response.content;
-}
-
-Need stream:
-async *stream<TInput = unknown, TOutput = unknown>(context: AgentContext<TInput>, options: AgentExecutionOptions = {}): AsyncGenerator<AgentStreamEvent, AgentResult<TOutput>, void> {
-const queue: AgentStreamEvent[] = [];
-let wake: (() => void) | null = null;
-const unsubscribe = this.on((event) => {
-queue.push(event);
-if (wake) { const current = wake; wake = null; current(); }
-});
-try {
-const execution = this.execute<TInput, TOutput>(context, options);
-let settled = false;
-execution.then(() => { settled = true; if (wake) { const current = wake; wake = null; current(); } }).catch(() => { settled = true; if (wake) { const current = wake; wake = null; current(); } });
-while (!settled || queue.length > 0) {
-if (queue.length === 0) {
-await new Promise<void>((resolve) => { wake = resolve; });
-continue;
-}
-const event = queue.shift();
-if (event) yield event;
-}
-const result = await execution;
-return result;
-} finally {
-unsubscribe();
-}
-}
-
-Potential issue if settled true and queue empty, loop exits. Good. But if execution resolves and queue has events, loop yields them then exits. Good. No duplicate done. It doesn't yield final done if execute emitted done and queue was consumed? execute emits done before resolving, so queue will have done event. We yield it. Then return result. Good. If event listener error? no. Good.
-
-Need cancel:
-cancel(reason = 'cancelled'): void {
-this.abortController?.abort();
-this.setStatus('cancelled');
-this.deps.logger.warn('Agent cancelled', { agentId: this.config.id, reason });
-}
-
-Need setStatus:
-protected setStatus(status: AgentStatus, context?: AgentContext): void {
-this.status = status;
-const event: AgentStreamEvent = { type: 'status', status, at: Date.now() };
-this.emit(event);
-context?.emit?.(event);
-}
-But if context.emit is same as this.emit, duplicate. In execute, effectiveContext.emit is context.emit ?? this.emit. So setStatus with effectiveContext will call this.emit via context.emit and also this.emit? Actually setStatus calls this.emit(event); then context?.emit?.(event); If context.emit is this.emit, duplicate. We should not call both. Better setStatus(status, context?) { this.status = status; const event = ...; if (context?.emit) context.emit(event); else this.emit(event); } But in execute we pass effectiveContext with emit always. Then this.emit not called. But external listeners via this.on won't receive status unless context.emit is this.emit. effectiveContext.emit is context.emit ?? this.emit. If original context had emit, this.listeners won't get status. Is that okay? We want both maybe. Simpler setStatus only calls this.emit. Since effectiveContext.emit is often this.emit, no duplicate. But if context.emit provided, we don't call it. Hmm. We can call this.emit always and also context.emit if different from this.emit? Can't compare easily. Could just call this.emit. In execute, effectiveContext.emit is this.emit if context.emit absent. If context.emit present, status not forwarded to it. But done event uses effectiveContext.emit. Accept. Simpler: setStatus(status) { this.status = status; this.emit({ type:'status', status, at: Date.now() }); } No context. Good. Then execute calls setStatus. Good.
-
-Need emit:
-protected emit(event: AgentStreamEvent): void {
-for (const listener of Array.from(this.listeners)) {
-try { listener(event); } catch (error) { this.deps.logger.error('Agent event listener failed', { agentId: this.config.id, error: String(error) }); }
-}
-}
-Need no double quotes. Good.
-
-Need on:
-on(listener: (event: AgentStreamEvent) => void): () => void {
-this.listeners.add(listener);
-return () => { this.listeners.delete(listener); };
-}
-
-Need registerTool and registerTools.
-
-Need getState.
-
-Need validateInput.
-
-Need withRetry:
-protected async withRetry<T>(operation: () => Promise<T>, maxRetries: number, signal: AbortSignal, context: AgentContext): Promise<T> {
-let attempt = 0;
-let lastError: unknown;
-while (attempt <= maxRetries) {
-if (signal.aborted) throw new AgentError('AGENT_CANCELLED', 'Execution cancelled', false);
-try { return await operation(); } catch (error) {
-lastError = error;
-const agentError = this.toAgentError(error);
-if (!agentError.retryable || attempt >= maxRetries) throw agentError;
-const delay = Math.min(1000 * Math.pow(2, attempt), 8000) + Math.floor(Math.random() * 100);
-this.deps.logger.warn('Retrying agent operation', { agentId: this.config.id, attempt: attempt + 1, delay, code: agentError.code });
-await this.sleep(delay, signal);
-attempt += 1;
-}
-}
-throw this.toAgentError(lastError);
-}
-
-Need sleep:
-protected sleep(ms: number, signal: AbortSignal): Promise<void> {
-return new Promise((resolve, reject) => {
-if (signal.aborted) { reject(new AgentError('AGENT_CANCELLED', 'Execution cancelled', false)); return; }
-const onAbort = () => { clearTimeout(timer); reject(new AgentError('AGENT_CANCELLED', 'Execution cancelled', false)); };
-const timer = setTimeout(() => { signal.removeEventListener('abort', onAbort); resolve(); }, ms);
-signal.addEventListener('abort', onAbort, { once: true });
-});
-}
-Potential TS: timer used before declaration inside onAbort? onAbort closure called after timer assigned, okay. But const timer defined after onAbort; TS might complain block-scoped variable used before declaration? In closure, okay? It may still complain? To be safe define let timer: ReturnType<typeof setTimeout>; then onAbort. We'll do:
-let timer: ReturnType<typeof setTimeout>;
-const onAbort = () => { clearTimeout(timer); reject(...); };
-timer = setTimeout(...);
-Good.
-
-Need getCircuit and record methods private.
-
-Need protected async withSpan<T>(name: string, attributes: Record<string, unknown>, fn: () => Promise<T>): Promise<T> {
-const span = this.deps.telemetry.startSpan(name, attributes);
-try { return await fn(); } catch (error) { span.recordException(error); throw error; } finally { span.end(); }
-}
-
-Need maybe use withSpan in execute. Could simplify.
-
-Need execute full:
-
-async execute<TInput = unknown, TOutput = unknown>(context: AgentContext<TInput>, options: AgentExecutionOptions = {}): Promise<AgentResult<TOutput>> {
-const started = Date.now();
-const traceId = context.traceId ?? this.newId('trace');
+Need effectiveContext type. We can avoid explicit type to reduce errors:
 const effectiveContext = { ...context, traceId, memory: context.memory ?? this.deps.memory, logger: context.logger ?? this.deps.logger, emit: context.emit ?? ((event: AgentStreamEvent) => this.emit(event)) };
-this.abortController = new AbortController();
-const signal = options.signal ?? context.signal ?? this.abortController.signal;
-const timeoutMs = options.timeoutMs ?? this.config.timeoutMs;
-let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-const timeoutPromise = new Promise<never>((resolve, reject) => { timeoutHandle = setTimeout(() => { this.abortController?.abort(); reject(new AgentError('AGENT_TIMEOUT', 'Agent execution timed out', true)); }, timeoutMs); });
-try {
-this.setStatus('running');
-this.validateInput(effectiveContext.input);
-await this.beforeExecute(effectiveContext);
-this.assertPermission('agent:execute', effectiveContext);
-const rateLimit = this.config.rateLimit;
-if (rateLimit && this.deps.rateLimiter) {
-const allowed = await this.deps.rateLimiter.check(effectiveContext.userId + ':' + this.config.id, rateLimit);
-if (!allowed) throw new AgentError('RATE_LIMITED', 'Rate limit exceeded', true);
-}
-const result = await this.withSpan('agent.execute', { agentId: this.config.id, traceId, tenantId: effectiveContext.tenantId }, async () => {
-const operation = async () => {
-const plan = await this.plan(effectiveContext);
-const output = await this.act(plan, effectiveContext) as TOutput;
-return { status: 'completed' as AgentStatus, agentId: this.config.id, output, durationMs: Date.now() - started, traceId };
-};
-return this.withRetry(operation, options.maxRetries ?? this.config.maxRetries, signal, effectiveContext);
-});
-this.setStatus(result.status);
-await this.afterExecute(effectiveContext, result);
-effectiveContext.emit({ type: 'done', result, at: Date.now() });
-return result;
-} catch (error) {
-const agentError = this.toAgentError(error);
-const status: AgentStatus = agentError.code === 'AGENT_CANCELLED' ? 'cancelled' : 'failed';
-this.setStatus(status);
-this.deps.telemetry.recordMetric('agent.errors', 1, { agentId: this.config.id, code: agentError.code });
-this.deps.logger.error('Agent execution failed', { agentId: this.config.id, code: agentError.code, message: agentError.message });
-await this.onError(effectiveContext, agentError);
-effectiveContext.emit({ type: 'error', error: agentError.message, at: Date.now() });
-return { status, agentId: this.config.id, error: { code: agentError.code, message: agentError.message, retryable: agentError.retryable }, durationMs: Date.now() - started, traceId };
-} finally {
-if (timeoutHandle) clearTimeout(timeoutHandle);
-this.abortController = null;
-}
-}
+Then effectiveContext.input is TInput. Good. But type inferred emit: ((event: AgentStreamEvent) => void). Good. memory: MemoryStore. logger: Logger. traceId: string. Good. It includes all context. Fine.
 
-Need timeoutPromise not used? We declared but not race. That's a bug. Could remove timeoutPromise or use it. Use Promise.race? Need withRetry operation maybe. Simpler remove timeoutPromise and use setTimeout to abort. But need reject if timeout. Could create timeoutPromise and race with main operation? Need avoid unused variable. We can use const timeoutPromise = ...; Then in withSpan: const result = await Promise.race([this.withSpan(...), timeoutPromise]); But timeout
+Need const timeoutPromise = new Promise<never>((_resolve, reject) => { ... }); okay. Need use it. In execute:
+const executionPromise = this.withSpan(...);
+const result = await Promise.race([executionPromise, timeoutPromise]) as AgentResult<TOutput>;
+Need timeoutPromise rejects; if operation resolves first, timeout still pending but cleared in finally. Good. If timeout fires, abort and reject. Good. But Promise.race will reject, caught. Good. Need timeoutPromise used. Good.
+
+Need ensure timeout abort affects signal if options.signal provided? No, but race rejects. Fine.
+
+Need in execute, this.abortController = new AbortController(); If options.signal provided, signal is options.signal. Timeout aborts abortController but not signal; race rejects. Fine.
+
+Need in catch, await this.onError(effectiveContext, agentError); If onError throws, it will escape catch? It would reject execute, not return result. Better wrap in try? Could do try { await this.onError(...); } catch (hookError) { this.deps.logger.error(...); }. Need robust. We'll implement.
+
+Need afterExecute may throw; would be caught by catch and turn completed into failed? Actually afterExecute called before return inside try; if throws, catch returns failed. Okay.
+
+Need effectiveContext.emit({ type: 'done', result, at: Date.now() }); result is AgentResult<TOutput>. Good.
+
+Need stream while loop. Need ensure no hang if execution settles but wake never resolves? The promise execution.then sets settled and calls wake. Good. If execute throws? execute catches and returns result, so resolves. Good.
+
+Need stream returns result. Good.
+
+Need withRetry uses context parameter maybe unused? We can remove context param to avoid noUnused? Not necessarily. We can use context in logging. We'll include tenantId: context.tenantId in warn. Good.
+
+Need withSpan uses span.setAttribute? Not used. Could set attributes? Fine.
+
+Need callModel options. Good.
+
+Need executeTool uses this.tools.get(toolName) as ToolDefinition<TArgs, TResult> | undefined. Good.
+
+Need registerTool<TArgs = unknown, TResult = unknown>(tool: ToolDefinition<TArgs, TResult>): this { this.tools.set(tool.name, tool as ToolDefinition); ... } Good.
+
+Need registerTools(tools: ToolDefinition[]): this good.
+
+Need getState returns config: AgentConfig. Return { ...this.config } okay.
+
+Need cancel reason default. Good.
+
+Need newId uses Math.random. Good.
+
+Need assertPermission context optional. Good.
+
+Need toAgentError if error is Error. Good.
+
+Need sleep with let timer. Good.
+
+Need recordToolFailure telemetry. Good.
+
+Need getCircuit existing state half-open? If open and reset elapsed sets half-open. On failure in half-open, failures >= threshold? It increments and opens again. On success closes. Good.
+
+Need execute rate limit before plan. Good.
+
+Need assertPermission('agent:execute', effectiveContext) after beforeExecute. Good.
+
+Need validateInput called before beforeExecute. Good.
+
+Need setStatus('running') emits status. Good.
+
+Need if this.abortController null in cancel? Fine.
+
+Need TypeScript issue: const timeoutPromise = new Promise<never>((_resolve, reject) => { timeoutHandle = setTimeout(() => { ... reject(new AgentError(...)); }, timeoutMs); }); reject type (reason?: any) => void; okay.
+
+Need Promise.race([executionPromise, timeoutPromise]) as AgentResult<TOutput>; executionPromise is Promise<AgentResult<TOutput>>? Let's check withSpan returns Promise<T>. The callback returns this.withRetry(operation,...). operation returns Promise<{ status: AgentStatus; agentId: string; output: TOutput; durationMs: number; traceId: string }>. withRetry returns Promise<that>. So withSpan returns Promise<that>. Type inference T = { status: AgentStatus; agentId: string; output: TOutput; durationMs: number; traceId: string }. This is structurally AgentResult<TOutput> because status AgentStatus, output TOutput. Good. Cast okay.
+
+Need this.setStatus(result.status); result.status is AgentStatus. Good.
+
+Need await this.afterExecute(effectiveContext, result); result type AgentResult<TOutput>. Good.
+
+Need catch returns AgentResult<TOutput> with status failed/cancelled. Good.
+
+Need effectiveContext.emit({ type: 'error', error: agentError.message, at: Date.now() }); good.
+
+Need stream queue. If event listener receives done and queue push. Good.
+
+Need maybe this.listeners Set iteration. Good.
+
+Need final JSON: [{"tool":"write_file","path":"C:\\Users\\DELL\\Documents\\hey\\src\\agents\\BaseAgent.ts","content":"...escaped..."}] Need JSON keys double quotes yes. Content string double quoted. Path has double backslashes. Need ensure content has no double quote. Good.
+
+Need encode content as one line with \n. This will be long. Need ensure no accidental actual newline inside content string. In final, I can write entire array on one line. It will be very long but okay. Need ensure all newline escapes are \n two chars. Need not escape single quotes. Need avoid \ in content. We may use Array.from etc no backslash. Good.
+
+Need verify content doesn't contain ". We'll use single quotes. Comments no double quotes. But typeof setTimeout no. '*' single quotes. Good.
+
+Need ensure no double quotes in string literals like 'agent.execute'. Good.
+
+Need potential TypeScript issue: AgentError class extends Error, but no Object.setPrototypeOf needed for ES2015. Fine.
+
+Need potential TS issue: private readonly circuit = new Map<string, CircuitBreakerState>(); uses CircuitBreakerState declared before class. Good.
+
+Need potential TS issue: protected readonly config: AgentConfigNormalized; type declared before class. Good.
+
+Need potential TS issue: AgentConfigNormalized includes temperature: number; maxRetries: number; timeoutMs: number; memoryNamespace: string; tools: string[]; permissions: string[]; and AgentConfig has optional same. Intersection okay.
+
+Need potential TS issue: this.config = { ...config, temperature: ..., maxRetries: ..., timeoutMs: ..., memoryNamespace: ..., tools: ..., permissions: ... }; rateLimit maybe undefined. Good.
+
+Need potential TS issue: protected readonly tools = new Map<string, ToolDefinition>(); ToolDefinition default generics. Good.
+
+Need potential TS issue: protected readonly listeners = new Set<(event: AgentStreamEvent) => void>(); good.
+
+Need potential TS issue: this.tools.set(tool.name, tool as ToolDefinition); okay.
+
+Need potential TS issue: const tool = this.tools.get(toolName) as ToolDefinition<TArgs, TResult> | undefined; okay.
+
+Need potential TS issue: this.config.permissions.includes('*') permissions string[]. Good.
+
+Need potential TS issue: context?.tenantId context type AgentContext. Good.
+
+Need potential TS issue: const traceId = context.traceId ?? this.newId('trace'); good.
+
+Need potential TS issue: const signal = options.signal ?? context.signal ?? this.abortController.signal; this.abortController just assigned non-null. Good.
+
+Need potential TS issue: let timeoutHandle: ReturnType<typeof setTimeout> | undefined; good. In finally if (timeoutHandle) clearTimeout(timeoutHandle); okay.
+
+Need potential TS issue: const executionPromise = this.withSpan(... async () => { ... return this.withRetry(...); }); The callback returns Promise<...>. Good.
+
+Need potential TS issue: Promise.race([executionPromise, timeoutPromise]) as AgentResult<TOutput> okay.
+
+Need potential TS issue: effectiveContext.emit is defined. Good.
+
+Need potential TS issue: async *stream... uses yield event; event type AgentStreamEvent. Good.
+
+Need potential TS issue: const result = await execution; return result; in async generator, return type AgentResult<TOutput>. Good.
+
+Need potential TS issue: execution.then(() => { ... }).catch(() => { ... }); no await. Good. But if execution resolves, .then handler runs microtask; while loop may check settled false then await new Promise setting wake; then then runs and resolves. Good.
+
+Need potential TS issue: let wake: (() => void) | null = null; then inside if (wake) { const current = wake; wake = null; current(); } TS may complain current possibly null? Since if (wake) narrows, assigning const current = wake should be function. Good.
+
+Need potential TS issue: queue.shift(); if (event) yield event; Good.
+
+Need maybe include export abstract class BaseAgent only. Good.
+
+Need final content. Need produce JSON with content string. Since content is huge, I need be careful. I can formulate final with one line. Need no markdown except code block. The code block content should be JSON. It can be multi-line? The JSON array can be one line. If I include line breaks inside code block outside string, JSON parser okay? It can parse whitespace. But content string must not have raw newline. I can put array with content on one line. Let's produce one line. Need ensure all newlines in code represented as \n. I will manually encode. This is long but doable. Need avoid mistakes. I'll write content with \n at line breaks. Need ensure at end content string closed. Need ensure path backslashes. Need ensure no double quotes in content. Let's craft.
+
+Need maybe not include too many comments. Use no comments. Good.
+
+Let's write final JSON. Need include {"tool":"write_file","path":"C:\\Users\\DELL\\Documents\\hey\\src\\agents\\BaseAgent.ts","content":"..."}. Since path in JSON, backslashes escaped. Good.
+
+Now craft content string. I must include all code. I'll encode newlines as \n. Need no actual newline in content. In final answer, I can have the code block with one line. It will be very long. Need ensure I don't accidentally put actual newline inside string. I'll write continuous. Need track quotes. Content string starts after "content":" and ends before "}]. No double quotes inside. Good.
+
+Let's assemble code with \n. I'll write here first mentally then final. Need be exact.
+
+Content:
+export type AgentStatus = 'idle' | 'running' | 'completed' | 'failed' | 'cancelled';\n\nexport interface AgentErrorShape {\n code: string;\n message: string;\n retryable: boolean;\n details?: unknown;\n}\n\nexport class AgentError extends Error {\n public readonly code: string;\n public readonly retryable: boolean;\n public readonly details?: unknown;\n\n constructor(code: string, message: string, retryable = false, details?: unknown) {\n super(message);\n this.name = 'AgentError';\n this.code = code;\n this.retryable = retryable;\n this.details = details;\n }\n}\n\n... etc.
+
+Need ensure no double quotes. Good.
+
+Need include 
+Record
+<string, unknown>
+ no quotes. Good.
+
+Need include 
+Promise
