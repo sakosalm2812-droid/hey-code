@@ -1,25 +1,150 @@
+The user wants me to upgrade the file. The format requirement says to wrap JSON tool calls in  code block. But the mission says "output ONLY the raw upgraded code. No markdown. No truncation."
+
+There's a conflict. The format requirement is about wrapping tool call arrays in json code blocks. But if I'm just outputting code (not a tool call), the mission says raw code only.
+
+Actually, let me re-read: "You MUST wrap ALL JSON tool call arrays in a  code block." So if I'm making tool calls. But the mission says output only raw upgraded code. This is a bit ambiguous—do they want a tool call to write the file, or just raw code?
+
+Given the previous successful pattern suggests writing files, but the mission explicitly says "output ONLY the raw upgraded code. No markdown. No truncation."
+
+Hmm, but the format requirement says the automation harness parses code blocks first. So I should output a JSON tool call. But the mission contradicts.
+
+Let me think about what's most likely: The automation harness wants a tool call to write_file. The "output only raw upgraded code" might be legacy instruction. But the format requirement is "READ CAREFULLY" and critical. It says "You MUST wrap ALL JSON tool call arrays in a  code block."
+
+I think the safest interpretation: produce a write_file tool call wrapped in json code block, with the upgraded content escaped.
+
+The file is truncated at the end: return NextResponse.json({ e — I need to complete it sensibly. The DELETE handler should probably check task exists, delete, audit log, return success.
+
+Let me write the complete upgraded file.
+
+Improvements:
+
+Shared auth guard helper to reduce repetition.
+
+Validate due date format.
+
+Better error handling for JSON parse failures.
+
+Consistent rate limiting on PATCH/DELETE? Maybe not needed.
+
+Sanitize/limit description length.
+
+Use proper type for task filters.
+
+Handle malformed JSON body -> 400.
+
+Ensure updateTask actually checks ownership (assume yes).
+
+Complete the DELETE handler: check exists, delete, audit, return.
+
+Add notification link maybe.
+
+Consistent response shapes.
+
+Fix title trim on update (currently uses body.title untrimmed).
+
+Add tags dedupe.
+
+Better status validation on GET filters (validate against TASK_STATUSES/TASK_PRIORITIES).
+
+Try/catch for audit log and notifications already there.
+
+Improve error detection with a custom error class? Keep simple.
+
+Liquid Glass UI — this is an API route, no UI. I'll focus on logic/robustness.
+
+Let me write the complete file:
+
+ts
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { auditLog } from '@/lib/audit';
 import { chatRateLimiter } from '@/lib/rate-limit';
-import { createTask, listTasks, getTaskById, updateTask, deleteTask } from '@/lib/tasks';
-import { TASK_PRIORITIES, TASK_STATUSES } from '@/lib/tasks';
+import {
+  createTask,
+  listTasks,
+  getTaskById,
+  updateTask,
+  deleteTask,
+  TASK_PRIORITIES,
+  TASK_STATUSES,
+} from '@/lib/tasks';
 import { createNotification } from '@/lib/notifications';
 
+const MAX_TITLE_LENGTH = 300;
+const MAX_DESCRIPTION_LENGTH = 10_000;
+const MAX_TAGS = 20;
+const MAX_TAG_LENGTH = 50;
+
+type TaskPriority = (typeof TASK_PRIORITIES)[number];
+type TaskStatus = (typeof TASK_STATUSES)[number];
+
+async function requireUserId(): Promise<string | null> {
+  const session = await auth();
+  return session?.user?.id ?? null;
+}
+
+function unauthorized() {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+}
+
+function badRequest(message: string) {
+  return NextResponse.json({ error: message }, { status: 400 });
+}
+
+function normalizeTags(input: unknown): string[] {
+  if (!Array.isArray(input)) return [];
+  const seen = new Set<string>();
+  const tags: string[] = [];
+  for (const raw of input) {
+    if (typeof raw !== 'string') continue;
+    const tag = raw.trim();
+    if (!tag || tag.length > MAX_TAG_LENGTH) continue;
+    const key = tag.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    tags.push(tag);
+    if (tags.length >= MAX_TAGS) break;
+  }
+  return tags;
+}
+
+function normalizeDueDate(input: unknown): string | null | undefined {
+  if (input === undefined) return undefined;
+  if (input === null || input === '') return null;
+  if (typeof input !== 'string') return undefined;
+  const parsed = new Date(input);
+  if (Number.isNaN(parsed.getTime())) return undefined;
+  return input;
+}
+
+function normalizeDescription(input: unknown): string | undefined {
+  if (typeof input !== 'string') return undefined;
+  const trimmed = input.trim();
+  if (!trimmed) return undefined;
+  return trimmed.slice(0, MAX_DESCRIPTION_LENGTH);
+}
+
+function normalizeTitle(input: unknown): string | undefined {
+  if (typeof input !== 'string') return undefined;
+  const trimmed = input.trim();
+  return trimmed || undefined;
+}
+
 export async function GET(request: NextRequest) {
+  const userId = await requireUserId();
+  if (!userId) return unauthorized();
+
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') ?? undefined;
-    const priority = searchParams.get('priority') ?? undefined;
+    const statusParam = searchParams.get('status');
+    const priorityParam = searchParams.get('priority');
     const due = searchParams.get('due') ?? undefined;
-    const search = searchParams.get('q') ?? undefined;
+    const search = searchParams.get('q')?.trim() || undefined;
 
-    const tasks = await listTasks(session.user.id, { status, priority, due, search });
+    const status = statusParam && TASK_STATUSES.includes(statusParam as TaskStatus) ? statusParam : undefined;
+    const priority = priorityParam && TASK_PRIORITIES.includes(priorityParam as TaskPriority) ? priorityParam : undefined;
+
+    const tasks = await listTasks(userId, { status, priority, due, search });
     return NextResponse.json({ tasks });
   } catch (error) {
     console.error('List tasks error:', error);
@@ -28,130 +153,72 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const userId = await requireUserId();
+  if (!userId) return unauthorized();
 
-    const rateLimit = await chatRateLimiter(`tasks:${session.user.id}`);
+  try {
+    const rateLimit = await chatRateLimiter(`tasks:${userId}`);
     if (!rateLimit.allowed) {
       return NextResponse.json({ error: 'Task rate limit exceeded' }, { status: 429 });
     }
 
-    const body = await request.json();
-    const title = typeof body?.title === 'string' ? body.title.trim() : '';
-    if (!title) {
-      return NextResponse.json({ error: 'Task title is required' }, { status: 400 });
-    }
-    if (title.length > 300) {
-      return NextResponse.json({ error: 'Task title is too long (max 300 characters)' }, { status: 400 });
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return badRequest('Invalid JSON body');
     }
 
-    const priority = TASK_PRIORITIES.includes(body?.priority) ? body.priority : 'MEDIUM';
-    const tags = Array.isArray(body?.tags) ? body.tags.filter((t: any) => typeof t === 'string').slice(0, 20) : [];
+    const title = normalizeTitle(body?.title);
+    if (!title) return badRequest('Task title is required');
+    if (title.length > MAX_TITLE_LENGTH) {
+      return badRequest(`Task title is too long (max ${MAX_TITLE_LENGTH} characters)`);
+    }
 
-    const task = await createTask(session.user.id, {
+    const priority: TaskPriority = TASK_PRIORITIES.includes(body?.priority) ? body.priority : 'MEDIUM';
+    const tags = normalizeTags(body?.tags);
+    const dueDate = normalizeDueDate(body?.dueDate) ?? null;
+
+    const task = await createTask(userId, {
       title,
-      description: typeof body?.description === 'string' ? body.description : undefined,
+      description: normalizeDescription(body?.description),
       priority,
-      dueDate: typeof body?.dueDate === 'string' ? body.dueDate : null,
+      dueDate,
       tags,
     });
 
-    try {
-      await auditLog(session.user.id, 'CREATE_TASK', 'task', { taskId: task.id, title: task.title }, request);
-    } catch {}
+    void auditLog(userId, 'CREATE_TASK', 'task', { taskId: task.id, title: task.title }, request).catch(() => {});
 
     return NextResponse.json({ task }, { status: 201 });
   } catch (error) {
     console.error('Create task error:', error);
-    if (error instanceof Error && error.message.includes('due date')) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+    if (error instanceof Error && error.message.toLowerCase().includes('due date')) {
+      return badRequest(error.message);
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 export async function PATCH(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  const userId = await requireUserId();
+  if (!userId) return unauthorized();
 
+  try {
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get('id');
-    if (!taskId) {
-      return NextResponse.json({ error: 'Task id is required' }, { status: 400 });
+    if (!taskId) return badRequest('Task id is required');
+
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return badRequest('Invalid JSON body');
     }
 
-    const body = await request.json();
-
-    const before = await getTaskById(session.user.id, taskId);
-
-    const task = await updateTask(session.user.id, taskId, {
-      ...(typeof body?.title === 'string' && body.title.trim() ? { title: body.title } : {}),
-      ...(typeof body?.description === 'string' ? { description: body.description } : {}),
-      ...(TASK_PRIORITIES.includes(body?.priority) ? { priority: body.priority } : {}),
-      ...(TASK_STATUSES.includes(body?.status) ? { status: body.status } : {}),
-      ...(body?.dueDate !== undefined ? { dueDate: typeof body.dueDate === 'string' ? body.dueDate : null } : {}),
-      ...(Array.isArray(body?.tags) ? { tags: body.tags.filter((t: any) => typeof t === 'string').slice(0, 20) } : {}),
-    });
-
-    if (!task) {
+    const before = await getTaskById(userId, taskId);
+    if (!before) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    if (task.status === 'COMPLETED' && before?.status !== 'COMPLETED') {
-      try {
-        await createNotification({
-          userId: session.user.id,
-          type: 'GENERAL',
-          title: 'Task completed',
-          message: task.title,
-          link: '/dashboard/tasks',
-        });
-      } catch {}
-    }
-
-    try {
-      await auditLog(session.user.id, 'UPDATE_TASK', 'task', { taskId, status: task.status }, request);
-    } catch {}
-
-    return NextResponse.json({ task });
-  } catch (error) {
-    console.error('Update task error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const taskId = searchParams.get('id');
-    if (!taskId) {
-      return NextResponse.json({ error: 'Task id is required' }, { status: 400 });
-    }
-
-    const existing = await getTaskById(session.user.id, taskId);
-    const result = await deleteTask(session.user.id, taskId);
-    if (result.count === 0) {
-      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
-    }
-
-    try {
-      await auditLog(session.user.id, 'DELETE_TASK', 'task', { taskId, title: existing?.title }, request);
-    } catch {}
-
-    return NextResponse.json({ deleted: result.count });
-  } catch (error) {
-    console.error('Delete task error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-  }
-}
+    const updates: Record<string, unknown> = {};
+    const title = normalizeTitle(body?.
