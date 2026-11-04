@@ -1,415 +1,384 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  Compass,
-  Cpu,
-  Orbit,
-  Sparkles,
-  Zap,
-  Repeat,
-  RotateCcw,
-} from "lucide-react";
+The user wants me to upgrade PhysicsTools.jsx. They want raw upgraded code, no markdown, no truncation. But the format requirement says I must wrap JSON tool call arrays in  code blocks. This is a code upgrade task — I should output the file content via write_file tool call.
 
-export default function PhysicsTools({ activeToolName = "Mechanics Simulator" }) {
-  const [activeTab, setActiveTab] = useState(() => {
-    if (activeToolName.includes("Optics") || activeToolName.includes("Wave")) return "optics";
-    if (activeToolName.includes("Circuit")) return "circuit";
-    if (activeToolName.includes("Unit") || activeToolName.includes("Constant")) return "units";
-    return "mechanics";
-  });
+Wait, let me re-read. "Otherwise, output ONLY the raw upgraded code. No markdown. No truncation." But the format requirement says to wrap JSON tool calls in code blocks. The system-level format requirement takes precedence for tool calls.
 
-  // Mechanics Simulator State
-  const canvasRef = useRef(null);
-  const [launchAngle, setLaunchAngle] = useState(45); // degrees
-  const [velocity, setVelocity] = useState(25); // m/s
-  const [gravity, setGravity] = useState(9.8); // m/s^2
+Actually the task is to upgrade the file. I should use write_file to write the upgraded file. Let me produce a substantially improved version.
 
-  // Optics Simulator State
-  const [n1, setN1] = useState(1.0); // Air
-  const [n2, setN2] = useState(1.5); // Glass
-  const [incidentAngle, setIncidentAngle] = useState(30);
+Current code is truncated. I need to write a complete, working, upgraded version.
 
-  // Circuit Sandbox State
-  const [voltage, setVoltage] = useState(12);
-  const [r1, setR1] = useState(10);
-  const [r2, setR2] = useState(20);
-  const [circuitType, setCircuitType] = useState("series"); // "series" | "parallel"
+Key improvements:
 
-  // Units Converter State
-  const [energyVal, setEnergyVal] = useState(1);
-  const [energyUnit, setEnergyUnit] = useState("eV");
+Liquid Glass aesthetic (matches existing style)
 
-  // Projectile Motion Calculations
-  const rad = (launchAngle * Math.PI) / 180;
-  const timeOfFlight = (2 * velocity * Math.sin(rad)) / gravity;
-  const maxHeight = (Math.pow(velocity * Math.sin(rad), 2)) / (2 * gravity);
-  const totalRange = (Math.pow(velocity, 2) * Math.sin(2 * rad)) / gravity;
+Fix bugs: canvas width/height set via props rather than canvas.width default 300x150? Actually canvas needs width/height attributes. The ref canvas width defaults to 300x150 which might work but let's set explicit sizes.
 
-  // Projectile Canvas Trajectory
+Add DPR handling for crisp canvas
+
+Better animations with RAF
+
+Add more features, preserve all 4 tabs
+
+Fix the truncated JSX
+
+Let me write a full robust component. Features:
+
+Mechanics: projectile with sliders, animated trajectory with moving ball, apex marker, range/height/time readouts
+
+Optics: Snell's law with ray diagram canvas, TIR handling
+
+Circuit: series/parallel with visual circuit diagram
+
+Units: energy converter with more units
+
+Let me build it.
+
+For canvas responsiveness, use ResizeObserver or set fixed dimensions based on container. I'll use a wrapper with fixed aspect and canvas resize via useEffect + window resize.
+
+Let me write clean code.
+
+For optics canvas, draw interface with two rays.
+
+For circuit canvas, draw simple resistor symbols.
+
+Let me include the icon imports used. Also add extra icons? Better to stick to what's imported to avoid missing imports. But I can add more from lucide-react — it's fine, they exist.
+
+Let me write.
+
+DPR: use devicePixelRatio. Set canvas.width = cssWidth * dpr, style width 100%.
+
+I'll implement a helper to size canvas.
+
+Let me produce final code carefully.
+
+Structure:
+
+jsx
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { Orbit, ... } from "lucide-react";
+
+I'll keep lucide imports minimal but include what I use: Orbit, Compass, Cpu, Sparkles, Zap, Repeat, RotateCcw, Play, Pause, Activity, Sliders... Actually let me only import what I use to avoid unused var lint noise — but not critical. I'll import: Orbit, Zap, RotateCcw, Play, Pause, Sun, Ruler, CircuitBoard, Atom? lucide has CircuitBoard, Atom, Sun, Waves. Let me use safe common ones: Orbit, Zap, RotateCcw, Play, Pause, Sun, Ruler, Activity, ChevronRight. All exist.
+
+I'll write.
+
+Mechanics: add an animated ball moving along the trajectory using requestAnimationFrame with a time state. Add Play/Pause.
+
+Let me define a reusable draw. I'll implement per-tab canvases with separate refs and effects.
+
+Sizing helper:
+
+js
+function useCanvasSize(ref, deps) { ... }
+
+Simpler: an effect that reads parent clientWidth and sets canvas size with DPR.
+
+I'll create a Canvas component wrapper:
+
+jsx
+function ResponsiveCanvas({ draw, deps, className }) {
+  const ref = useRef(null);
   useEffect(() => {
-    if (activeTab !== "mechanics" || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
+    const canvas = ref.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let raf;
+    const render = () => {
+      const w = parent.clientWidth;
+      const h = parent.clientHeight;
+      if (!w || !h) return;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw(ctx, w, h);
+    };
+    render();
+    const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); });
+    ro.observe(parent);
+    return () => { ro.disconnect(); cancelAnimationFrame(raf); };
+  }, deps);
+  return <canvas ref={ref} className={className} />;
+}
 
-    ctx.clearRect(0, 0, width, height);
+Careful: draw depends on props; include in deps.
 
-    // Floor and axes
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(30, height - 30);
-    ctx.lineTo(width - 20, height - 30);
-    ctx.stroke();
+But draw functions recreated each render → effect runs each render. Pass deps explicitly, and disable exhaustive lint (fine).
 
-    // Scale factors
-    const maxGraphX = Math.max(totalRange * 1.2, 50);
-    const maxGraphY = Math.max(maxHeight * 1.4, 20);
-    const scaleX = (width - 60) / maxGraphX;
-    const scaleY = (height - 60) / maxGraphY;
+Actually if draw is inline arrow in deps array it re-runs every render. Let me pass deps list explicitly and not include draw. Use a ref for latest draw.
 
-    // Draw arc
-    ctx.strokeStyle = "#F59E0B";
-    ctx.lineWidth = 3;
-    ctx.beginPath();
+Simpler approach: use useRef to hold latest draw, and deps list controls when to re-render.
 
-    const steps = 60;
-    for (let i = 0; i <= steps; i++) {
-      const t = (i / steps) * timeOfFlight;
-      const x = velocity * Math.cos(rad) * t;
-      const y = velocity * Math.sin(rad) * t - 0.5 * gravity * t * t;
+jsx
+const drawRef = useRef(draw);
+drawRef.current = draw;
 
-      const px = 30 + x * scaleX;
-      const py = height - 30 - y * scaleY;
+then effect calls drawRef.current.
 
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
+Good.
+
+Now the canvas container needs defined height. I'll use aspect or flex-1 with min-h.
+
+Let me structure layout: header, tabs, content area flex-1 with grid: left canvas panel, right controls.
+
+Let me write the full thing.
+
+Mechanics math: guard gravity>0.
+
+Animation: useEffect RAF loop updating progress 0..1 when playing, and draw uses progress to place ball. The ball position updates each frame → need re-render. I'll store t in state but that re-renders 60fps which is okay-ish. Alternatively draw the ball inside the canvas using an internal RAF that calls a draw with local progress. Cleaner: keep a progressRef and run an internal RAF in the canvas draw effect that redraws only the canvas.
+
+Let me do: the mechanics draw effect sets up a RAF loop that draws the full scene each frame using progressRef.current, and a separate effect advances progressRef when playing. Actually simplest: single effect for mechanics with RAF loop that updates progress and draws. Playing state via ref so effect doesn't restart... but playing needs to be in deps to restart loop. That's fine, restarting the loop is cheap.
+
+Let me implement:
+
+js
+useEffect(() => {
+  const canvas = mechRef.current; ...
+  let raf; let last = performance.now();
+  const loop = (now) => {
+    const dt = (now - last)/1000; last = now;
+    if (playing) {
+      progressRef.current += dt / animDuration;
+      if (progressRef.current > 1) progressRef.current = 0; // loop
     }
-    ctx.stroke();
+    draw(ctx, w, h, progressRef.current);
+    raf = requestAnimationFrame(loop);
+  };
+  ...
+}, [playing, deps...]);
 
-    // Draw launch canon
-    ctx.fillStyle = "#F59E0B";
-    ctx.beginPath();
-    ctx.arc(30, height - 30, 6, 0, Math.PI * 2);
-    ctx.fill();
-  }, [activeTab, launchAngle, velocity, gravity, totalRange, maxHeight, timeOfFlight, rad]);
+Hmm but resize handling. I'll combine: use a fixed container size measured once per resize via ResizeObserver storing w,h in refs; the RAF loop reads them.
 
-  // Snell's Law Calculation: n1 * sin(t1) = n2 * sin(t2)
-  const incRad = (incidentAngle * Math.PI) / 180;
-  const sinRefract = (n1 * Math.sin(incRad)) / n2;
-  const isTIR = sinRefract > 1.0;
-  const refractAngle = isTIR ? null : ((Math.asin(sinRefract) * 180) / Math.PI).toFixed(1);
+Let me write a custom hook useAnimatedCanvas(drawFn, deps) where drawFn(ctx,w,h,dt).
 
-  // Circuit Equivalent Resistance
-  const rEq = circuitType === "series" ? r1 + r2 : (r1 * r2) / (r1 + r2 || 1);
-  const totalCurrent = (voltage / (rEq || 1)).toFixed(2);
-  const totalPower = (voltage * totalCurrent).toFixed(1);
+Actually to keep code manageable, I'll write two hooks:
 
+useCanvas(draw, deps) — static redraw on resize/deps change.
+
+For mechanics, the draw includes progress and we run RAF externally.
+
+Let me simplify: all three canvases use useCanvas but mechanics' draw reads progressRef.current — and I run an internal RAF in the mechanics effect that updates progressRef and calls a redraw function exposed... complicated.
+
+Alternative simplest: store progress in state, update via RAF at 60fps. React re-render each frame of a small component is fine. The canvas draw effect depends on progress → redraws. Redraw of ~60 line segments per frame is cheap. Good, do that. But the ResizeObserver effect would re-run every frame (it observes...). Split: one effect for size (on mount + resize sets canvas size), one effect for drawing (on progress/deps).
+
+But drawing needs current w/h. Read from canvas.width/dpr. Fine.
+
+Let me do:
+
+jsx
+// size effect (mount)
+useEffect(() => {
+  const canvas = ref.current; const parent = canvas.parentElement;
+  const resize = () => {
+    const dpr = Math.min(devicePixelRatio||1,2);
+    const w = parent.clientWidth, h = parent.clientHeight;
+    canvas.width = w*dpr; canvas.height = h*dpr;
+    canvas.style.width = w+'px'; canvas.style.height = h+'px';
+    setSize({w,h}); // triggers redraw
+  };
+  resize();
+  const ro = new ResizeObserver(resize); ro.observe(parent);
+  return () => ro.disconnect();
+}, []);
+
+But setSize in every canvas component... I'll make a hook returning {ref, w, h}.
+
+js
+function useCanvasSize() {
+  const ref = useRef(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    const apply = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = parent.clientWidth, h = parent.clientHeight;
+      if (!w || !h) return;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      setSize({ w, h, dpr });
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, size];
+}
+
+Then in each canvas effect: if (!size.w) return; const ctx = canvas.getContext('2d'); ctx.setTransform(size.dpr,0,0,size.dpr,0,0); ctx.clearRect(0,0,size.w,size.h); ...draw...
+
+Good.
+
+Now write the mechanics draw with progress and animated ball.
+
+Let me handle the ball: at t = progress * timeOfFlight, position. Draw circle with glow.
+
+Also draw grid, apex dashed line, velocity vector maybe.
+
+Optics draw: horizontal interface line at mid-height. Normal dashed vertical. Incident ray from upper-left at incidentAngle from normal. Refracted ray to lower-right at refractAngle, or reflected if TIR. Media labels n1 above, n2 below. Colors: incident #F59E0B, refracted #38BDF8, reflected #F472B6.
+
+Circuit draw: battery, resistors. Simple schematic. Series: battery left, two resistors on top line. Parallel: two branches.
+
+Let me draw circuit in SVG instead of canvas — easier and crisper. Yes! Use SVG for circuit. Good.
+
+Units: energy converter. Base in Joules. Units: eV, J, kJ, cal, kcal, kWh, erg. Convert.
+
+Also add: constants list display maybe.
+
+Let me add wave/optics extra: critical angle display.
+
+OK writing now. Keep it long but complete.
+
+Colors: amber #F59E0B accent, glass panels.
+
+Let me write the code.
+
+jsx
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { Orbit, Zap, RotateCcw, Play, Pause, Sun, Ruler, Activity, Compass, Cpu, Sparkles } from "lucide-react";
+
+I'll use Orbit, Play, Pause, RotateCcw, Sun, Zap, Ruler, Activity maybe. Let me just import a set and use most.
+
+Now component.
+
+Slider component: reusable.
+
+jsx
+function Slider({ label, value, onChange, min, max, step = 1, unit = "", accent = "#F59E0B" }) {
   return (
-    <div
-      className="h-full flex flex-col rounded-3xl border border-white/10 bg-[#131419]/90 backdrop-blur-[24px] text-[#F5F6F8] overflow-hidden"
-      style={{ backdropFilter: "blur(24px)" }}
-    >
-      {/* Top Header */}
-      <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-black/20 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <Orbit className="w-5 h-5 text-[#F59E0B]" />
-          <span className="text-sm font-bold tracking-tight text-[#F5F6F8]">Physics Mechanics &amp; Electrodynamics</span>
-        </div>
-
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#0A0B0F]/80 border border-white/10 text-xs">
-          {[
-            { id: "mechanics", label: "Mechanics Simulator" },
-            { id: "optics", label: "Optics & Wave Bench" },
-            { id: "circuit", label: "Circuit Sandbox" },
-            { id: "units", label: "Constants & Units" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-[#F59E0B] text-[#0A0B0F] font-bold shadow-md shadow-[#F59E0B]/20"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+    <label className="block">
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] font-medium uppercase tracking-wider text-white/50">{label}</span>
+        <span className="text-xs font-bold tabular-nums text-white">{value}<span className="ml-0.5 text-white/40 font-normal">{unit}</span></span>
       </div>
-
-      {/* Main Container */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* TAB 1: MECHANICS SIMULATOR */}
-        {activeTab === "mechanics" && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">2D Kinematic Projectile Motion Simulator</h3>
-              <p className="text-xs text-white/50">Adjust launch parameters to calculate ballistic arc, apex, flight duration, and range.</p>
-            </div>
-
-            {/* Sliders */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-white/60">Launch Angle (θ)</span>
-                  <span className="font-bold text-[#F59E0B]">{launchAngle}°</span>
-                </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="85"
-                  value={launchAngle}
-                  onChange={(e) => setLaunchAngle(Number(e.target.value))}
-                  className="w-full accent-[#F59E0B]"
-                />
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-white/60">Initial Velocity (v₀)</span>
-                  <span className="font-bold text-[#F59E0B]">{velocity} m/s</span>
-                </div>
-                <input
-                  type="range"
-                  min="5"
-                  max="60"
-                  value={velocity}
-                  onChange={(e) => setVelocity(Number(e.target.value))}
-                  className="w-full accent-[#F59E0B]"
-                />
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-white/60">Gravitational Accel (g)</span>
-                  <span className="font-bold text-[#F59E0B]">{gravity} m/s²</span>
-                </div>
-                <div className="flex gap-2">
-                  {[
-                    { name: "Earth", val: 9.8 },
-                    { name: "Moon", val: 1.62 },
-                    { name: "Mars", val: 3.71 },
-                  ].map((p) => (
-                    <button
-                      key={p.name}
-                      onClick={() => setGravity(p.val)}
-                      className={`px-2 py-1 text-[11px] rounded-lg border ${
-                        gravity === p.val
-                          ? "bg-[#F59E0B]/20 border-[#F59E0B] text-[#F5F6F8]"
-                          : "bg-white/5 border-white/10 text-white/50"
-                      }`}
-                    >
-                      {p.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Readout Metrics */}
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="p-4 rounded-xl bg-black/40 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/40 block">Max Height (Apex)</span>
-                <span className="text-lg font-bold text-[#F5F6F8] font-mono">{maxHeight.toFixed(2)} m</span>
-              </div>
-              <div className="p-4 rounded-xl bg-black/40 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/40 block">Total Horizontal Range</span>
-                <span className="text-lg font-bold text-[#F5F6F8] font-mono">{totalRange.toFixed(2)} m</span>
-              </div>
-              <div className="p-4 rounded-xl bg-black/40 border border-white/10">
-                <span className="text-[10px] uppercase tracking-wider text-white/40 block">Time of Flight</span>
-                <span className="text-lg font-bold text-[#F59E0B] font-mono">{timeOfFlight.toFixed(2)} s</span>
-              </div>
-            </div>
-
-            {/* Canvas Plot */}
-            <div className="p-4 rounded-2xl border border-white/10 bg-[#0A0B0F] flex items-center justify-center">
-              <canvas ref={canvasRef} width={640} height={240} className="w-full max-w-2xl h-auto" />
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: OPTICS & WAVE BENCH */}
-        {activeTab === "optics" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Snell&apos;s Law Refraction &amp; Optics Bench</h3>
-              <p className="text-xs text-white/50">Simulate ray deviation across boundaries and determine Critical Angle for Total Internal Reflection.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-white/60">Incident Angle (θ₁)</span>
-                  <span className="font-bold text-[#F59E0B]">{incidentAngle}°</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="90"
-                  value={incidentAngle}
-                  onChange={(e) => setIncidentAngle(Number(e.target.value))}
-                  className="w-full accent-[#F59E0B]"
-                />
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <span className="text-xs text-white/60 block">Medium 1 (n₁)</span>
-                <select
-                  value={n1}
-                  onChange={(e) => setN1(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
-                >
-                  <option value={1.0}>Air (1.00)</option>
-                  <option value={1.33}>Water (1.33)</option>
-                  <option value={1.52}>Crown Glass (1.52)</option>
-                  <option value={2.42}>Diamond (2.42)</option>
-                </select>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <span className="text-xs text-white/60 block">Medium 2 (n₂)</span>
-                <select
-                  value={n2}
-                  onChange={(e) => setN2(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs text-white"
-                >
-                  <option value={1.0}>Air (1.00)</option>
-                  <option value={1.33}>Water (1.33)</option>
-                  <option value={1.52}>Crown Glass (1.52)</option>
-                  <option value={2.42}>Diamond (2.42)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Results Card */}
-            <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-white/40 font-semibold">Refraction Outcome</span>
-                <span className="font-mono text-xs text-white/70">n₁ sin θ₁ = n₂ sin θ₂</span>
-              </div>
-
-              {isTIR ? (
-                <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-semibold">
-                  ⚠️ Total Internal Reflection (TIR): No refracted ray emerges; 100% of incident light reflects back into Medium 1.
-                </div>
-              ) : (
-                <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 flex items-center justify-around text-center">
-                  <div>
-                    <span className="text-xs text-white/40 block">Angle of Incidence (θ₁)</span>
-                    <span className="text-xl font-bold font-mono text-white">{incidentAngle}°</span>
-                  </div>
-                  <div className="text-xl text-[#F59E0B]">→</div>
-                  <div>
-                    <span className="text-xs text-white/40 block">Angle of Refraction (θ₂)</span>
-                    <span className="text-xl font-bold font-mono text-[#F59E0B]">{refractAngle}°</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: CIRCUIT SANDBOX */}
-        {activeTab === "circuit" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Ohm&apos;s Law &amp; Resistor Network Sandbox</h3>
-              <p className="text-xs text-white/50">Calculate equivalent resistance, branch current, and Joule heating power dissipation.</p>
-            </div>
-
-            <div className="flex gap-2">
-              {["series", "parallel"].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setCircuitType(type)}
-                  className={`px-4 py-2 rounded-xl capitalize text-xs font-semibold border ${
-                    circuitType === type
-                      ? "bg-[#F59E0B]/20 border-[#F59E0B] text-[#F59E0B]"
-                      : "bg-white/5 border-white/10 text-white/60"
-                  }`}
-                >
-                  {type} Circuit
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-1">
-                <label className="text-xs text-white/60">Source Voltage (V)</label>
-                <input
-                  type="number"
-                  value={voltage}
-                  onChange={(e) => setVoltage(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 font-mono text-sm text-white"
-                />
-              </div>
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-1">
-                <label className="text-xs text-white/60">Resistor R₁ (Ω)</label>
-                <input
-                  type="number"
-                  value={r1}
-                  onChange={(e) => setR1(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 font-mono text-sm text-white"
-                />
-              </div>
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-1">
-                <label className="text-xs text-white/60">Resistor R₂ (Ω)</label>
-                <input
-                  type="number"
-                  value={r2}
-                  onChange={(e) => setR2(Number(e.target.value))}
-                  className="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 font-mono text-sm text-white"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div className="p-4 rounded-xl bg-black/40 border border-white/10">
-                <span className="text-[10px] uppercase text-white/40 block">Equivalent Resistance (R_eq)</span>
-                <span className="text-xl font-bold font-mono text-white">{rEq.toFixed(2)} Ω</span>
-              </div>
-              <div className="p-4 rounded-xl bg-black/40 border border-white/10">
-                <span className="text-[10px] uppercase text-white/40 block">Total Circuit Current (I)</span>
-                <span className="text-xl font-bold font-mono text-[#F59E0B]">{totalCurrent} A</span>
-              </div>
-              <div className="p-4 rounded-xl bg-black/40 border border-white/10">
-                <span className="text-[10px] uppercase text-white/40 block">Total Power Dissipation (P)</span>
-                <span className="text-xl font-bold font-mono text-emerald-400">{totalPower} W</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: CONSTANTS & UNITS */}
-        {activeTab === "units" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Universal Physical Constants &amp; Unit Converter</h3>
-              <p className="text-xs text-white/50">Precise CODATA recommended values for thermodynamic, quantum, and relativistic calculations.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { name: "Speed of Light (c)", val: "2.99792458 × 10⁸ m/s", desc: "Universal cosmic velocity limit" },
-                { name: "Planck Constant (h)", val: "6.62607015 × 10⁻³⁴ J·s", desc: "Quantum action fundamental" },
-                { name: "Gravitational Constant (G)", val: "6.67430 × 10⁻¹¹ m³/(kg·s²)", desc: "Newtonian spacetime curvature factor" },
-                { name: "Elementary Charge (e)", val: "1.60217663 × 10⁻¹⁹ C", desc: "Proton / electron charge quantum" },
-                { name: "Boltzmann Constant (k_B)", val: "1.380649 × 10⁻²³ J/K", desc: "Thermal energy per Kelvin" },
-                { name: "Vacuum Permittivity (ε₀)", val: "8.85418781 × 10⁻¹² F/m", desc: "Electric field transmission capacity" },
-              ].map((c) => (
-                <div key={c.name} className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-1">
-                  <div className="text-xs font-bold text-[#F5F6F8]">{c.name}</div>
-                  <div className="text-sm font-mono text-[#F59E0B]">{c.val}</div>
-                  <div className="text-[10px] text-white/40">{c.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={(e)=>onChange(parseFloat(e.target.value))}
+        className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-white/10 accent-[#F59E0B]"
+        style={{ accentColor: accent }}
+      />
+    </label>
   );
 }
+
+Note: accent-[#F59E0B] arbitrary Tailwind may not be configured; use style accentColor. Remove the class.
+
+Stat card component.
+
+Now the layout.
+
+Let me write everything out.
+
+For mechanics animation duration: use timeOfFlight real seconds scaled — if timeOfFlight is e.g. 3.6s, animate over min(timeOfFlight, 4)? Use animDuration = Math.min(Math.max(timeOfFlight, 1.2), 5). Actually just use timeOfFlight directly but clamp. I'll use Math.max(0.8, Math.min(timeOfFlight, 6)).
+
+Progress state + RAF:
+
+jsx
+const [playing, setPlaying] = useState(true);
+const [progress, setProgress] = useState(0);
+useEffect(() => {
+  if (activeTab !== "mechanics" || !playing) return;
+  let raf, last = performance.now();
+  const tick = (now) => {
+    const dt = (now - last) / 1000; last = now;
+    setProgress(p => {
+      const next = p + dt / animDuration;
+      return next > 1 ? 0 : next;
+    });
+    raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+  return () => cancelAnimationFrame(raf);
+}, [activeTab, playing, animDuration]);
+
+Reset progress when params change: useEffect on [launchAngle, velocity, gravity] → setProgress(0).
+
+Hmm, but animDuration changes with params too, covered.
+
+Draw effect deps: [size, launchAngle, velocity, gravity, progress, activeTab].
+
+That redraws every frame — fine.
+
+Now the draw function.
+
+js
+const ctx = canvas.getContext("2d");
+ctx.setTransform(size.dpr, 0, 0, size.dpr, 0, 0);
+ctx.clearRect(0, 0, size.w, size.h);
+const W = size.w, H = size.h;
+const padL = 34, padR = 18, padB = 28, padT = 18;
+const plotW = W - padL - padR;
+const plotH = H - padT - padB;
+const originX = padL, originY = H - padB;
+
+Scale:
+
+js
+const gx = Math.max(totalRange * 1.25, 10);
+const gy = Math.max(maxHeight * 1.6, 5);
+const sx = plotW / gx;
+const sy = plotH / gy;
+
+Grid: draw faint horizontal lines.
+
+Trajectory path.
+
+Ball at progress.
+
+Apex marker: dashed line at maxHeight and label.
+
+Velocity vector at ball: optional, skip or add small arrow.
+
+Ok.
+
+Optics canvas draw.
+
+Circuit SVG.
+
+Let me now write final code in one go.
+
+For the units converter, define:
+
+js
+const ENERGY_UNITS = {
+  J: 1,
+  kJ: 1000,
+  cal: 4.184,
+  kcal: 4184,
+  Wh: 3600,
+  kWh: 3.6e6,
+  eV: 1.602176634e-19,
+  erg: 1e-7,
+};
+
+value in J = energyVal * ENERGY_UNITS[energyUnit]; display conversions.
+
+Format numbers nicely with toPrecision / exponential.
+
+js
+function fmt(n) {
+  if (n === 0) return "0";
+  const a = Math.abs(n);
+  if (a >= 1e6 || a < 1e-4) return n.toExponential(4);
+  return parseFloat(n.toPrecision(6)).toString();
+}
+
+Now write.
+
+Also add keyboard/accessibility? Keep it reasonable.
+
+Let me write out the full file.
+
+For the tabs, use the same structure.
+
+Let me write carefully the circuit SVG.
+
+Series circuit SVG (viewBox 0 0 400 240):
+
+Battery at left vertical: lines at x=60, y 100..140.
+
+Loop rectangle from (60,120) → (340,120) top... hmm, let's do: top
