@@ -1,5 +1,66 @@
+The user wants me to upgrade a Breadcrumb.css file. But there's a format requirement at the top: I MUST wrap ALL JSON tool call arrays in a  code block. The automation harness parses response by looking for code blocks first.
+
+Wait, this is confusing. The file is a format requirement telling me to output JSON tool calls. But the mission says "output ONLY the raw upgraded code. No markdown."
+
+The format requirement is critical — it says I must wrap JSON tool call arrays in a code block. So I should use a write_file tool call.
+
+But the mission says output only raw upgraded code. There's a conflict. The format requirement says "You MUST wrap ALL JSON tool call arrays in a  code block." This is a meta-instruction about how to call tools.
+
+I think the right approach: use the write_file tool call wrapped in  code block, with the upgraded CSS content.
+
+Let me actually design a 10x better Breadcrumb CSS using motion principles.
+
+Audit findings:
+
+Basic transitions, could add better motion
+
+Hover background transition is abrupt (only color transitions, not background)
+
+No active/press states
+
+No reduced-motion handling
+
+Ellipsis hover has no transition
+
+Separator could animate
+
+No slide-in for items on mount
+
+Focus-visible is good
+
+Could use transform for subtle lift
+
+Liquid Glass aesthetic - could enhance with backdrop-filter
+
+Let me write upgraded CSS with:
+
+Better transitions (color + background)
+
+Active press state
+
+Reduced motion support
+
+Slide-in stagger animation for list items
+
+Enhanced glass effect
+
+Separator opacity transition
+
+Ellipsis transition
+
+Focus ring improvements
+
+Better responsive
+
+Let me write the file. Path: src/components/ui/Breadcrumb.css — but they said /abs/path. Let me use src/components/ui/Breadcrumb.css as given.
+
+I'll produce the JSON array with write_file.
+
+Let me write the CSS carefully.
+
+css
 /* =========================================
-   HEY BREADCRUMB
+   HEY BREADCRUMB — Liquid Glass Edition
    ========================================= */
 
 .hey-breadcrumb {
@@ -10,6 +71,7 @@
   padding: var(--space-2) 0;
   font-family: var(--font-body);
   font-size: var(--text-small);
+  -webkit-font-smoothing: antialiased;
 }
 
 .hey-breadcrumb__list {
@@ -26,22 +88,50 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
+  animation: hey-breadcrumb-enter var(--motion-normal) var(--ease-out) both;
+}
+
+/* Staggered mount for each crumb */
+.hey-breadcrumb__item:nth-child(1) { animation-delay: 0ms; }
+.hey-breadcrumb__item:nth-child(2) { animation-delay: 30ms; }
+.hey-breadcrumb__item:nth-child(3) { animation-delay: 60ms; }
+.hey-breadcrumb__item:nth-child(4) { animation-delay: 90ms; }
+.hey-breadcrumb__item:nth-child(5) { animation-delay: 120ms; }
+.hey-breadcrumb__item:nth-child(n+6) { animation-delay: 150ms; }
+
+@keyframes hey-breadcrumb-enter {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .hey-breadcrumb__link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   color: var(--text-secondary);
   text-decoration: none;
-  transition: color var(--motion-fast) var(--ease);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-control);
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .hey-breadcrumb__link:hover {
   color: var(--text-primary);
   background: var(--glass-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--glass-shadow, 0 1px 2px rgba(0,0,0,0.04));
+}
+
+.hey-breadcrumb__link:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: var(--motion-instant, 80ms);
 }
 
 .hey-breadcrumb__link:focus-visible {
@@ -56,17 +146,28 @@
   color: var(--text-primary);
   font-weight: 500;
   padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .hey-breadcrumb__icon {
   display: inline-flex;
   flex-shrink: 0;
   line-height: 1;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+.hey-breadcrumb__link:hover .hey-breadcrumb__icon {
+  transform: scale(1.05);
 }
 
 .hey-breadcrumb__icon svg {
   width: 14px;
   height: 14px;
+  display: block;
 }
 
 .hey-breadcrumb__separator {
@@ -75,6 +176,12 @@
   justify-content: center;
   color: var(--text-tertiary);
   font-size: var(--text-micro);
+  transition: color var(--motion-fast) var(--ease-out);
+  user-select: none;
+}
+
+.hey-breadcrumb__link:hover + .hey-breadcrumb__separator {
+  color: var(--text-secondary);
 }
 
 .hey-breadcrumb__ellipsis {
@@ -87,24 +194,37 @@
   font-size: var(--text-body);
   border-radius: var(--radius-control);
   cursor: default;
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
 }
 
 .hey-breadcrumb__ellipsis:hover {
   background: var(--glass-bg);
   color: var(--text-secondary);
+  transform: scale(1.08);
 }
 
-/* =========================================
-   RESPONSIVE
-   ========================================= */
+.hey-breadcrumb__ellipsis:active {
+  transform: scale(0.96);
+}
 
+/* Responsive */
 @media (max-width: 480px) {
   .hey-breadcrumb {
     font-size: var(--text-micro);
   }
-
   .hey-breadcrumb__link,
   .hey-breadcrumb__current {
     padding: var(--space-1);
   }
 }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hey-breadcrumb__item {
+    animation: none;
+  }
+  .hey-breadcrumb__link,
+  .hey-breadcrumb__link
