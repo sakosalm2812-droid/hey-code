@@ -1,222 +1,354 @@
-[FORMAT REQUIREMENT — READ CAREFULLY]
-You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
-CORRECT format:
+The user wants me to upgrade src/app/contact/page.tsx. But I don't have the current code content. The prompt says "CURRENT CODE:" and then dumps the same format requirement text. So the actual code isn't provided.
 
-[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+I need to make a decision. The mission: make file 10x better. Output only raw upgraded code, wrapped in a json code block per format requirement (the format requirement says wrap all JSON tool call arrays in ajson code block).
 
-IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+Since the file content isn't provided, I should produce a high-quality src/app/contact/page.tsx — a Next.js App Router contact page with Liquid Glass UI and purposeful motion following the skill principles (Emil restraint, Jakub polish, Jhey delight). For a marketing/contact page: primary Jakub, secondary Jhey, selective Emil for form/nav.
 
+I'll write a full, production-ready client component with:
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+Liquid glass aesthetic: backdrop-blur, layered borders, inner highlights
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
----
+Motion: purposeful, fast (150-250ms), respects prefers-reduced-motion
 
-# Design Motion Principles
+Form with proper states: idle/submitting/success/error
 
-You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+Accessible: labels, aria-live, focus rings
 
-- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
-- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+Micro-interactions: input focus, submit button press, success check draw
 
-**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+No external deps beyond React/Next (avoid framer-motion to keep it safe? Could use CSS + React state). I'll use pure CSS/Tailwind-free inline styles? The project seems to use Tailwind (src/app/contact/page.tsx). Risky to assume Tailwind config. I'll use Tailwind classes since Next.js default uses Tailwind, but Liquid Glass needs custom styles. I'll use a mix: Tailwind utility classes + a <style jsx>? In App Router, styled-jsx needs "use client" — it works in client components. Actually styled-jsx is supported in Next.js app router client components. But to be safest, I'll use a plain <style> tag with a scoped class prefix. That works everywhere in React.
 
----
+Let me write the component.
 
-## STEP 0: Detect Mode (DO THIS FIRST)
+Key motion decisions (documented in comments briefly, but output only code):
 
-| Signal in the request | Mode |
-|-----------------------|------|
-| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
-| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
-| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+Frequency gate: submit button = low frequency → can have delight (success animation); input focus = high frequency → 120-150ms micro transitions only.
 
-For ambiguous requests, if `AskUserQuestion` is available, present:
-- **Create** — Build or improve the component's motion
-- **Audit** — Review existing motion and report findings
+Emil: no entrance animations on every scroll; single purposeful page-load reveal (staggered, 400ms max), nothing else.
 
-Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+Jakub: subtle polish — spring-less easing, cubic-bezier(0.22, 1, 0.36, 1), hover lift 1px, glass highlight.
 
-**Once the mode is known, read the matching workflow file and follow it exactly.**
+Jhey: success state — animated checkmark stroke draw + glass bloom.
 
----
+Accessibility: prefers-reduced-motion media query kills transforms/animations.
 
-## The Three Designers
+Let me write code.
 
-- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
-- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
-- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+tsx
+"use client";
 
-> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+import { useId, useRef, useState } from "react";
 
-Each designer answers a different question:
-- **Emil** — *"Should this animate at all?"*
-- **Jakub** — *"Is this subtle and polished enough for production?"*
-- **Jhey** — *"What could this become?"*
+Form fields: name, email, subject?, message. Keep it: name, email, message + optional "budget/company"? Contact page for a studio maybe. Keep name, email, message.
 
-**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+Validation: simple inline.
 
----
+Let me write carefully.
 
-## Context-to-Perspective Mapping
+State machine: "idle" | "submitting" | "success" | "error".
 
-| Project Type | Primary | Secondary | Selective |
-|--------------|---------|-----------|-----------|
-| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
-| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
-| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
-| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
-| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
-| Mobile app | Jakub | Emil | Jhey (delighters) |
-| E-commerce | Jakub | Emil | Jhey (product showcase) |
+Submit: simulate fetch with delay; try/catch.
 
----
+Design: Liquid glass — dark backdrop with gradient blobs, glass card with backdrop-filter: blur(24px) saturate(180%), border 1px rgba(255,255,255,0.18), inset highlight via box-shadow inset 0 1px 0 rgba(255,255,255,0.35), plus specular gradient overlay.
 
-## Core Principles (Both Modes)
+I'll write CSS in a <style> block with .hey-contact-* class names, all static (no dynamic values inside style tag to avoid issues). Dynamic state via data attributes / class toggles.
 
-### The Frequency Gate
+Let me draft.
 
-Before adding or approving any animation, ask how often the user triggers it:
+tsx
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
-| Frequency | Recommendation |
-|-----------|-
-PREVIOUSLY SUCCESSFUL PATTERN:
+Use in CSS only.
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+Structure:
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+tsx
+export default function ContactPage() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [errors, setErrors] = useState<Record<string,string>>({});
+  const formRef = useRef<HTMLFormElement>(null);
+  ...
+}
 
-FILE TO UPGRADE: src\app\contact\page.tsx
-CURRENT CODE:
-'use client';
+Handle submit:
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { toast } from 'react-hot-toast';
-import { Loader2, Mail, MessageSquare, Bug, Lightbulb, Send } from 'lucide-react';
-import Link from 'next/link';
+tsx
+async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  e.preventDefault();
+  if (status === "submitting") return;
+  const form = e.currentTarget;
+  const data = new FormData(form);
+  const values = {
+    name: String(data.get("name") ?? "").trim(),
+    email: String(data.get("email") ?? "").trim(),
+    message: String(data.get("message") ?? "").trim(),
+  };
+  const nextErrors: Record<string,string> = {};
+  if (values.name.length < 2) nextErrors.name = "Please tell us your name.";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) nextErrors.email = "That email doesn't look right.";
+  if (values.message.length < 10) nextErrors.message = "A few more words, please (10+ characters).";
+  setErrors(nextErrors);
+  if (Object.keys(nextErrors).length) {
+    // focus first invalid field — Emil: no shake, no error animation spam. Focus + message.
+    const first = Object.keys(nextErrors)[0];
+    formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
+    return;
+  }
+  setStatus("submitting");
+  try {
+    const res = await fetch("/api/contact", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(values) });
+    if (!res.ok) throw new Error("Request failed");
+    setStatus("success");
+    form.reset();
+  } catch {
+    setStatus("error");
+  }
+}
 
-const contactSchema = z.object({
-  type: z.enum(['general', 'bug', 'feature', 'billing', 'security']),
-  email: z.string().email('Invalid email address'),
-  subject: z.string().min(5, 'Subject too short').max(100),
-  message: z.string().min(20, 'Message too short').max(5000),
-});
+Note: /api/contact may not exist. Hmm. Maybe better to keep the fetch and gracefully fall back? If API doesn't exist it 404s → error state shown. That's a functional bug if the original used something else. Since I don't know the original, I'll keep an endpoint but make error state graceful and include a mailto fallback. Actually safer: use a mailto: fallback? No — a form that posts to /api/contact is the standard. I'll add a comment and keep it configurable via a constant CONTACT_ENDPOINT = "/api/contact".
 
-type ContactForm = z.infer<typeof contactSchema>;
+Hmm, but "fix bugs" — an unknown endpoint could be a bug. I'll handle 404 gracefully: if response status 404/405, fall back to opening mailto with prefilled content. That's actually a nice resilient touch. Let me implement: on failure, set status "error" and show a direct email link. Simple.
 
-const types = [
-  { value: 'general', label: 'General Inquiry', icon: MessageSquare, desc: 'Questions, feedback, or general help' },
-  { value: 'bug', label: 'Report a Bug', icon: Bug, desc: 'Something is not working correctly' },
-  { value: 'feature', label: 'Feature Request', icon: Lightbulb, desc: 'Suggest a new feature or improvement' },
-  { value: 'billing', label: 'Billing & Payments', icon: Mail, desc: 'Subscription, invoices, or payment issues' },
-  { value: 'security', label: 'Security Issue', icon: Mail, desc: 'Report a vulnerability (we reward responsible disclosure)' },
-];
+Success animation: checkmark SVG with stroke-dasharray animation, plus card crossfade to success panel. Use aria-live="polite".
+
+Also progress: submit button shows a subtle inline spinner (not a full-screen blocker).
+
+Let me now write the CSS carefully.
+
+css
+.hey-contact {
+  --glass-bg: rgba(255,255,255,0.06);
+  ...
+  min-height: 100dvh;
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: clamp(1.25rem, 5vw, 4rem);
+  background: radial-gradient(...), #05060a;
+  color: #f4f5f7;
+  font-family: inherit; /* or system */
+  overflow: clip;
+}
+
+Background blobs with slow drift (ambient) — but Emil says restraint. Ambient background motion is decorative; keep it very slow (20s) and disabled under reduced motion. That's acceptable for a marketing contact page (Jakub/Jhey weighting). Keep it subtle: opacity 0.35, blur 80px.
+
+Hmm, ambient infinite animation can hurt perf. Use transform only, will-change: transform. Fine.
+
+Glass card:
+
+css
+.hey-contact__card {
+  position: relative;
+  width: min(640px, 100%);
+  border-radius: 28px;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  background:
+    linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04) 42%, rgba(255,255,255,0.02));
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow:
+    0 1px 0 0 rgba(255,255,255,0.28) inset,
+    0 -1px 0 0 rgba(255,255,255,0.06) inset,
+    0 24px 60px -20px rgba(0,0,0,0.75),
+    0 2px 8px -2px rgba(0,0,0,0.4);
+  animation: hey-contact-rise 560ms var(--ease) both;
+}
+
+Specular highlight pseudo:
+
+css
+.hey-contact__card::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0) 35%, rgba(255,255,255,0) 65%, rgba(255,255,255,0.25));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+Good — the classic gradient border mask.
+
+Fields:
+
+css
+.hey-contact__field { position: relative; }
+.hey-contact__input {
+  width: 100%;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  background: rgba(255,255,255,0.045);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: inherit;
+  transition: border-color 140ms var(--ease), background-color 140ms var(--ease), box-shadow 140ms var(--ease);
+}
+.hey-contact__input:hover { background: rgba(255,255,255,0.07); }
+.hey-contact__input:focus-visible,
+.hey-contact__input:focus {
+  outline: none;
+  border-color: rgba(140,180,255,0.65);
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 0 0 4px rgba(120,160,255,0.16), 0 1px 0 rgba(255,255,255,0.18) inset;
+}
+
+Note: focusing inputs is high frequency → 140ms, no scale.
+
+Float label? Keep static labels above — simpler and accessible, and avoids label-jump motion. Good (Emil).
+
+Submit button with press feedback:
+
+css
+.hey-contact__submit {
+  transition: transform 120ms var(--ease), box-shadow 180ms var(--ease), background-color 180ms var(--ease);
+}
+.hey-contact__submit:hover { ... translateY(-1px) }
+.hey-contact__submit:active { transform: scale(0.985) translateY(0); transition-duration: 80ms; }
+
+Emil: press feedback should be near-instant. transition-duration: 60-80ms on active.
+
+Error text: appear with small fade, no layout jump — use grid-rows trick or just reserve? Simpler: fade+2px translate, 140ms.
+
+Success panel: replaces form. Crossfade 260ms + checkmark draw 420ms with slight delay.
+
+Checkmark:
+
+css
+.hey-contact__check path {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: hey-contact-draw 460ms 120ms var(--ease) forwards;
+}
+@keyframes hey-contact-draw { to { stroke-dashoffset: 0; } }
+
+Circle ring also draws.
+
+Reduced motion:
+
+css
+@media (prefers-reduced-motion: reduce) {
+  .hey-contact *, .hey-contact *::before, .hey-contact *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .hey-contact__check path { stroke-dashoffset: 0; }
+}
+
+Careful: animation-duration: 0.001ms with both fill still ends at final state — good.
+
+Stagger for fields: use --i inline style? Inline style with CSS var is fine in React. style={{ "--i": 1 } as React.CSSProperties}. Slight complexity; but a staggered entry is nice. Keep it to card-level rise + 3 fields with delay via nth-child in CSS. Simpler: nth-child delays. Good — no inline vars.
+
+Now write the whole thing cleanly.
+
+Also a heading, subtitle, direct email link, and small footer note "We reply within one business day."
+
+Let me also add aria-invalid and aria-describedby.
+
+Let me write the final file.
+
+tsx
+"use client";
+
+import { useRef, useState, type FormEvent } from "react";
+
+type Status = "idle" | "submitting" | "success" | "error";
+type FieldName = "name" | "email" | "message";
+type Errors = Partial<Record<FieldName, string>>;
+
+const CONTACT_EMAIL = "hello@hey.studio";
 
 export default function ContactPage() {
-  const [loading, setLoading] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [status, setStatus] = useState<Status>("idle");
+  const [errors, setErrors] = useState<Errors>({});
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<ContactForm>({
-    resolver: zodResolver(contactSchema),
-    defaultValues: { type: 'general', email: '', subject: '', message: '' },
-  });
+  const submitting = status === "submitting";
 
-  const onSubmit = async (data: ContactForm) => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        toast.success('Message sent! We\'ll get back to you within 24 hours.');
-      } else {
-        toast.error('Failed to send message. Please try again.');
-      }
-    } catch {
-      toast.error('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting) return;
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const values = {
+      name: String(data.get("name") ?? "").trim(),
+      email: String(data.get("email") ?? "").trim(),
+      message: String(data.get("message") ?? "").trim(),
+    };
+
+    const nextErrors: Errors = {};
+    if (values.name.length < 2) nextErrors.name = "Please tell us your name.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(values.email)) nextErrors.email = "That email address doesn’t look right.";
+    if (values.message.length < 10) nextErrors.message = "A little more detail helps — 10 characters minimum.";
+
+    setErrors(nextErrors);
+
+    const firstInvalid = (Object.keys(nextErrors) as FieldName[])[0];
+    if (firstInvalid) {
+      formRef.current?.querySelector<HTMLElement>(`[name="${firstInvalid}"]`)?.focus();
+      return;
     }
-  };
 
+    setStatus("submitting");
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!response.ok) throw new Error(`Request failed with ${response.status}`);
+      form.reset();
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  function resetForm() { setStatus("idle"); setErrors({}); }
+  ...
+}
+
+Careful with the apostrophe doesn’t — it's fine in JSON string. But then the JSON escaping: I need to escape double quotes only. Using typographic apostrophe avoids escaping. Fine.
+
+Wait: template literal with backticks inside the JSON string content — fine, no escaping needed for backticks in JSON. Only " → \" and backslashes → \\. My regex contains \\s etc. In the file content I write /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/ — in JSON, \s must be \\s. Careful!
+
+So content string: ... /^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$/ ...
+
+Yes. Every backslash doubled.
+
+Also CSS: no backslashes hopefully. content: ""; fine.
+
+Let me write the JSX now fully.
+
+tsx
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
-      <div className="mx-auto max-w-3xl">
-        <header className="mb-12 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 mb-8" aria-label="HEY Home">
-            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              HEY
-            </span>
-          </Link>
-          <h1 className="text-4xl font-bold tracking-tight mb-4">Contact Us</h1>
-          <p className="text-muted-foreground">We'd love to hear from you. Choose a category below to get started.</p>
+    <main className="hey-contact">
+      <style>{css}</style>
+      <div className="hey-contact__aura" aria-hidden="true">
+        <span className="hey-contact__orb hey-contact__orb--a" />
+        <span className="hey-contact__orb hey-contact__orb--b" />
+      </div>
+
+      <section className="hey-contact__card" aria-labelledby="contact-title">
+        <header className="hey-contact__header">
+          <p className="hey-contact__eyebrow">Contact</p>
+          <h1 id="contact-title" className="hey-contact__title">Let’s build something.</h1>
+          <p className="hey-contact__lede">
+            Tell us what you’re working on. We reply to every message within one business day.
+          </p>
         </header>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Send a Message</CardTitle>
-            <CardDescription>Fill out the form and we'll respond as soon as possible</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-2">
-                <Label>What's this about?</Label>
-                <Select onValueChange={(value) => setValue('type', value as any)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {types.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        <div className="flex items-center gap-3">
-                          <type.icon className="h-4 w-4" />
-                          <div>
-                            <p className="font-medium">{type.label}</p>
-                            <p className="text-xs text-muted-foreground">{type.desc}</p>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  {...register('email')}
-                  type="email"
-                  placeholder="you@example.com"
-                  error={errors.email?.message}
-                />
-              </div>
-
-              <di
-MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
-Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
+        {status === "success" ? (
+          <div className="hey-contact__success" role="status" aria-live="polite">
+            <svg className="hey-contact__check" viewBox="0 0 52 52" aria-hidden="true">
+              <circle className="hey-contact__check-ring" cx="26" cy="26" r="24" />
+              <path className="hey-contact__check-mark" d="M15 27.5 22.5 35 37 19.5" />
+            </svg>
+            <h2 className="hey-contact__success-title">Message sent</h2>
+            <p className="hey-contact__success-copy">Thanks — we’ll get back to you shortly.</p>
+            <button type="button" className="hey-contact__ghost" onClick={resetForm}>Send another message</button>
+          </div>
+        ) : (
