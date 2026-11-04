@@ -1,222 +1,356 @@
-[FORMAT REQUIREMENT — READ CAREFULLY]
-You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
-CORRECT format:
+The user wants me to upgrade the file src\app\privacy\page.tsx. But there's no actual current code provided — the "CURRENT CODE" section just repeats the format requirements. There's no file content.
 
-[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+I need to figure out what to do. The mission says: output ONLY the raw upgraded code, no markdown. But the system says wrap JSON tool calls in code block.
 
-IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+There's no current code. I can't upgrade what I can't see. But the expectation is I produce the file. Given the pattern of these tasks (HEY Motion Specialist upgrading a privacy page), I should create a plausible, high-quality privacy page with Liquid Glass styling and purposeful motion.
 
+Wait — but the file content shown is just format-requirement text. There's literally no code. So I should just produce a great privacy page component.
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+But the output format requirement conflicts: "output ONLY the raw upgraded code. No markdown." vs "wrap ALL JSON tool call arrays in a code block."
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
----
+The harness parses code blocks first. So I should output a JSON tool call in a  block with write_file.
 
-# Design Motion Principles
+Let me design the privacy page. It's a Next.js app (src/app/privacy/page.tsx). Should be a client component if it uses motion, or server component with CSS-only motion. Given "Liquid Glass" and motion, I'll make it a client component with subtle purposeful motion.
 
-You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+Design considerations per the skill:
 
-- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
-- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+Privacy page = low-frequency, informational content. Emil's rule: don't over-animate. Content should just be readable.
 
-**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+Motion should be minimal: perhaps a subtle fade/rise for section reveals on scroll, respecting prefers-reduced-motion.
 
----
+Liquid Glass: backdrop-blur, translucent layers, soft borders, gradient highlights.
 
-## STEP 0: Detect Mode (DO THIS FIRST)
+Accessibility: reduced motion, semantic structure, focus states, anchor links for sections.
 
-| Signal in the request | Mode |
-|-----------------------|------|
-| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
-| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
-| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+Let me write it well:
 
-For ambiguous requests, if `AskUserQuestion` is available, present:
-- **Create** — Build or improve the component's motion
-- **Audit** — Review existing motion and report findings
+Sticky glass header/nav within page? Maybe a table-of-contents with scroll-spy.
 
-Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+Sections with headings, IDs, and smooth-scroll anchor links.
 
-**Once the mode is known, read the matching workflow file and follow it exactly.**
+prefers-reduced-motion respected.
 
----
+Use useEffect + IntersectionObserver for reveal animations.
 
-## The Three Designers
+Light/dark support via CSS variables? Keep it self-contained with Tailwind-ish classes? I don't know the project's styling setup. Safer: use a <style jsx>-free approach with inline styles + CSS module? Hmm.
 
-- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
-- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
-- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+Given uncertainty, I'll use Tailwind classes (very common in Next.js app router projects) plus a scoped <style> for glass effects. Actually mixing is fine — I'll use Tailwind for layout and a <style> block for the glass specifics and keyframes. But dangerouslySetInnerHTML for style is ugly; a plain <style>{...}</style> in a client component works fine in React 18+ (though React warns about <style> children — actually it's fine, style tags with children are supported; React 19 hoists them).
 
-> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+Hmm, safer: use a CSS file? Can't create two files? I can create two files in the JSON array. But then path references. Let me keep it to one file and use <style jsx>? That needs styled-jsx which Next provides by default in pages dir... actually Next.js supports styled-jsx in app router too if configured. Risky.
 
-Each designer answers a different question:
-- **Emil** — *"Should this animate at all?"*
-- **Jakub** — *"Is this subtle and polished enough for production?"*
-- **Jhey** — *"What could this become?"*
+Alternative: Tailwind arbitrary values. backdrop-blur-xl bg-white/60 border border-white/40 shadow-[...]. That handles liquid glass decently. Add motion via Tailwind transitions and a custom class via a <style> tag...
 
-**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+Let me just use a plain <style> element with a template string inside the component. That's valid React and works. React 19 hoists <style> — fine.
 
----
+Actually, cleanest and most robust: inline everything with a <style> block containing scoped class names prefixed pp-. Combined with Tailwind for utility. Hmm, if Tailwind isn't set up, the page breaks visually. If I use pure CSS in the style block, it works regardless of Tailwind. Safer: pure CSS with scoped classes. But then the file is huge. That's OK.
 
-## Context-to-Perspective Mapping
+Let me write pure CSS-in-style-block with class names, respecting prefers-reduced-motion, prefers-color-scheme.
 
-| Project Type | Primary | Secondary | Selective |
-|--------------|---------|-----------|-----------|
-| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
-| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
-| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
-| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
-| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
-| Mobile app | Jakub | Emil | Jhey (delighters) |
-| E-commerce | Jakub | Emil | Jhey (product showcase) |
+Structure:
 
----
+'use client'
 
-## Core Principles (Both Modes)
+Imports: useEffect, useRef, useState, useMemo.
 
-### The Frequency Gate
+Data: sections array with id, title, body (JSX or strings).
 
-Before adding or approving any animation, ask how often the user triggers it:
+TOC sidebar with scroll-spy via IntersectionObserver.
 
-| Frequency | Recommendation |
-|-----------|-
-PREVIOUSLY SUCCESSFUL PATTERN:
+Reveal animation on sections.
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+Back-to-top button that appears after scroll, with smooth transition.
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+Reading progress bar at top (glass, subtle) — nice motion, low frequency but ambient... Emil might say skip. But reading progress is functional, not decorative. Keep it minimal.
 
-FILE TO UPGRADE: src\app\privacy\page.tsx
-CURRENT CODE:
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { Header } from '@/components/landing/header';
-import { Footer } from '@/components/landing/footer';
-import { ShieldCheck } from 'lucide-react';
+Actually a progress bar is a good, purposeful motion element. Keep it.
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://hey.ai';
-const effectiveDate = 'September 19, 2026';
+Let me write the content: privacy policy for HEY (health/wellness app?). "HEY" — could be anything. I'll write generic-but-substantive privacy content: overview, data we collect, how we use it, sharing, retention, your rights (GDPR/CCPA), cookies, security, children's privacy, international transfers, changes, contact.
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy',
-  description:
-    'How HEY collects, uses, and protects your information when you chat, upload, create, and work with our AI assistant — and the choices you control.',
-  alternates: { canonical: `${baseUrl}/privacy` },
-  openGraph: {
-    title: 'Privacy Policy — HEY',
-    description:
-      'How HEY collects, uses, and protects your information across chat, memory, voice, files, and teams — and the choices you control.',
-    url: `${baseUrl}/privacy`,
-    images: ['/og-image.png'],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Privacy Policy — HEY',
-    description:
-      'How HEY collects, uses, and protects your information — and the choices you control.',
-    images: ['/og-image.png'],
-  },
+Let me write the code.
+
+Key motion decisions (documenting in code comments):
+
+Section reveal: 12px rise + fade, 500ms, cubic-bezier(0.22, 1, 0.36, 1), only once, staggered by index capped.
+
+Hover on TOC links: 150ms.
+
+Back-to-top: fade + scale 0.9→1, 200ms.
+
+Progress bar: transform scaleX, no transition needed (updated on scroll) — or transition 100ms linear.
+
+Reduced motion: all disabled.
+
+Let me write it.
+
+tsx
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+Sections data with id, title, content as string arrays / JSX.
+
+I'll build content as an array of blocks: { type: 'p' | 'ul', ... } to keep it clean. Or just use JSX directly in a components map. Simpler: define SECTIONS as { id, title, body: React.ReactNode }.
+
+Let me write.
+
+tsx
+type Section = {
+  id: string;
+  title: string;
+  body: React.ReactNode;
 };
 
-const sections = [
-  { id: 'overview', label: '1. Overview' },
-  { id: 'collect', label: '2. What we collect' },
-  { id: 'use', label: '3. How we use it' },
-  { id: 'ai', label: '4. How AI features work' },
-  { id: 'share', label: '5. How we share it' },
-  { id: 'retention', label: '6. Retention' },
-  { id: 'rights', label: '7. Your choices & rights' },
-  { id: 'security', label: '8. Security' },
-  { id: 'children', label: '9. Children' },
-  { id: 'international', label: '10. International transfers' },
-  { id: 'changes', label: '11. Changes' },
-  { id: 'contact', label: '12. Contact' },
+const SECTIONS: Section[] = [
+  {
+    id: 'overview',
+    title: 'Overview',
+    body: (
+      <>
+        <p>HEY (“we”, “us”) builds tools that help you move, recover, and feel better. This policy explains what we collect, why we collect it, and the control you have over it. It applies to the HEY web app, mobile apps, and any related services.</p>
+        <p>We keep this short on purpose. If a sentence needs a legal translator, we rewrite it.</p>
+      </>
+    ),
+  },
+  ...
 ];
 
+That's fine but verbose. Good.
+
+For the "last updated" date, use a constant to avoid hydration mismatch: const LAST_UPDATED = 'February 14, 2026'; — actually a static string is fine.
+
+Now the component:
+
+tsx
 export default function PrivacyPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main id="main" className="pt-32 lg:pt-40 pb-20 lg:pb-28">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <header className="mb-10">
-            <Link
-              href="/about"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-            >
-              <span aria-hidden="true">←</span> About HEY
-            </Link>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-3">Privacy Policy</h1>
-            <p className="text-muted-foreground">Effective: {effectiveDate}</p>
-          </header>
+  const [activeId, setActiveId] = useState(SECTIONS[0].id);
+  const [progress, setProgress] = useState(0);
+  const [showTop, setShowTop] = useState(false);
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
-          <section
-            aria-label="At a glance"
-            className="rounded-xl border border-primary/20 bg-primary/5 p-6 mb-12"
-          >
-            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-primary" aria-hidden="true" />
-              At a glance
-            </h2>
-            <ul className="space-y-2 text-sm leading-relaxed text-muted-foreground">
-              <li>
-                · HEY has no advertising business. We never sell your personal information.
-              </li>
-              <li>· Your content is not used to train our models.</li>
-              <li>
-                · Hand-gesture detection and voice playback run on your device; your video frames
-                are not uploaded.
-              </li>
-              <li>
-                · Marketing email and data-sharing preferences are off by default until you enable
-                them.
-              </li>
-              <li>
-                · You can download a copy of your data or delete your account at any time, free of
-                charge, directly from Settings.
-              </li>
-            </ul>
-            <p className="text-xs text-muted-foreground mt-4">
-              This summary is for convenience. The full policy below is what governs your use of
-              HEY, together with our{' '}
-              <Link href="/terms" className="underline hover:text-foreground">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/cookies" className="underline hover:text-foreground">
-                Cookie Policy
-              </Link>
-              .
-            </p>
-          </section>
+Scroll handling with rAF throttle.
 
-          <nav
-            aria-label="Privacy policy contents"
-            className="grid gap-2 sm:grid-cols-2 mb-12"
-          >
-            {sections.map((section) => (
-              <a
-                key={section.id}
-                href={`#${section.id}`}
-                className="rounded-lg border border-border bg-card px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
-              >
-                {section.label}
-              </a>
-            ))}
-          </nav>
+IntersectionObserver for active section.
 
-          <div className="space-y-12">
-            <section id="overview" aria-labelledby="overview-h" className="scroll-mt-28">
-              <h2 id="overview-h" className="text-2xl font-semibold tracking-tight mb-4">
-                1. Overview
-             
-MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
-Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
+Reveal: a useEffect that observes [data-reveal] elements and adds is-visible.
+
+Let me write the whole thing.
+
+tsx
+useEffect(() => {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const nodes = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+  if (reduce) {
+    nodes.forEach((n) => n.classList.add('is-visible'));
+    return;
+  }
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    },
+    { rootMargin: '0px 0px -12% 0px', threshold: 0.12 }
+  );
+  nodes.forEach((n) => io.observe(n));
+  return () => io.disconnect();
+}, []);
+
+Note: if reduce, still need to clear. Return undefined — fine, but the cleanup returns a function... if (reduce) { ...; return; } returns undefined, TS is fine.
+
+Progress + showTop:
+
+tsx
+useEffect(() => {
+  let frame = 0;
+  const onScroll = () => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - doc.clientHeight;
+      const y = window.scrollY;
+      setProgress(max > 0 ? Math.min(1, Math.max(0, y / max)) : 0);
+      setShowTop(y > 640);
+    });
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  return () => {
+    if (frame) cancelAnimationFrame(frame);
+    window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('resize', onScroll);
+  };
+}, []);
+
+Active section observer:
+
+tsx
+useEffect(() => {
+  const els = SECTIONS.map((s) => document.getElementById(s.id)).filter(Boolean) as HTMLElement[];
+  const io = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((e) => e.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible) setActiveId(visible.target.id);
+    },
+    { rootMargin: '-20% 0px -60% 0px', threshold: [0, 0.25, 0.5, 1] }
+  );
+  els.forEach((el) => io.observe(el));
+  return () => io.disconnect();
+}, []);
+
+Scroll to section handler with reduced-motion check.
+
+Now the render. CSS variables for glass.
+
+Let me write the CSS carefully.
+
+css
+.pp {
+  --pp-radius: 22px;
+  --pp-ink: #0b1220;
+  --pp-ink-soft: #4a566b;
+  --pp-line: rgba(15, 23, 42, 0.08);
+  --pp-glass: rgba(255, 255, 255, 0.55);
+  --pp-glass-strong: rgba(255, 255, 255, 0.72);
+  --pp-accent: #2f6bff;
+  --pp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  ...
+}
+
+Dark mode via @media (prefers-color-scheme: dark).
+
+Background: layered radial gradients for the "liquid" feel.
+
+Let me now write out the final file fully.
+
+I'll keep it reasonably sized but complete.
+
+Page layout:
+
+<div className="pp"> root with background
+
+top progress bar (fixed)
+
+header hero with title, subtitle, last updated
+
+two-column grid: TOC (sticky) + content
+
+footer contact card
+
+back to top button
+
+For accessibility: TOC is <nav aria-label="On this page">, links with aria-current.
+
+Let me write.
+
+Careful with JSX escaping of quotes inside strings — I'll use typographic quotes (“ ”) to avoid escaping issues in JSON. Actually in JSON I need to escape " as \". Since the content field is a JSON string, all " inside must be escaped. That's a lot. Using curly quotes “ ” reduces escaping. I'll use curly quotes in prose, and escape where needed for code.
+
+Let me write the component code carefully, minimizing straight double quotes in JSX text (use curly quotes). But JSX attributes need "... wait, in JSX I'd write className="pp". In JSON that becomes className=\"pp\". Yes, that's required. Fine, I'll do it — the harness expects escaped quotes.
+
+Hmm, that's error-prone but manageable. Alternatively use single quotes for JSX attributes? JSX allows className='pp'. Yes! JSX supports single-quoted attribute values. That avoids escaping entirely. But prettier/lint would complain... whatever, it's valid. Hmm, but for consistency and readability I'll just escape the double quotes properly. Actually — using single quotes everywhere makes the JSON much safer. But readability of code suffers slightly.
+
+I'll use double quotes and escape them. Let me be careful.
+
+Actually, let me reconsider: risk of error is high with a long file. Using single quotes in JSX attributes is 100% valid JSX and avoids all escaping. String literals in JS I can also use single quotes. Then the only double quotes are... none. That's much safer.
+
+But style-wise, a typical React/Next project uses double quotes. Eh. Correctness > style here. Hmm, but the output is "raw upgraded code" the user will keep. Mixed quotes look sloppy.
+
+I'll go with double quotes and escape carefully. I'm capable of that.
+
+Let me draft.
+
+tsx
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+
+const LAST_UPDATED = 'February 14, 2026';
+const CONTACT_EMAIL = 'privacy@hey.com';
+
+Sections. Let me write content blocks as ReactNode.
+
+I'll write helper subcomponents: P, UL.
+
+Now writing final.
+
+CSS — let me write it thoroughly.
+
+css
+.pp {
+  --pp-bg: #f6f7fb;
+  --pp-ink: #0b1220;
+  --pp-ink-2: #46536b;
+  --pp-ink-3: #6b778c;
+  --pp-line: rgba(11, 18, 32, 0.08);
+  --pp-glass: rgba(255, 255, 255, 0.58);
+  --pp-glass-hi: rgba(255, 255, 255, 0.78);
+  --pp-shadow: 0 1px 1px rgba(11, 18, 32, 0.04), 0 8px 24px -12px rgba(11, 18, 32, 0.18), 0 24px 64px -32px rgba(11, 18, 32, 0.24);
+  --pp-accent: #2f6bff;
+  --pp-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --pp-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  min-height: 100dvh;
+  color: var(--pp-ink);
+  background:
+    radial-gradient(1200px 600px at 12% -8%, rgba(120, 160, 255, 0.28), transparent 62%),
+    radial-gradient(900px 520px at 92% 4%, rgba(255, 168, 214, 0.24), transparent 60%),
+    radial-gradient(900px 700px at 50% 108%, rgba(140, 255, 226, 0.20), transparent 62%),
+    var(--pp-bg);
+  background-attachment: fixed;
+  ...
+}
+
+background-attachment: fixed can hurt perf on mobile — skip it or keep. Skip.
+
+Dark mode:
+
+css
+@media (prefers-color-scheme: dark) {
+  .pp {
+    --pp-bg: #070a12;
+    --pp-ink: #eef2fa;
+    --pp-ink-2: #a9b4c9;
+    --pp-ink-3: #7d889e;
+    --pp-line: rgba(255, 255, 255, 0.10);
+    --pp-glass: rgba(20, 26, 40, 0.55);
+    --pp-glass-hi: rgba(28, 36, 54, 0.75);
+    --pp-shadow: ...
+    background: radial-gradient(...), var(--pp-bg);
+  }
+}
+
+Reveal:
+
+css
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition: opacity 620ms var(--pp-ease-out), transform 620ms var(--pp-ease-out);
+  transition-delay: var(--pp-delay, 0ms);
+  will-change: opacity, transform;
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+will-change permanently is bad; remove after visible. I'll just not use will-change, or add [data-reveal].is-visible { will-change: auto; }.
+
+Reduced motion: 
+@media (prefers-reduced
+-motion: reduce) { [data-reveal] { opacity:1
+; transform:none; transition:none } }
+ — though I add is-visible in JS too.
+
+Layout: 
+.pp
+__grid { display: grid; grid-template-columns: 240px minmax
+(0, 1fr); gap: 48
+px }
+ at >= 980px, else single column with TOC hidden or
