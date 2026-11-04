@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\ui\MotionTutorial.jsx
+CURRENT CODE:
 /**
  * HEY V1 — Tutorial System Components
  * Implements Sections 38, 40, 41, 42: Tutorial Animation Catalog & Visual Language
@@ -154,287 +252,6 @@ const TutorialSpotlight = ({
                     `${targetRect.left + targetRect.width / 2}px`,
     '--caption-y': step.captionPosition === 'top' ? `${targetRect.top - 16}px` :
                     step.captionPosition === 'bottom' ? `${targetRect.bottom + 16}px` :
-                    `${targetRect.top + targetRect.height / 2}px`,
-  } : {};
-
-  if (!targetRect) {
-    return <div className="hey-tutorial-loading">Finding target...</div>;
-  }
-
-  return (
-    <div className="hey-tutorial-spotlight-overlay" style={spotlightStyles as React.CSSProperties}>
-      {/* Spotlight ring */}
-      <div className="hey-tutorial-spotlight" />
-
-      {/* Pointer */}
-      {showPointer && (
-        <div
-          ref={pointerRef}
-          className="hey-tutorial-pointer"
-          style={{
-            left: `${pointerPosition.x}px`,
-            top: `${pointerPosition.y}px`,
-          } as React.CSSProperties}
-          aria-hidden="true"
-        >
-          <div className="hey-tutorial-pointer-ring" />
-          <div className="hey-tutorial-pointer-dot" />
-        </div>
-      )}
-
-      {/* Gesture silhouette */}
-      {step.gestureType && !reduced && (
-        <div className={`hey-tutorial-gesture hey-tutorial-gesture-${step.gestureType}`} aria-hidden="true">
-          <GestureSilhouette type={step.gestureType} />
-        </div>
-      )}
-
-      {/* Caption */}
-      <div
-        className="hey-tutorial-caption"
-        style={captionStyles as React.CSSProperties}
-        role="dialog"
-        aria-label="Tutorial step"
-      >
-        <div className="hey-tutorial-caption-content">
-          <p>{step.caption}</p>
-          <div className="hey-tutorial-caption-controls">
-            <span className="hey-tutorial-progress">
-              Step {currentStep + 1} of {totalSteps}
-            </span>
-            <div className="hey-tutorial-buttons">
-              {currentStep > 0 && (
-                <button className="hey-tutorial-btn" onClick={onPrev}>
-                  Back
-                </button>
-              )}
-              <button className="hey-tutorial-btn hey-tutorial-btn-skip" onClick={onSkip}>
-                Skip
-              </button>
-              <button className="hey-tutorial-btn hey-tutorial-btn-primary" onClick={onNext}>
-                {currentStep === totalSteps - 1 ? 'Done' : 'Next'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Gesture silhouettes for tutorial (section 40)
-const GestureSilhouette = ({ type }: { type: string }) => {
-  const silhouettes = {
-    tap: (
-      <svg viewBox="0 0 60 80" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M30 70 L30 40" />
-        <ellipse cx="30" cy="30" rx="15" ry="10" />
-        <circle cx="30" cy="30" r="5" style={{ animation: 'hey-tap-pulse 0.5s ease-out' }} />
-      </svg>
-    ),
-    swipe: (
-      <svg viewBox="0 0 60 80" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M30 70 L30 40" />
-        <ellipse cx="30" cy="30" rx="15" ry="10" />
-        <path d="M30 30 L50 10" style={{ strokeDasharray: '20', animation: 'hey-swipe-trail 0.8s ease-out' }} />
-        <polygon points="50,10 44,18 56,18" />
-      </svg>
-    ),
-    pinch: (
-      <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="20" cy="40" r="8" style={{ animation: 'hey-pinch-move 1s ease-in-out infinite alternate' }} />
-        <circle cx="60" cy="40" r="8" style={{ animation: 'hey-pinch-move 1s ease-in-out infinite alternate-reverse' }} />
-      </svg>
-    ),
-    drag: (
-      <svg viewBox="0 0 60 80" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M30 70 L30 40" />
-        <ellipse cx="30" cy="30" rx="15" ry="10" />
-        <rect x="20" y="20" width="20" height="20" rx="4" style={{ animation: 'hey-drag-move 1.5s ease-in-out infinite' }} />
-      </svg>
-    ),
-    hold: (
-      <svg viewBox="0 0 60 80" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M30 70 L30 40" />
-        <ellipse cx="30" cy="30" rx="15" ry="10" />
-        <circle cx="30" cy="30" r="12" style={{ strokeDasharray: '75', animation: 'hey-hold-ring 2s ease-in-out infinite' }} />
-      </svg>
-    ),
-  };
-
-  return silhouettes[type as keyof typeof silhouettes] || silhouettes.tap;
-};
-
-// Main Tutorial Component
-interface MotionTutorialProps {
-  choreography: TutorialChoreography;
-  autoStart?: boolean;
-  className?: string;
-}
-
-const MotionTutorial = forwardRef(({
-  choreography,
-  autoStart = false,
-  className = '',
-}, ref) => {
-  const reduced = useReducedMotion();
-  const {
-    currentStep,
-    isPlaying,
-    completed,
-    nextStep,
-    prevStep,
-    skip,
-    replay,
-    setIsPlaying,
-  } = useTutorialChoreography(choreography, autoStart);
-
-  const steps = reduced && choreography.reducedMotionSteps
-    ? choreography.reducedMotionSteps
-    : choreography.steps;
-
-  const currentStepData = steps[currentStep];
-
-  const handleNext = useCallback(() => {
-    if (currentStepData?.waitFor && !currentStepData.waitFor()) {
-      return;
-    }
-    nextStep();
-    if (currentStep === steps.length - 1) {
-      choreography.onComplete?.();
-    }
-  }, [currentStep, currentStepData, nextStep, steps.length, choreography]);
-
-  const handleSkip = useCallback(() => {
-    skip();
-    choreography.onSkip?.();
-  }, [skip, choreography]);
-
-  const handleReplay = useCallback(() => {
-    replay();
-  }, [replay]);
-
-  if (!isPlaying && !completed) return null;
-
-  return createPortal(
-    <div
-      ref={ref}
-      className={`hey-tutorial ${completed ? 'completed' : ''} ${reduced ? 'reduced-motion' : ''} ${className}`}
-      role="dialog"
-      aria-modal="true"
-      aria-label={choreography.title}
-    >
-      <TutorialSpotlight
-        step={currentStepData}
-        onNext={handleNext}
-        onPrev={prevStep}
-        onSkip={handleSkip}
-        onReplay={handleReplay}
-        currentStep={currentStep}
-        totalSteps={steps.length}
-        reduced={reduced}
-      />
-
-      {completed && (
-        <div className="hey-tutorial-completion" role="status">
-          <div className="hey-tutorial-completion-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-          <h3>Tutorial Complete!</h3>
-          <p>You can replay this anytime from Tutorials.</p>
-          <button className="hey-tutorial-btn hey-tutorial-btn-primary" onClick={handleReplay}>
-            Replay
-          </button>
-          <button className="hey-tutorial-btn" onClick={handleSkip}>
-            Close
-          </button>
-        </div>
-      )}
-    </div>,
-    document.body
-  );
-});
-
-MotionTutorial.displayName = 'MotionTutorial';
-
-// Tutorial Registry - maps tutorial IDs to choreographies
-export const tutorialRegistry: Record<string, TutorialChoreography> = {
-  'first-launch': {
-    id: 'first-launch',
-    version: 1,
-    title: 'Welcome to HEY',
-    steps: [
-      {
-        id: 'wordmark',
-        target: '.hey-app-brand',
-        action: 'explain',
-        caption: 'This is HEY. Your AI companion.',
-      },
-      {
-        id: 'chat',
-        target: '.hey-dashboard-talk',
-        action: 'click',
-        caption: 'Click here to start a conversation with HEY.',
-        pointerPath: [
-          { x: 100, y: 100 },
-          { x: 200, y: 300 },
-        ],
-      },
-      {
-        id: 'voice',
-        target: '.hey-voice-button',
-        action: 'click',
-        caption: 'Or press and hold to talk with your voice.',
-        gestureType: 'hold',
-      },
-    ],
-  },
-  'chat': {
-    id: 'chat',
-    version: 1,
-    title: 'Chat with HEY',
-    steps: [
-      {
-        id: 'input',
-        target: '.hey-chat-input',
-        action: 'click',
-        caption: 'Type your message here.',
-      },
-      {
-        id: 'attach',
-        target: '.hey-chat-attach',
-        action: 'click',
-        caption: 'Attach files, images, or code.',
-        gestureType: 'tap',
-      },
-      {
-        id: 'send',
-        target: '.hey-chat-send',
-        action: 'click',
-        caption: 'Send to start the conversation.',
-        pointerPath: [
-          { x: 200, y: 100 },
-          { x: 400, y: 500 },
-        ],
-      },
-    ],
-  },
-  // Add more tutorial choreographies as needed
-};
-
-// Tutorial Provider Hook
-export function useTutorial(tutorialId: string) {
-  const choreography = useMemo(() => tutorialRegistry[tutorialId], [tutorialId]);
-
-  const start = useCallback(() => {
-    // Dispatch event to start tutorial
-    window.dispatchEvent(new CustomEvent('hey:tutorial:start', { detail: { tutorialId } }));
-  }, [tutorialId]);
-
-  return { choreography, start };
-}
-
-export { MotionTutorial, TutorialSpotlight, GestureSilhouette };
-export default MotionTutorial;
+  
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
