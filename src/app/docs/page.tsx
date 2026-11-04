@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\docs\page.tsx
+CURRENT CODE:
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -170,238 +268,6 @@ export default function DocsPage() {
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="mx-auto max-w-7xl">
         <header className="mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6" aria-label="HEY Home">
-            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              HEY
-            </span>
-          </Link>
-          <h1 className="text-4xl font-bold tracking-tight mb-4">API Documentation</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Complete API reference for HEY. All endpoints require authentication via session cookie or API key.
-          </p>
-        </header>
-
-        <Tabs defaultValue="reference" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="reference">
-              <Globe className="h-4 w-4 mr-2" />
-              API Reference
-            </TabsTrigger>
-            <TabsTrigger value="authentication">
-              <Key className="h-4 w-4 mr-2" />
-              Authentication
-            </TabsTrigger>
-            <TabsTrigger value="examples">
-              <Code className="h-4 w-4 mr-2" />
-              Examples
-            </TabsTrigger>
-            <TabsTrigger value="openapi">
-              <Download className="h-4 w-4 mr-2" />
-              OpenAPI Spec
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="reference">
-            <Card className="h-[80vh]">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Interactive API Explorer</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="/api/openapi.json" target="_blank" rel="noopener">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      View JSON
-                    </a>
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0 h-[calc(100%-80px)]">
-                <div id="swagger-ui" ref={swaggerRef} className="h-full">
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                    <span className="ml-2 text-muted-foreground">Loading API documentation...</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="authentication">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Key className="h-5 w-5" />
-                    Authentication Methods
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-3">
-                    <h4 className="font-medium">1. Session Cookie (Browser)</h4>
-                    <p className="text-sm text-muted-foreground">
-                      When using the web app, authentication is handled automatically via NextAuth.js session cookies.
-                      No additional headers needed for same-origin requests.
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    <h4 className="font-medium">2. API Key (Programmatic)</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Generate API keys in Settings - API Keys. Include in Authorization header:
-                    </p>
-                    <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                      <code>{`Authorization: Bearer hey_live_abc123...`}</code>
-                    </pre>
-                  </div>
-                  <div className="space-y-3">
-                    <h4 className="font-medium">3. OAuth (Third-party)</h4>
-                    <p className="text-sm text-muted-foreground">
-                      For third-party integrations, use OAuth 2.0 with Google or GitHub.
-                      Redirect users to <code>/api/auth/signin/google</code> or <code>/api/auth/signin/github</code>.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Rate Limits</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left">
-                          <th className="pb-2">Endpoint</th>
-                          <th className="pb-2">Limit</th>
-                          <th className="pb-2">Window</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="border-b"><td className="py-2 font-mono">/api/chat</td><td className="py-2">30 req</td><td className="py-2">1 min</td></tr>
-                        <tr className="border-b"><td className="py-2 font-mono">/api/auth/*</td><td className="py-2">10 req</td><td className="py-2">15 min</td></tr>
-                        <tr className="border-b"><td className="py-2 font-mono">/api/voice</td><td className="py-2">10 req</td><td className="py-2">1 min</td></tr>
-                        <tr className="border-b"><td className="py-2 font-mono">/api/images/generate</td><td className="py-2">5 req</td><td className="py-2">1 min</td></tr>
-                        <tr className="border-b"><td className="py-2 font-mono">/api/upload</td><td className="py-2">20 req</td><td className="py-2">1 min</td></tr>
-                        <tr><td className="py-2 font-mono">/api/*</td><td className="py-2">60 req</td><td className="py-2">1 min</td></tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Limits are per user/IP. Exceeding limits returns <code>429 Too Many Requests</code> with <code>Retry-After</code> header.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Error Responses</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                    <code>{ERROR_EXAMPLE}</code>
-                  </pre>
-                  <p className="text-sm text-muted-foreground">
-                    All errors follow this format. Check the <code>code</code> field for programmatic handling.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="examples">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Chat Completion (Streaming)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                    <code>{CHAT_EXAMPLE}</code>
-                  </pre>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Image Generation</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                    <code>{IMAGE_EXAMPLE}</code>
-                  </pre>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Voice Transcription</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                    <code>{VOICE_EXAMPLE}</code>
-                  </pre>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>File Upload</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                    <code>{UPLOAD_EXAMPLE}</code>
-                  </pre>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Team Management</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-                    <code>{TEAM_EXAMPLE}</code>
-                  </pre>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="openapi">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  OpenAPI 3.0 Specification
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <a href="/api/openapi.json" target="_blank" rel="noopener">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        View Raw JSON
-                      </a>
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => {
-                      const blob = new Blob([JSON.stringify(openApiSpec, null, 2)], { type: 'application/json' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'hey-api-spec.json';
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    }}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <pre className="bg-muted p-4 rounded-lg text-xs overflow-x-auto max-h-[60vh] overflow-y-auto">
-                  <code>{JSON.stringify(openApiSpec, null, 2)}</code>
-                </pre>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
-  );
-}
+          <Link href="/" 
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
