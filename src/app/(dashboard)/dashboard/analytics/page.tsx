@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\(dashboard)\dashboard\analytics\page.tsx
+CURRENT CODE:
 The user wants me to upgrade a file. The format requirement says to wrap JSON tool call arrays in  code blocks. Let me output a write_file tool call.
 
 Let me think about what improvements to make:
@@ -111,272 +209,6 @@ function BarChart({ buckets, max, accent = 'primary' }: {...}) {
           return (
             <div key={b.date} className="group relative flex-1 flex flex-col items-center justify-end gap-1 h-full" title={...}>
               <span className="text-[10px] tabular-nums text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-150">{b.count}</span>
-              <div className="w-full rounded-t-md ... hey-bar" style={{ height: `${h}%`, animationDelay: `${i*18}ms`, transformOrigin: 'bottom' }} />
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-Hmm, height percent inside flex column with justify-end — the span takes space. Fine.
-
-Actually with the count label appearing on hover it may shift layout. Use absolute positioning for the label instead. Let's do: container relative, label absolutely positioned above bar. Simpler: keep label always rendered but opacity-0 → occupies space. That's fine and matches original.
-
-Hmm but with h-full and flex-col justify-end, the label + bar heights. bar height is % of container height which is h-full of 8rem... percentage height inside flex item with flex-basis auto may not resolve. Original code had flex flex-col items-center gap-1 without h-full, and the bar height % worked relative to... hmm, actually it wouldn't. Let's be safe: make bar container a fixed-height div and use absolute positioning.
-
-Better structure:
-
-tsx
-<div className="relative h-32 flex items-end gap-1">
-  {buckets.map(...)=> (
-    <div key className="group relative flex-1 h-full flex flex-col justify-end">
-      <div className="relative w-full rounded-t-md bg-gradient..." style={{height: `${h}%`}} />
-      <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] ...">{b.count}</span>
-    </div>
-  ))}
-</div>
-
-Here the inner div has height: h% of the flex item which has h-full → resolves. Good. Label absolutely positioned relative to the column. Use bottom: calc(h% + 4px)? Simpler: put label with opacity-0 group-hover:opacity-100 positioned at top of column (top-0), which is a fixed place. Fine.
-
-Actually nice: on hover show the value at the top. OK.
-
-Now write it all.
-
-Also data.window first/last dates as axis labels.
-
-Let me finalize. I need to be careful about JSON escaping — lots of quotes. I'll be methodical.
-
-Let me write the whole file content mentally then escape.
-
-tsx
-'use client';
-
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  BarChart3,
-  MessageSquare,
-  MessagesSquare,
-  Coins,
-  Target,
-  BookOpenText,
-  TrendingUp,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  Clock3,
-  Sparkles,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-interface Bucket {
-  date: string;
-  count: number;
-}
-
-interface Analytics {
-  window: string[];
-  messagesPerDay: Bucket[];
-  tokensPerDay: Bucket[];
-  journalPerDay: Bucket[];
-  totals: {
-    messages: number;
-    chats: number;
-    tokens: number;
-    journalEntries: number;
-    completionRate: number;
-  };
-  taskBreakdown: {
-    byStatus: Array<{ label: string; count: number }>;
-    completed: number;
-    pending: number;
-  };
-  topModels: Array<{ label: string; count: number }>;
-  maxMessages: number;
-  maxJournal: number;
-  recentChats: Array<{ id: string; title: string; createdAt: string }>;
-}
-
-Then constants for the CSS.
-
-tsx
-const MOTION_CSS = `
-@keyframes heyRise { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes heyGrow { from { transform: scaleY(0.02); opacity: 0.4; } to { transform: scaleY(1); opacity: 1; } }
-@keyframes heyShimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
-.hey-rise { animation: heyRise 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-.hey-bar { transform-origin: bottom; animation: heyGrow 620ms cubic-bezier(0.22, 1, 0.36, 1) both; }
-.hey-skeleton { background-image: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.45) 50%, transparent 80%); background-size: 200% 100%; animation: heyShimmer 1.6s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .hey-rise, .hey-bar, .hey-skeleton { animation: none !important; }
-}
-`;
-
-Glass classes:
-
-text
-const glass = 'relative overflow-hidden rounded-2xl border border-white/50 bg-white/60 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_-12px_rgba(16,24,40,0.18)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-white/[0.04] dark:shadow-[0_1px_0_rgba(255,255,255,0.06)_inset,0_16px_40px_-20px_rgba(0,0,0,0.8)]';
-
-Hmm, I'll create a GlassCard component to reduce repetition:
-
-tsx
-function GlassCard({ className, children }: { className?: string; children: React.ReactNode }) {
-  return (
-    <Card className={cn(glass, 'transition-[transform,box-shadow] duration-300 will-change-transform hover:-translate-y-0.5 hover:shadow-[0_1px_2px_rgba(16,24,40,0.05),0_18px_44px_-14px_rgba(16,24,40,0.24)] motion-reduce:hover:translate-y-0', className)}>
-      {children}
-    </Card>
-  );
-}
-
-Wait — motion-reduce:hover:translate-y-0 tailwind has motion-reduce: variant. Yes, Tailwind supports motion-reduce.
-
-Stat card component with accent.
-
-tsx
-const STAT_TONES = {
-  primary: 'from-primary/20 to-primary/0 text-primary',
-  ...
-}
-
-Simplify: pass a tone class string.
-
-Stat card:
-
-tsx
-function StatCard({ label, value, icon: Icon, delay, tone }) {
-  return (
-    <GlassCard className="hey-rise" style?...
-
-Card doesn't accept style prop necessarily... shadcn Card does spread props. But I typed GlassCard without style. Let me add style to GlassCard props.
-
-Actually simpler: put the animation delay via inline style on a wrapping div. Let me just add style?: React.CSSProperties to GlassCard.
-
-Now the page.
-
-Loading skeleton:
-
-tsx
-if (loading) return <SkeletonView />;
-
-Let me build skeleton matching layout: 5 stat cards + 2 charts + 3 lists.
-
-Error state: glass panel with AlertCircle, message, retry button.
-
-Main render:
-
-Header with title, subtitle (window range), refresh button.
-
-Refresh button: glass pill with RefreshCw spinning while loading... but loading replaces view. Instead use a separate refreshing state so we don't blow away data. Let me handle: loading for initial, refreshing for subsequent. Use data existence to decide skeleton.
-
-Implement:
-
-tsx
-const [refreshing, setRefreshing] = useState(false);
-const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
-  if (mode === 'refresh') setRefreshing(true); else setLoading(true);
-  ...
-  finally { setRefreshing(false); setLoading(false); }
-}, []);
-
-Good — nice logic improvement: refetch without blanking the screen (Emil: avoid layout flash).
-
-Now the value formatting with tabular-nums.
-
-Let me write everything out now.
-
-For topModels and byStatus — render bars with widths.
-
-recentChats — list with date.
-
-Let me write full JSX.
-
-tsx
-export default function AnalyticsPage() {
-  const [data, setData] = useState<Analytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
-    if (mode === 'refresh') setRefreshing(true);
-    else setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/analytics', { cache: 'no-store' });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(body?.error || 'Failed to load analytics');
-        return;
-      }
-      setData(body);
-    } catch {
-      setError('Failed to load analytics');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => { void load('initial'); }, [load]);
-
-Then derived:
-
-tsx
-const windowLabel = useMemo(() => {
-  const w = data?.window ?? [];
-  if (w.length < 2) return null;
-  const fmt = (d: string) => new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  return `${fmt(w[0])} – ${fmt(w[w.length - 1])}`;
-}, [data]);
-
-Careful with en dash in strings — fine.
-
-Stats array memo.
-
-Let me write the render.
-
-Now the code block content. Write it.
-
-I need to double check the style prop on GlassCard typed as React.CSSProperties — need to import type. React.CSSProperties requires React namespace import; with import { useState } from 'react' the React namespace isn't available unless import type React from 'react' — in TSX with React 18 types, the global React namespace is available via the JSX namespace? Actually React.CSSProperties works if @types/react declares global React namespace — it does declare declare global { namespace React {...} }? No, it declares declare namespace React in module scope. Without importing React, React.CSSProperties may fail. Safer: import type { CSSProperties, ReactNode } from 'react';.
-
-Good.
-
-Now let me write final code text.
-
-tsx
-'use client';
-
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { CSSProperties, ReactNode } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  BarChart3,
-  MessageSquare,
-  MessagesSquare,
-  Coins,
-  Target,
-  BookOpenText,
-  TrendingUp,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle2,
-  Clock3,
-  Sparkles,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-interface Bucket { date: string; count: number; }
-
-interface Analytics { ... }
-
-const MOTION_CSS = `...`;
-
-const GLASS =
-  'relative overflow-hidden rounded-2xl border border-white/60 bg-white/60 backdrop-blur-xl backdrop-saturate-150 ' +
-  'shadow-[0_1px_2px_rgba(16,24,40,0.04),0_16px_40px_-16px_rgba(16,24,40,0.18)] ' +
-  'dark:border-white/10 dark:bg-white/[0.045] dark:shadow-[inset_0_1px_0_rgba(255,255,255,
-
-Hmm, 
-e
+              <div className="w-full rounded-t-md ... hey-bar" style={{ height: `${h}%`, animationDelay: `${i*18}ms`, transformOrigin: 'bottom' }
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
