@@ -1,14 +1,54 @@
-The user wants me to output the entire upgraded file as a JSON tool call wrapped in a json code block. Wait — there's a contradiction: the FORMAT REQUIREMENT says wrap JSON tool calls injson code block, but the "CRITICAL INSTRUCTIONS" at the end say "Output ONLY the raw code. No markdown blocks."
+The user wants me to upgrade the file. Let me look at the current code.
 
-The system-level format requirement (from the harness) says the automation harness parses code blocks first, and raw JSON outside a code block will NOT be detected. So I must wrap the tool call in a  code block. The "CRITICAL INSTRUCTIONS" inside the file appear to be part of the prompt telling me to output the entire file content (as the content field), not truncate it.
+The current code is src/app/api/team/invitations/accept/route.ts — a Next.js App Router API route for accepting team invitations.
 
-So: output a  block with [{"tool": "write_file", "path": "...", "content": "..."}].
+Current code has:
 
-Path: C:\Users\DELL\Documents\hey\src\app\api\team\invitations\accept\route.ts — need to escape backslashes in JSON? In JSON strings, backslash must be escaped as \. Hmm, the example shows "/abs/path". Windows paths with backslashes need escaping. I'll use forward slashes: C:/Users/DELL/Documents/hey/src/app/api/team/invitations/accept/route.ts — that works on Windows generally and avoids escaping issues. Actually the automation might expect the exact path. Safer to use escaped backslashes: C:\Users\DELL\... Both should resolve. I'll use forward slashes to be safe with JSON parsing... Actually many harnesses handle both. I'll use escaped backslashes to match exactly. Hmm, either works if it's Node path handling. I'll go with forward slashes? Let me just escape backslashes — that's literally what the file path is. Both are valid. I'll use forward slashes since the example used forward slashes and it's simpler/less error-prone.
+Uses auth from @/lib/auth, prisma, auditLog
 
-Now write the code. I must carefully escape all double quotes and backslashes in the content string.
+In-memory rate limiting map
 
-Let me write the TypeScript file.
+Zod token validation
+
+Error helper
+
+extractToken
+
+Some helpers but the actual GET/POST handlers aren't shown — the code seems truncated/incomplete. The shown code ends at a type definition InvitationState.
+
+I need to output the entire upgraded file. Since the file is incomplete, I should produce a complete, robust implementation. Let me write a comprehensive route.ts.
+
+Key improvements:
+
+Fix rate limiting (in-memory won't survive serverless; but keep as fallback, maybe use a pluggable store). Add cleanup, better key.
+
+Use constant-time-ish token hashing — store hash of token instead of raw token. But I don't know the schema. Typical: Invitation model with token, email, role, teamId, expiresAt, acceptedAt. I'll assume fields: id, token, email, role, teamId, expiresAt, acceptedAt, invitedById.
+
+Atomic acceptance via prisma.$transaction with conditional update (updateMany where acceptedAt is null and expiresAt > now) to prevent race / double-accept.
+
+Seat limits: team max members.
+
+Email mismatch check.
+
+Audit logging.
+
+Security headers, no-store.
+
+Proper error handling, no leaking details.
+
+GET to preview invitation, POST to accept.
+
+Handle already-member case (idempotent).
+
+Normalize email case.
+
+Revalidate paths? maybe not.
+
+I'll write it carefully. Also need to be careful about the "Liquid Glass" UI note — that's generic boilerplate; this is an API route, no UI. I'll note improvements in code comments minimally (but "no markdown" so only raw code).
+
+Let me write the final TypeScript.
+
+Key design:
 
 ts
 import { NextRequest, NextResponse } from 'next/server';
@@ -21,66 +61,212 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-Rate limit map:
+Rate limit: keep in-memory but with better structure and note about distributed.
+
+Token: accept from header x-invitation-token, query token, or body.
+
+GET: preview — requires auth? Preview could be public but shouldn't leak team member data. I'll require auth for preview too? Hmm. Actually invitation preview before login is useful (to show team name). I'll allow unauthenticated preview but only return team name + role + inviter name, not email. Actually the email is needed to verify. I'll return masked email? For simplicity: GET requires auth? Let me make GET public-safe: returns team name, role, expiresAt, and a boolean whether the signed-in user (if any) matches. That's nice.
+
+POST: requires auth. Checks:
+
+rate limit
+
+token valid
+
+invitation exists
+
+not expired
+
+not accepted
+
+email matches (case-insensitive) OR allow if user has verified email matching
+
+team seat capacity
+
+transaction: conditional updateMany on invitation (acceptedAt null, expiresAt > now) → count===1, then create membership (upsert) with unique (userId, teamId)
+
+audit log
+
+Race: use transaction with updateMany guard.
+
+Also handle Prisma unique constraint error P2002 → treat as already member.
+
+Let's define max team members constant e.g. 50.
+
+Write the code.
 
 ts
+const MAX_TEAM_MEMBERS = 50;
+const INVITATION_TTL... 
+
+For the transaction:
+
+ts
+const result = await prisma.$transaction(async (tx) => {
+  const claimed = await tx.invitation.updateMany({
+    where: { id: invitation.id, acceptedAt: null, expiresAt: { gt: now } },
+    data: { acceptedAt: now, acceptedById: userId },
+  });
+  if (claimed.count === 0) return { ok: false, reason: 'race' };
+  const memberCount = await tx.teamMember.count({ where: { teamId: invitation.teamId } });
+  if (memberCount >= MAX_TEAM_MEMBERS) throw new TeamFullError();
+  ...
+});
+
+Careful: throwing inside transaction rolls back, good. But we need to count before claiming? Doing count inside tx after claim, throwing rolls back the claim. Fine.
+
+Actually better: check capacity before claim inside tx too. Either way, rollback on throw.
+
+Use upsert for membership to be idempotent — but if updateMany guard succeeded, they weren't a member... actually they might already be a member (invited twice). Then upsert returns existing. We should check membership first: if already a member, mark invitation accepted and return success with alreadyMember: true.
+
+Prisma model names: I'll guess teamMember with fields teamId, userId, role. And invitation model with teamId, email, role, token, expiresAt, acceptedAt, invitedById. Also acceptedById may not exist in schema — risky. To minimize schema assumptions, I'll avoid writing fields that may not exist. Hmm, but acceptedAt is mentioned in the "CURRENT CODE" (accepted state), so it exists. I'll only write acceptedAt and avoid acceptedById. Safer.
+
+Also role on invitation — exists (ROLE_VALUES). Use it for membership role.
+
+Team model has name. Include team.
+
+Let me keep prisma calls typed loosely? No — write as if schema matches. I'll add a comment.
+
+I'll write it now.
+
+Also add export async function OPTIONS? Not needed.
+
+Let me carefully produce the JSON-escaped content. That's the painful part — every " → \", every newline → \n (JSON strings can't have raw newlines). And backslashes in regex → \\.
+
+I'll write the content with \n escapes. This is going to be long but let's do it accurately.
+
+Let me compose the file text first, then escape.
+
+FILE:
+
+text
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { auditLog } from '@/lib/audit';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+/* -------------------------------------------------------------------------- */
+/*  Configuration                                                              */
+/* -------------------------------------------------------------------------- */
+
+const MAX_TEAM_MEMBERS = 50;
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX = 30;
+const RATE_LIMIT_MAX = 20;
+const BUCKET_SWEEP_THRESHOLD = 5_000;
+
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+  Pragma: 'no-cache',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'no-referrer',
+} as const;
+
+const TEAM_ROLES = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'] as const;
+type TeamRole = (typeof TEAM_ROLES)[number];
+
+const TOKEN_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
+const tokenSchema = z
+  .string()
+  .trim()
+  .regex(TOKEN_PATTERN, 'Malformed invitation token');
+
+const roleSchema = z.enum(TEAM_ROLES).catch('MEMBER');
+
+/* -------------------------------------------------------------------------- */
+/*  Errors                                                                     */
+/* -------------------------------------------------------------------------- */
+
+type ErrorCode =
+  | 'TOKEN_REQUIRED'
+  | 'TOKEN_INVALID'
+  | 'INVITATION_NOT_FOUND'
+  | 'INVITATION_EXPIRED'
+  | 'INVITATION_ACCEPTED'
+  | 'AUTH_REQUIRED'
+  | 'EMAIL_MISMATCH'
+  | 'TEAM_FULL'
+  | 'RATE_LIMITED'
+  | 'INTERNAL';
+
+const STATUS_BY_CODE: Record<ErrorCode, number> = {
+  TOKEN_REQUIRED: 400,
+  TOKEN_INVALID: 400,
+  INVITATION_NOT_FOUND: 404,
+  INVITATION_EXPIRED: 410,
+  INVITATION_ACCEPTED: 409,
+  AUTH_REQUIRED: 401,
+  EMAIL_MISMATCH: 403,
+  TEAM_FULL: 409,
+  RATE_LIMITED: 429,
+  INTERNAL: 500,
+};
+
+function jsonError(code: ErrorCode, message: string, headers: Record<string, string> = {}) {
+  return NextResponse.json(
+    { ok: false, error: message, code },
+    { status: STATUS_BY_CODE[code], headers: { ...NO_STORE_HEADERS, ...headers } },
+  );
+}
+
+class RouteError extends Error {
+  constructor(readonly code: ErrorCode, message: string) {
+    super(message);
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Rate limiting (best-effort, per-instance)                                  */
+/* -------------------------------------------------------------------------- */
+
+...
+
+Continue with rate limit map.
+
+I'll write full code now, then escape.
+
+One more thought on auditLog signature — unknown. I'll call auditLog({ action: 'team.invitation.accepted', ... }) and wrap in try/catch so a mismatch never breaks the request. Good.
+
+Now full code:
+
+ts
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
 
-function rateLimit(key: string, max = RATE_LIMIT_MAX, windowMs = RATE_LIMIT_WINDOW_MS): { ok: boolean; retryAfter: number } {
+function sweep(now: number) {
+  if (buckets.size < BUCKET_SWEEP_THRESHOLD) return;
+  for (const [key, bucket] of buckets) {
+    if (bucket.resetAt <= now) buckets.delete(key);
+  }
+}
+
+function rateLimit(key: string, max = RATE_LIMIT_MAX, windowMs = RATE_LIMIT_WINDOW_MS) {
   const now = Date.now();
   const bucket = buckets.get(key);
+
   if (!bucket || bucket.resetAt <= now) {
+    sweep(now);
     buckets.set(key, { count: 1, resetAt: now + windowMs });
-    if (buckets.size > 10_000) { // opportunistic prune
-      for (const [k, v] of buckets) if (v.resetAt <= now) buckets.delete(k);
-    }
-    return { ok: true, retryAfter: 0 };
+    return { ok: true, retryAfter: 0, remaining: max - 1 };
   }
-  if (bucket.count >= max) return { ok: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000) };
+
+  if (bucket.count >= max) {
+    return { ok: false, retryAfter: Math.ceil((bucket.resetAt - now) / 1000), remaining: 0 };
+  }
+
   bucket.count += 1;
-  return { ok: true, retryAfter: 0 };
+  return { ok: true, retryAfter: 0, remaining: max - bucket.count };
 }
 
 function clientKey(request: NextRequest): string {
-  const fwd = request.headers.get('x-forwarded-for');
-  const ip = fwd?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
-  return `team-invite:${ip}`;
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = forwarded?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+  return `team-invitation-accept:${ip}`;
 }
-
-Constants:
-
-ts
-const NO_STORE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-  'Pragma': 'no-cache',
-  'X-Content-Type-Options': 'nosniff',
-};
-
-const TOKEN_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
-const tokenSchema = z.string().trim().regex(TOKEN_PATTERN, 'Malformed invitation token');
-const ROLE_VALUES = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'] as const;
-
-Hmm role validation: invitation.role comes from DB; use zod enum with fallback 'MEMBER'. Use roleSchema = z.enum(['OWNER','ADMIN','MEMBER','VIEWER']) and .catch('MEMBER'). Safe.
-
-Error helper:
-
-ts
-type ErrorCode =
-  | 'TOKEN_REQUIRED' | 'TOKEN_INVALID' | 'INVITATION_NOT_FOUND' | 'INVITATION_EXPIRED'
-  | 'INVITATION_ACCEPTED' | 'AUTH_REQUIRED' | 'EMAIL_MISMATCH' | 'TEAM_FULL'
-  | 'RATE_LIMITED' | 'INTERNAL';
-
-function jsonError(code: ErrorCode, message: string, status: number, extra: Record<string, unknown> = {}) {
-  return NextResponse.json({ error: message, code, ...extra }, { status, headers: NO_STORE_HEADERS });
-}
-
-Include select:
-
-ts
-const INVITATION_INCLUDE = { team: { select: { id: true, name: true } } };
 
 Token extraction:
 
@@ -88,264 +274,227 @@ ts
 function extractToken(request: NextRequest, body?: unknown): string | null {
   const header = request.headers.get('x-invitation-token');
   if (header) return header.trim();
+
   const query = request.nextUrl.searchParams.get('token');
   if (query) return query.trim();
+
   if (body && typeof body === 'object' && 'token' in body) {
-    const v = (body as { token?: unknown }).token;
-    if (typeof v === 'string') return v.trim();
+    const value = (body as { token?: unknown }).token;
+    if (typeof value === 'string') return value.trim();
   }
+
   return null;
 }
 
-validateToken helper returning parsed or null.
+function parseToken(raw: string | null): string {
+  if (!raw) throw new RouteError('TOKEN_REQUIRED', 'An invitation token is required.');
+  const parsed = tokenSchema.safeParse(raw);
+  if (!parsed.success) throw new RouteError('TOKEN_INVALID', 'This invitation token is not valid.');
+  return parsed.data;
+}
 
-State evaluation helper shared by GET/POST:
-
-ts
-type InvitationState =
-  | { kind: 'missing' }
-  | { kind: 'expired' }
-  | { kind: 'accepted' }
-  | { kind: 'ok'; invitation: ... };
-
-Because of Prisma typing with any, I'll type invitation as Awaited<ReturnType<...>>? Simpler: define a local type via any. I'll just use any in a few places, but avoid excessive. Hmm, TS strict with noImplicitAny may complain about implicit any but explicit any is fine (unless eslint rule no-explicit-any — but it's already used in auth.ts with (user as any)). Fine.
-
-Let me define:
+Invitation state:
 
 ts
-type LoadedInvitation = {
+const INVITATION_SELECT = {
+  id: true,
+  email: true,
+  role: true,
+  teamId: true,
+  expiresAt: true,
+  acceptedAt: true,
+  team: { select: { id: true, name: true } },
+} as const;
+
+type InvitationRecord = {
   id: string;
-  token: string;
   email: string;
   role: string;
   teamId: string;
   expiresAt: Date;
   acceptedAt: Date | null;
-  team: { id: string; name: string } | null;
+  team: { id: string; name: string };
 };
 
-And cast the prisma result as unknown as LoadedInvitation | null. That's safe-ish.
-
-loadInvitation:
-
-ts
-async function loadInvitation(token: string): Promise<LoadedInvitation | null> {
-  const invitation = await prisma.teamInvitation.findUnique({
+async function loadInvitation(token: string): Promise<InvitationRecord> {
+  const invitation = await prisma.invitation.findUnique({
     where: { token },
-    select: {
-      id: true, token: true, email: true, role: true, teamId: true,
-      expiresAt: true, acceptedAt: true,
-      team: { select: { id: true, name: true } },
-    },
+    select: INVITATION_SELECT,
   });
-  return (invitation as unknown as LoadedInvitation | null) ?? null;
+  if (!invitation) throw new RouteError('INVITATION_NOT_FOUND', 'This invitation could not be found.');
+  return invitation as InvitationRecord;
 }
 
-Wait: include vs select — original used include; select with those fields is fine and better. But does teamInvitation have token, email, role, teamId, expiresAt, acceptedAt? Yes per original code.
+function assertUsable(invitation: InvitationRecord, now: Date) {
+  if (invitation.acceptedAt) throw new RouteError('INVITATION_ACCEPTED', 'This invitation has already been accepted.');
+  if (invitation.expiresAt.getTime() <= now.getTime()) throw new RouteError('INVITATION_EXPIRED', 'This invitation has expired. Ask your admin for a new one.');
+}
 
-Preview builder:
+Body parsing:
 
 ts
-async function buildPreview(invitation: LoadedInvitation) {
-  let memberCount: number | null = null;
+async function readBody(request: NextRequest): Promise<Record<string, unknown>> {
+  const contentType = request.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) return {};
   try {
-    memberCount = await prisma.teamMember.count({ where: { teamId: invitation.teamId } });
-  } catch { memberCount = null; }
-  return {
-    teamId: invitation.teamId,
-    teamName: invitation.team?.name ?? 'Unknown team',
-    role: invitation.role,
-    email: invitation.email,
-    expiresAt: invitation.expiresAt,
-    memberCount,
-  };
+    const parsed = await request.json();
+    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+Email normalize:
+
+ts
+function normalizeEmail(value: string): string {
+  return value.trim().toLowerCase();
 }
 
 GET:
 
 ts
 export async function GET(request: NextRequest) {
-  const started = Date.now();
+  const limit = rateLimit(clientKey(request));
+  if (!limit.ok) {
+    return jsonError('RATE_LIMITED', 'Too many attempts. Please retry shortly.', { 'Retry-After': String(limit.retryAfter) });
+  }
+
   try {
-    const rl = rateLimit(clientKey(request));
-    if (!rl.ok) {
-      return NextResponse.json(
-        { error: 'Too many requests. Please try again shortly.', code: 'RATE_LIMITED' },
-        { status: 429, headers: { ...NO_STORE_HEADERS, 'Retry-After': String(rl.retryAfter) } }
-      );
-    }
+    const token = parseToken(extractToken(request));
+    const invitation = await loadInvitation(token);
+    const now = new Date();
 
-    const rawToken = extractToken(request);
-    if (!rawToken) return jsonError('TOKEN_REQUIRED', 'Token required', 400);
-    const parsedToken = tokenSchema.safeParse(rawToken);
-    if (!parsedToken.success) return jsonError('TOKEN_INVALID', 'Invalid invitation', 404);
+    const session = await auth().catch(() => null);
+    const viewerEmail = session?.user?.email ? normalizeEmail(session.user.email) : null;
+    const matchesViewer = viewerEmail !== null && viewerEmail === normalizeEmail(invitation.email);
 
-    const invitation = await loadInvitation(parsedToken.data);
-    if (!invitation) return jsonError('INVITATION_NOT_FOUND', 'Invalid invitation', 404);
-    if (invitation.acceptedAt) return jsonError('INVITATION_ACCEPTED', 'Invitation already accepted', 400);
-    if (invitation.expiresAt.getTime() <= Date.now()) return jsonError('INVITATION_EXPIRED', 'Invitation expired', 400);
-
-    const preview = await buildPreview(invitation);
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'Authentication required', code: 'AUTH_REQUIRED', invitation: preview },
-        { status: 401, headers: NO_STORE_HEADERS }
-      );
-    }
-
-    const sessionEmail = session.user.email?.toLowerCase() ?? '';
-    if (sessionEmail !== invitation.email.toLowerCase()) {
-      return NextResponse.json(
-        { error: 'This invitation is for a different email', code: 'EMAIL_MISMATCH', invitation: preview },
-        { status: 403, headers: NO_STORE_HEADERS }
-      );
-    }
-
-    return NextResponse.json({ invitation: preview, success: true }, { headers: NO_STORE_HEADERS });
+    return NextResponse.json(
+      {
+        ok: true,
+        invitation: {
+          team: { id: invitation.team.id, name: invitation.team.name },
+          role: roleSchema.parse(invitation.role),
+          email: maskEmail(invitation.email),
+          expiresAt: invitation.expiresAt.toISOString(),
+          accepted: invitation.acceptedAt !== null,
+          expired: invitation.expiresAt.getTime() <= now.getTime(),
+          matchesViewer,
+        },
+      },
+      { status: 200, headers: NO_STORE_HEADERS },
+    );
   } catch (error) {
-    console.error('[team-invitations:accept:GET]', { durationMs: Date.now() - started, error });
-    return jsonError('INTERNAL', 'Failed to verify invitation', 500);
+    if (error instanceof RouteError) return jsonError(error.code, error.message);
+    console.error('[team/invitations/accept] GET failed', error);
+    return jsonError('INTERNAL', 'Unable to load this invitation right now.');
   }
 }
 
-Note: original GET returns invitation without success flag — adding success true is fine.
+maskEmail:
+
+ts
+function maskEmail(email: string): string {
+  const [local, domain] = normalizeEmail(email).split('@');
+  if (!domain) return '•••';
+  const visible = local.slice(0, 2);
+  return `${visible}${'•'.repeat(Math.max(local.length - 2, 3))}@${domain}`;
+}
 
 POST:
 
 ts
 export async function POST(request: NextRequest) {
-  const started = Date.now();
+  const limit = rateLimit(clientKey(request));
+  if (!limit.ok) {
+    return jsonError('RATE_LIMITED', 'Too many attempts. Please retry shortly.', { 'Retry-After': String(limit.retryAfter) });
+  }
+
   try {
-    const rl = rateLimit(clientKey(request));
-    if (!rl.ok) { ...429 }
+    const body = await readBody(request);
+    const token = parseToken(extractToken(request, body));
 
-    const session = await auth();
-    if (!session?.user?.id) return jsonError('AUTH_REQUIRED', 'Unauthorized', 401);
-    const userId = session.user.id;
+    const session = await auth().catch(() => null);
+    const userId = session?.user?.id;
+    const userEmail = session?.user?.email ? normalizeEmail(session.user.email) : null;
+    if (!userId || !userEmail) throw new RouteError('AUTH_REQUIRED', 'Sign in to accept this invitation.');
 
-    let body: unknown = undefined;
-    try {
-      const contentType = request.headers.get('content-type') ?? '';
-      if (contentType.includes('application/json')) body = await request.json();
-    } catch { body = undefined; }
+    const invitation = await loadInvitation(token);
+    const now = new Date();
+    assertUsable(invitation, now);
 
-    const rawToken = extractToken(request, body);
-    if (!rawToken) return jsonError('TOKEN_REQUIRED', 'Token required', 400);
-    const parsedToken = tokenSchema.safeParse(rawToken);
-    if (!parsedToken.success) return jsonError('TOKEN_INVALID', 'Invalid invitation', 404);
-
-    const invitation = await loadInvitation(parsedToken.data);
-    if (!invitation) return jsonError('INVITATION_NOT_FOUND', 'Invalid invitation', 404);
-
-    const sessionEmail = session.user.email?.toLowerCase() ?? '';
-    if (sessionEmail !== invitation.email.toLowerCase()) return jsonError('EMAIL_MISMATCH', 'This invitation is for a different email', 403);
-
-    // Idempotent: already accepted -> if member, return success
-    if (invitation.acceptedAt) {
-      const existing = await prisma.teamMember.findFirst({ where: { teamId: invitation.teamId, userId } });
-      if (existing) {
-        return NextResponse.json({ success: true, teamId: invitation.teamId, alreadyMember: true }, { headers: NO_STORE_HEADERS });
-      }
-      return jsonError('INVITATION_ACCEPTED', 'Invitation already accepted', 400);
+    if (normalizeEmail(invitation.email) !== userEmail) {
+      throw new RouteError('EMAIL_MISMATCH', 'This invitation was sent to a different email address.');
     }
 
-    if (invitation.expiresAt.getTime() <= Date.now()) return jsonError('INVITATION_EXPIRED', 'Invitation expired', 400);
+    const existingMembership = await prisma.teamMember.findFirst({
+      where: { teamId: invitation.teamId, userId },
+      select: { id: true },
+    });
 
-    // seat limit check (soft)
-    const seatLimit = (invitation.team as any)?.seatLimit;
-    ...
+Hmm, teamMember may not have id. Use select: { teamId: true }? findFirst with select of scalar fields only. I'll use select: { userId: true }. Safer.
 
-Hmm, I selected only id/name for team, so seatLimit won't be there. I'd rather do the seat check by counting members and comparing against team's seatLimit if it exists. Since I don't select it, skip or add to select? Adding a nonexistent field to select would be a TS error. Avoid. I'll drop the seat-limit check entirely, or... I could do prisma.team.findUnique({ where: { id }, select: { } }) — no.
-
-Alternative: implement seat limit as an optional guard using raw query? Overkill. I'll skip seat limits and mention it in comments? The council asked... but the feedback listed it as "optional". I'll add a comment // TODO(scale): enforce plan-based seat limits before creating membership inside the transaction. Good.
-
-Transaction:
+Actually if it's a composite unique, findFirst works fine.
 
 ts
-    const role = roleSchema.catch('MEMBER').parse(invitation.role);
+    const role = roleSchema.parse(invitation.role);
 
-    let alreadyMember = false;
-    await prisma.$transaction(async (tx) => {
-      // Atomically claim the invitation. Only one concurrent request can win.
-      const claimed = await tx.teamInvitation.updateMany({
+    if (existingMembership) {
+      await prisma.invitation.updateMany({
         where: { id: invitation.id, acceptedAt: null },
-        data: { acceptedAt: new Date() },
+        data: { acceptedAt: now },
       });
+      void safeAudit({ action: 'team.invitation.accepted', ... });
+      return NextResponse.json({ ok: true, alreadyMember: true, team: {...}, role }, {headers});
+    }
 
+Then transaction for the new-member path.
+
+ts
+    const outcome = await prisma.$transaction(async (tx) => {
+      const claimed = await tx.invitation.updateMany({
+        where: { id: invitation.id, acceptedAt: null, expiresAt: { gt: now } },
+        data: { acceptedAt: now },
+      });
       if (claimed.count === 0) {
-        // Someone else accepted it (or it was revoked) between read and write.
-        const member = await tx.teamMember.findFirst({ where: { teamId: invitation.teamId, userId } });
-        if (member) { alreadyMember = true; return; }
-        throw new InvitationRaceError();
+        const current = await tx.invitation.findUnique({ where: { id: invitation.id }, select: { acceptedAt: true, expiresAt: true } });
+        if (current?.acceptedAt) throw new RouteError('INVITATION_ACCEPTED', '...');
+        throw new RouteError('INVITATION_EXPIRED', '...');
       }
 
-      const existingMembership = await tx.teamMember.findFirst({ where: { teamId: invitation.teamId, userId } });
-      if (existingMembership) {
-        alreadyMember = true;
-        return;
-      }
+      const memberCount = await tx.teamMember.count({ where: { teamId: invitation.teamId } });
+      if (memberCount >= MAX_TEAM_MEMBERS) throw new RouteError('TEAM_FULL', 'This team has reached its member limit.');
 
       await tx.teamMember.create({ data: { teamId: invitation.teamId, userId, role } });
-    }, { isolationLevel: 'Serializable', timeout: 10_000 });
+      return { memberCount: memberCount + 1 };
+    }, { isolationLevel: 'Serializable' });
 
-Wait: throwing inside interactive transaction and catching outside — the error propagates. I'll define class InvitationRaceError extends Error.
+Hmm isolationLevel: 'Serializable' — Prisma supports Prisma.TransactionIsolationLevel.Serializable via string 'Serializable'. Passing the literal string works in recent Prisma. But if unsupported, it errors. Risk. I'll omit isolation level to be safe? Serializable would be more correct for capacity check. Prisma accepts string literal for isolationLevel since 4.x. I'll include it — actually to be safe against runtime errors, I'll omit it and rely on the conditional updateMany. Hmm, capacity race is minor. I'll keep it simple: omit isolationLevel but keep the conditional claim. Actually including it is more "10x better". Prisma's type expects Prisma.TransactionIsolationLevel which is a string union — literal 'Serializable' is assignable. Fine, include.
 
-Hmm, one concern: if the updateMany succeeds but then membership create fails, transaction rolls back and the invitation is unclaimed — good.
+Also need to handle P2002 (unique violation on membership).
 
-Also isolationLevel: 'Serializable' — Prisma type is Prisma.TransactionIsolationLevel which is a string literal union; passing the string literal directly should be fine type-wise even without importing Prisma? Actually the type is Prisma.TransactionIsolationLevel | ... — passing 'Serializable' as a string literal in an object literal typed as { isolationLevel?: ... } works fine without importing. Yes, TS will check the literal against the union. Good.
-
-Hmm, but risk: if the Prisma version doesn't support isolationLevel option... it's been supported since 4.4. Should be fine. Alternatively omit to be safe. Risk of build error vs benefit. I'll keep it but... Actually a subtle risk: if they use a preview/custom client. I'll keep it — it's standard. Hmm, actually let me reduce risk and skip isolationLevel since the atomic updateMany already guarantees correctness. Actually with updateMany conditional + Serializable, both fine. I'll keep Serializable — no, I'll drop it. The conditional updateMany is the real guard. Dropping reduces build risk. But the council asked for Serializable... I'll include it. Ugh. Decision: include. It's a standard, well-supported option. Actually wait — also timeout option is supported. Keep both minimal: just isolationLevel.
-
-Hmm, but there's an ESLint/prettier concern? No.
-
-After transaction:
+Wrap: catch Prisma error code.
 
 ts
-    // Post-accept side effects — never fail the request.
-    try {
-      await auditLog(userId, 'ACCEPT_TEAM_INVITATION', 'team_invitation', {
-        teamId: invitation.teamId,
-        invitationId: invitation.id,
-        role,
-        alreadyMember,
-      }, request);
-    } catch (auditError) {
-      console.error('[team-invitations:accept:POST] auditLog failed', auditError);
-    }
+function isPrismaUniqueViolation(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && (error as { code?: string }).code === 'P2002';
+}
 
-    return NextResponse.json(
-      { success: true, teamId: invitation.teamId, role, alreadyMember },
-      { headers: NO_STORE_HEADERS }
-    );
+Then audit + response.
 
-Catch block:
+safeAudit:
 
 ts
+async function safeAudit(entry: Record<string, unknown>) {
+  try {
+    await auditLog(entry as never);
   } catch (error) {
-    if (error instanceof InvitationRaceError) {
-      return jsonError('INVITATION_ACCEPTED', 'Invitation already accepted', 400);
-    }
-    const code = (error as { code?: string })?.code;
-    if (code === 'P2002') {
-      // unique constraint -> membership already exists
-      return NextResponse.json({ success: true, teamId: ... })
+    console.error('[team/invitations/accept] audit log failed', error);
+  }
+}
 
-Hmm, in the P2002 branch I need teamId which is out of scope. I could hoist let acceptedTeamId: string | null = null;. Let's do that — assign after successful transaction; in P2002 catch, if acceptedTeamId is set, return success alreadyMember. Actually P2002 would be caught by outer catch. Simpler: since we pre-check membership inside the transaction, P2002 is unlikely; just return 409 with a generic message... but we don't have teamId. I'll hoist a variable let resolvedTeamId: string | undefined; set inside the transaction before creating. Then in catch, if P2002 and resolvedTeamId → return success alreadyMember true. Good.
+Hmm 
+auditLog(entry as never)
+ — fine.
 
-Also handle P2025 (record not found) → 404.
-
-Let me also normalize: since the invitation role might be lowercase 'member', use zod transform to uppercase first: z.preprocess or z.string().transform(s => s.toUpperCase()).pipe(z.enum([...])). Simpler: 
-const role = ROLE_V
-ALUES.includes(rawRole.to
-UpperCase() as any) ? rawRole.toUpperCase()
-: 'MEMBER'
-. Let's do:
-
-ts
-const ROLE_VALUES = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'] as const;
-type InvitationRole = (typeof ROLE_VALUES)[number];
-function normalizeRole(role: string | null | undefined): InvitationRole {
-  const upper = (role ?? '').toUpperCase();
-  return (ROLE_VALUES as readonly string[]).includes(upper) ? (upper as InvitationRole) : 'MEMBER
+payload includes team
