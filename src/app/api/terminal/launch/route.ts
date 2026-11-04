@@ -1,3 +1,136 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Improver. Implement the 10X upgrades requested by the Council.
+File: C:\Users\DELL\Documents\hey\src\app\api\terminal\launch\route.ts
+Dependencies: 
+--- DEPENDENCY: src\lib\terminal\app-catalog.ts ---
+/**
+ * Friendly-name -> platform target catalog for the command router.
+ *
+ * Single source of truth consumed by BOTH:
+ *  - the browser strategies (android-strategy resolves package names, ios-strategy
+ *    forwards friendly names, desktop-strategy forwards friendly names),
+ *  - the Node API route src/app/api/terminal/launch which resolves these tokens into
+ *    allowlisted sub-process argv.
+ *
+ * No free-form user input is ever executed; the router only ever resolves against
+ * this fixed dictionary.
+ */
+
+import type { AppTarget } from '@/lib/terminal/types';
+
+export interface AppCatalogEntry extends AppTarget {
+  description: string;
+}
+
+const APP_TARGETS: AppCatalogEntry[] = [
+  {
+    friendly: 'calculator',
+    description: 'System / calculator app',
+    windows: 'calc.exe',
+    macos: 'Calculator',
+    linux: 'gnome-calculator',
+    android: 'com.android.calculator2',
+    ios: 'calculator://',
+  },
+  {
+    friendly: 'notepad',
+    description: 'Plain-text editor',
+    windows: 'notepad.exe',
+    macos: 'TextEdit',
+    linux: 'gedit',
+    android: '',
+    ios: '',
+  },
+  {
+    friendly: 'spotify',
+    description: 'Spotify music',
+    windows: 'Spotify:',
+    macos: 'Spotify',
+    linux: 'spotify',
+    android: 'com.spotify.music',
+    ios: 'spotify://',
+  },
+  {
+    friendly: 'maps',
+    description: 'Maps application',
+    windows: 'bingmaps:',
+    macos: 'Maps',
+    linux: 'gnome-maps',
+    android: 'com.google.android.apps.maps',
+    ios: 'maps://',
+  },
+  {
+    friendly: 'settings',
+    description: 'System settings',
+    windows: 'ms-settings:',
+    macos: 'System Settings',
+    linux: 'gnome-control-center',
+    android: 'com.android.settings',
+    ios: 'app-settings:',
+  },
+  {
+    friendly: 'browser',
+    description: 'Default web browser',
+    windows: 'msedge.exe',
+    macos: 'Safari',
+    linux: 'firefox',
+    android: '',
+    ios: 'https://',
+  },
+  {
+    friendly: 'calendar',
+    description: 'Calendar application',
+    windows: 'outlookcal:',
+    macos: 'Calendar',
+    linux: 'gnome-calendar',
+    android: 'com.google.android.calendar',
+    ios: 'calshow://',
+  },
+  {
+    friendly: 'files',
+    description: 'File manager',
+    windows: 'explorer.exe',
+    macos: 'Finder',
+    linux: 'nautilus',
+    android: 'com.android.documentsui',
+    ios: 'shareddocuments://',
+  },
+  {
+    friendly: 'messages',
+    description: 'Messaging application',
+    windows: 'mssettings:messaging',
+    macos: 'Messages',
+    linux: '',
+    android: 'com.google.android.apps.messaging',
+    ios: 'sms:',
+  },
+];
+
+const CATALOG: ReadonlyMap<string, AppCatalogEntry> = new Map(
+  APP_TARGETS.map((entry) => [entry.friendly, entry])
+);
+
+export function getAppTarget(friendlyName: string): AppCatalogEntry | null {
+  return CATALOG.get(friendlyName.trim().toLowerCase()) ?? null;
+}
+
+export function listAppTargets(): readonly AppCatalogEntry[] {
+  return APP_TARGETS;
+}
+
+--- DEPENDENCY: src\lib\terminal\types
+Feedback: [FORMAT REQUIREMENT — READ CAREFULLY].txt
+TXT 8.53KB
+
+Current Code:
 import { NextRequest, NextResponse } from 'next/server';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -119,3 +252,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     );
   }
 }
+
+CRITICAL INSTRUCTIONS:
+1. Output the ENTIRE file. DO NOT truncate.
+2. Preserve existing working logic, but aggressively upgrade everything else.
+3. Output ONLY the raw code. No markdown blocks.
