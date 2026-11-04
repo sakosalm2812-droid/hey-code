@@ -1,3 +1,116 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill is for finding out what they actually want, and why, before
+anything gets built.
+
+People often haven't finished working out what they want. Good questions
+help them think it through. When you understand the why, you make the
+hundred decisions they never mention the way they would have made them.
+
+## First: What Do You Actually Know?
+
+Before you reply, ask yourself: what do I know about what they want, and
+why?
+
+- **Everything that matters is in the request** ("make the icon cornflower
+  blue"). This is a quick, clear task. Do it, and say what you did.
+- **Something non-trivial is missing.** Start the conversation.
+
+Before you start implementing, you must, in order:
+
+1. Lay out the approaches in a message of their own, and have your
+   human partner pick one (see Lay out the approaches).
+2. Write the design doc, short or full (see Size the Work).
+3. Get their approval of that doc.
+4. Invoke the superpowers:writing-plans skill.
+
+If nothing is open when you write your first message and there's one
+sensible way, steps 1 to 3 happen in that message (see Your First
+Message).
+
+Two things aren't implementing: a spike they said yes to (see Spike to
+feel things out), and doing what they asked once they've opted out of
+the questions.
+
+## Look Before You Ask
+
+In an existing project, or when they've given you context (a spec, a plan,
+a handoff, files they pointed at, earlier conversation), dig in before your
+first message. Read what they referred to and the code or material it
+connects to, and keep reading until you can explain how the relevant
+parts work today and what this change would touch. Never ask what the
+project or their context already answers, or reopen what they've
+already decided.
+
+## Your First Message
+
+Move the work forward, with one of these:
+
+- **They've already said what they want** (a spec, a plan, a detailed
+  request): aim for about 200 words for the whole message. Echo their
+  request back in your own words, so they can see whether you've got its
+  shape: what they want, who it's for, and why, as far as they've said.
+  Add what you found that bears on it: how the relevant parts work today
+  and what the change would touch. If you found something they may not
+  have considered that would change what they're asking for or how it
+  has to be built, like a constraint, a conflict, or a cheaper path, say
+  so plainly. How to build it comes later, once you understand what they
+  want (see Lay out the approaches). End with one line inviting
+  corrections. Then, if they haven't told you why they want it, even if
+  you can guess, ask about that: one open question in their own terms,
+  with nothing to pick from. If they have told you, and their request
+  and the project leave open something whose answer would change what
+  gets built, ask about the one that would change it most; when its
+  choices can be named, sketch each concretely, with what it trades off
+  and which you'd pick. If nothing like that is open, there's one
+  sensible way: end with the short design itself (the approach, a line on
+  why the others don't fit, and the design in a few lines) and ask them
+  to approve it. Their approval covers the approach and the design: write
+  the short design doc as approved and go on to the plan.
+  Specs are often incomplete, so confirm before you build on one.
+- **They haven't:** one open question, in their own terms, about the
+  biggest thing their request leaves unsettled. Say why you're asking:
+  what the answer would change about what you build. For "a website for
+  my bakery": "If it's mostly f
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill i
+
+FILE TO UPGRADE: src\app\api\projects\route.ts
+CURRENT CODE:
 The user wants an upgraded version of the API route. They say output ONLY raw upgraded code, no markdown. But the FORMAT REQUIREMENT says all JSON tool call arrays must be wrapped in  code block. Hmm — there's a conflict. The "PREVIOUSLY SUCCESSFUL PATTERN" is truncated. The mission says output only raw upgraded code, no markdown, no truncation.
 
 But the file format requirement says wrap ALL JSON tool call arrays in json code block. This implies we should use write_file tool to write the file. The automation harness parses code blocks. So the correct response is a JSON tool call array inside ajson block, with content being the upgraded code escaped.
@@ -105,272 +218,6 @@ function sanitizeText(value: string): string {
   return value.replace(CONTROL_CHARS, ' ').replace(/\s+/g, ' ').trim();
 }
 
-That would collapse newlines in description — for description we want to preserve newlines. So use different sanitizers: sanitizeName collapses whitespace; sanitizeDescription strips control chars except \n and \t.
-
-Let me write:
-
-ts
-const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
-
-Escaped in JSON: /[\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]/g. Wait — in the file content we want \u0000 literal text. In JSON, to represent backslash + u0000 we write \\u0000. Yes.
-
-OK.
-
-Now the code body.
-
-ts
-interface ApiFailure {
-  error: string;
-  code: string;
-  details?: unknown;
-}
-
-function jsonError(status: number, code: string, message: string, details?: unknown) {
-  const payload: ApiFailure = { error: message, code };
-  if (details !== undefined) payload.details = details;
-  return NextResponse.json(payload, {
-    status,
-    headers: { 'Cache-Control': 'no-store' },
-  });
-}
-
-function jsonOk<T extends object>(body: T, status = 200) {
-  return NextResponse.json(body, {
-    status,
-    headers: { 'Cache-Control': 'no-store' },
-  });
-}
-
-Auth helper:
-
-ts
-async function requireUserId(): Promise<string | null> {
-  const session = await auth();
-  return session?.user?.id ?? null;
-}
-
-Hmm but we also need session for audit. Just userId.
-
-Audit safely:
-
-ts
-async function safeAudit(userId: string, action: string, payload: Record<string, unknown>, request: NextRequest) {
-  try {
-    await auditLog(userId, action, 'project', payload, request);
-  } catch (error) {
-    console.error('[projects] audit log failed', { action, userId, error: serializeError(error) });
-  }
-}
-
-serializeError:
-
-ts
-function serializeError(error: unknown) {
-  if (error instanceof Error) {
-    return { name: error.name, message: error.message };
-  }
-  return { value: String(error) };
-}
-
-Body parsing:
-
-ts
-async function readJsonObject(request: NextRequest): Promise<Record<string, unknown> | null> {
-  try {
-    const body = await request.json();
-    if (body && typeof body === 'object' && !Array.isArray(body)) {
-      return body as Record<string, unknown>;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-Validation for create:
-
-ts
-interface ProjectInput { name: string; description?: string; color?: string; }
-
-function parseCreateInput(body: Record<string, unknown>): { ok: true; value: ProjectInput } | { ok: false; message: string } {
-  const rawName = typeof body.name === 'string' ? body.name : '';
-  const name = sanitizeName(rawName);
-  if (!name) return { ok: false, message: 'Project name is required' };
-  if (name.length > MAX_NAME_LENGTH) return { ok: false, message: `Project name must be at most ${MAX_NAME_LENGTH} characters` };
-
-  const description = typeof body.description === 'string' ? sanitizeDescription(body.description) : undefined;
-  if (description && description.length > MAX_DESCRIPTION_LENGTH) return { ok: false, message: `Description must be at most ${MAX_DESCRIPTION_LENGTH} characters` };
-
-  let color: string | undefined;
-  if (typeof body.color === 'string' && body.color.trim()) {
-    const candidate = body.color.trim();
-    if (!HEX_COLOR.test(candidate)) return { ok: false, message: 'Color must be a valid hex value (e.g. #6366F1)' };
-    color = candidate.toUpperCase();
-  }
-
-  return { ok: true, value: { name, description: description || undefined, color } };
-}
-
-DELETE: accept id from query or body. Also validate id format (cuid/uuid) — maybe just trim and length check to avoid weird input.
-
-Rate limiting: skip — adding in-memory limiter in a serverless route is misleading. I'll skip and mention nothing (no markdown allowed anyway).
-
-duplicate detection: error.message.includes('already exists') — improve: check isUniqueConstraintError by code 'P2002' or message. Keep both.
-
-Also handle error instanceof Error && /already exists|unique constraint/i.test(error.message).
-
-For DELETE result: result.count === 0 — keep but guard result shape.
-
-Let me write the final file.
-
-Also GET could support pagination/search — maybe add optional ?q= filter? That changes lib usage. Keep simple: no.
-
-Maybe add HEAD? No.
-
-Write final code:
-
-ts
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { auditLog } from '@/lib/audit';
-import { createProject, listProjects, deleteProject } from '@/lib/files';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-const MAX_NAME_LENGTH = 120;
-const MAX_DESCRIPTION_LENGTH = 2000;
-const MAX_ID_LENGTH = 64;
-const DEFAULT_COLOR = '#6366F1';
-const HEX_COLOR = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/;
-const FORBIDDEN_CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
-const WHITESPACE = /\s+/g;
-const UNIQUE_VIOLATION = /already exists|unique constraint|duplicate key/i;
-
-interface ProjectInput {
-  name: string;
-  description?: string;
-  color?: string;
-}
-
-type ParseResult<T> = { ok: true; value: T } | { ok: false; message: string };
-
-function noStoreHeaders(): HeadersInit {
-  return { 'Cache-Control': 'no-store, max-age=0' };
-}
-
-function errorResponse(status: number, code: string, message: string) {
-  return NextResponse.json({ error: message, code }, { status, headers: noStoreHeaders() });
-}
-
-function successResponse(body: Record<string, unknown>, status = 200) {
-  return NextResponse.json(body, { status, headers: noStoreHeaders() });
-}
-
-function serializeError(error: unknown): Record<string, unknown> {
-  if (error instanceof Error) {
-    return { name: error.name, message: error.message };
-  }
-  return { value: String(error) };
-}
-
-function sanitizeName(value: string): string {
-  return value.replace(FORBIDDEN_CONTROL_CHARS, ' ').replace(WHITESPACE, ' ').trim();
-}
-
-function sanitizeDescription(value: string): string {
-  return value.replace(FORBIDDEN_CONTROL_CHARS, '').trim();
-}
-
-function sanitizeId(value: string | null): string | null {
-  if (!value) return null;
-  const trimmed = value.trim();
-  if (!trimmed || trimmed.length > MAX_ID_LENGTH) return null;
-  return trimmed;
-}
-
-async function getUserId(): Promise<string | null> {
-  const session = await auth();
-  return session?.user?.id ?? null;
-}
-
-async function safeAudit(userId: string, action: string, payload: Record<string, unknown>, request: NextRequest): Promise<void> {
-  try {
-    await auditLog(userId, action, 'project', payload, request);
-  } catch (error) {
-    console.error('[api/projects] audit log failed', { action, userId, error: serializeError(error) });
-  }
-}
-
-async function readJsonBody(request: NextRequest): Promise<Record<string, unknown> | null> {
-  try {
-    const body: unknown = await request.json();
-    if (body && typeof body === 'object' && !Array.isArray(body)) {
-      return body as Record<string, unknown>;
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function parseProjectInput(body: Record<string, unknown>): ParseResult<ProjectInput> {
-  const name = sanitizeName(typeof body.name === 'string' ? body.name : '');
-  if (!name) {
-    return { ok: false, message: 'Project name is required' };
-  }
-  if (name.length > MAX_NAME_LENGTH) {
-    return { ok: false, message: `Project name must be at most ${MAX_NAME_LENGTH} characters` };
-  }
-
-  const descriptionRaw = typeof body.description === 'string' ? sanitizeDescription(body.description) : '';
-  if (descriptionRaw.length > MAX_DESCRIPTION_LENGTH) {
-    return { ok: false, message: `Description must be at most ${MAX_DESCRIPTION_LENGTH} characters` };
-  }
-
-  let color = DEFAULT_COLOR;
-  if (typeof body.color === 'string' && body.color.trim() !== '') {
-    const candidate = body.color.trim();
-    if (!HEX_COLOR.test(candidate)) {
-      return { ok: false, message: 'Color must be a hex value such as #6366F1' };
-    }
-    color = candidate.toUpperCase();
-  }
-
-  return {
-    ok: true,
-    value: {
-      name,
-      description: descriptionRaw.length > 0 ? descriptionRaw : undefined,
-      color,
-    },
-  };
-}
-
-export async function GET() {
-  const userId = await getUserId();
-  if (!userId) {
-    return errorResponse(401, 'UNAUTHORIZED', 'Unauthorized');
-  }
-
-  try {
-    const projects = await listProjects(userId);
-    return successResponse({ projects: Array.isArray(projects) ? projects : [] });
-  } catch (error) {
-    console.error('[api/projects] list failed', { userId, error: serializeError(error) });
-    return errorResponse(500, 'INTERNAL_ERROR', 'Internal server error');
-  }
-}
-...
-
-POST and DELETE similarly.
-
-DELETE: get id from query 
-id
- or 
-projectId
-, else body.
-
-ts
-export async function DELETE(request: NextRequest) {
-  const userId =
+That would collapse newlines in description — for description we want to preserve newlines. So use
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
