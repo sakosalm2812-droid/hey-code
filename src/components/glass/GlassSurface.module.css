@@ -1,116 +1,201 @@
+The user wants an upgraded CSS file. They gave format requirements: wrap JSON tool call arrays in  code block. The mission says output ONLY raw upgraded code... but the format requirement says to use write_file tool call in a JSON code block. Given the harness parses code blocks, I should output a JSON tool call array with write_file.
+
+Let me analyze the CSS and improve it:
+
+Current issues:
+
+transition: transform 0.18s ease, ... — using ease and animating box-shadow and background which are paint-heavy. Should use cubic-bezier and be more specific. Also transition: all-like broad transitions on a glass surface are costly. Box-shadow animation causes repaints. Emil would say keep transitions off high-frequency, but for hover states 180ms is okay. However ease should be a custom curve.
+
+Hover translateY(-2px) is generic AI-slop-ish. But for a glass card, a subtle lift is acceptable. Jakub would prefer a subtler -1px or scale. Actually per skill: avoid transform on hover for large surfaces? Let's keep a refined lift with proper easing and spring-like curve.
+
+Active state: transition-duration: 0.08s overrides ALL transition durations (shorthand list) — that's actually fine but abrupt; it applies to all properties. Better to scope: transition-duration: 80ms for transform only. Actually setting transition-duration sets duration for all listed properties equally — a common bug: the hover shadow lingers. Use explicit.
+
+Reduced motion: transition: none is heavy-handed — it kills useful opacity/color transitions too. Better: keep color transitions, remove transform. Also add transition-duration: 0.01ms pattern? Emil prefers removing motion but keeping state feedback. Actually reduced-motion should remove transforms and keep colors. Let's do: transition-property: background, border-color, box-shadow with short duration; transform none.
+
+Reduced motion active: transform: scale(0.99) still moves — should be none.
+
+Missing will-change? Not necessary. Better not.
+
+Missing @media (hover: hover) guard — hover effects on touch devices stick. That's a real bug: on touch, :hover sticks after tap. Wrap hover in @media (hover: hover) and (pointer: fine).
+
+:active:not(:focus-visible) — the intent is to avoid the press effect when keyboard-activating. But focus-visible is on the element and persists after activation... Actually while keyboard activating (space), :focus-visible matches, so it's fine. But a subtle bug: mouse-clicking a focus-visible element (after tabbing) won't show active. Acceptable. But :active:not(:focus-visible) also means a mouse click on an element that got focus-visible from keyboard wouldn't show. Minor. Better approach: :active normally and use @media (prefers-reduced-motion) for motion. Keep but note.
+
+Also need transform-origin, backface-visibility, GPU compositing hints, isolation: isolate.
+
+--accent-glow-soft might be undefined → fallback needed. Use fallback in var().
+
+Missing translateY reset when leaving hover — implicit.
+
+Border-color on hover: glass surfaces typically highlight border via a gradient/border-image; but CSS var border-color is fine.
+
+Add -webkit-tap-highlight-color: transparent for mobile, touch-action: manipulation.
+
+Add content-visibility? no.
+
+Liquid Glass improvements: add specular highlight layer via ::before/::after? The file is just the module CSS for the surface; adding pseudo-elements could conflict with component. But we can add a subtle inner highlight on interaction. Risky but can be additive if component doesn't use ::before. Hmm. Since it's a module CSS for GlassSurface, adding pseudo-elements might conflict. I'll add a ::after specular layer only... risky. Let me include a .interactive::after for press sheen? Might overlay content. Use pointer-events: none and z-index: 0... content may not be positioned. I'll skip pseudo-elements except a safe one? I'll add a subtle box-shadow inset on active instead. Safer.
+
+Actually a "10x better" file: add CSS custom properties for timing tokens, use @property? Not needed.
+
+High contrast / reduced transparency: !important on background is fine, but they duplicate with print. Could consolidate. Also for reduced transparency, keep a subtle border and shadow so it still reads as a surface.
+
+Print: add color-adjust, -webkit-print-color-adjust: exact? Not needed. Remove transitions in print.
+
+Add contain: paint? no.
+
+Let me also ensure :focus-visible outline uses outline-offset: 3px and maybe box-shadow fallback for forced-colors. Add @media (forced-colors: active) to use system colors — that's a real accessibility gap: forced-colors mode (Windows High Contrast) ignores box-shadow/outline colors; need forced-color-adjust handling and Border with CanvasText.
+
+Also prefers-contrast: more — should also increase border opacity, and outline.
+
+Timing: Emil's approach — hover in ~150-200ms, hover out shorter? Actually quick out. Use --hey-motion-fast: 160ms with cubic-bezier(0.2, 0, 0, 1) (standard easing) and press 90ms with cubic-bezier(0.3, 0, 0.2, 1).
+
+Transition list: avoid background shorthand animating (it animates background-color, background-position...). Use background-color. But the base .surface might have gradient backgrounds — transitioning background-color is fine.
+
+Also add transition-property on .surface but only apply motion-capable transitions to .interactive to avoid cost on non-interactive surfaces. Good: non-interactive glass doesn't need transitions at all. That's an optimization: move transition to .interactive only. But other classes may change theme... theme changes are rare, no transition needed. Yes — move transitions to .interactive.
+
+Wait, but .surface base transition currently applies to all. Removing it might break theme-change animation. Fine, it's better.
+
+Let me write.
+
+Also add border: 1px solid transparent? The base doesn't define border — presumably component sets it. Hover sets border-color only. If the border isn't defined, no effect. Keep as is but hover should also set border-color with fallback rgba.
+
+Add --hey-glass-hover-lift: -2px? Could scale the lift down to -1px for restraint. Hmm, Jakub subtlety: -2px on hover for a card is fine. I'll use -1px on hover, and press uses translateY(0) scale(0.995). Actually for glass, a slight lift with glow is nice. I'll do translateY(-2px) but with a subtle scale 1.005? No, skip scale on hover (can cause blurry text on non-integer). Keep -2px.
+
+Add @media (prefers-reduced-motion: reduce) — keep border-color/background transitions at 0.01ms? Emil: reduced motion should not remove state feedback. So set transition-property to background-color, border-color, box-shadow (color changes ok), and transform none. Box-shadow change on hover is a big glow — under reduced motion it's not motion, it's fine, but it can be jarring; keep it, it's not motion. I'll keep color/shadow transitions with 120ms.
+
+Active under reduced motion: no transform, but provide an alternative feedback — e.g., slightly stronger border/box-shadow, or opacity. Use filter: brightness(0.96)? That's a change in luminance — acceptable. I'll add box-shadow inset.
+
+Forced colors mode: .interactive:focus-visible { outline: 2px solid; } and borders via ButtonBorder/CanvasText.
+
+Let me write clean CSS with tokens defined at .surface scope? Use :where() to avoid specificity issues? Keep simple.
+
+I'll define local fallbacks:
+
+css
+.surface {
+  --_hey-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --_hey-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --_hey-dur-hover: 180ms;
+  --_hey-dur-press: 90ms;
+  ...
+}
+
+Use .interactive for transitions.
+
+Also add transform: translateZ(0)? Not needed; will-change: transform on hover only:
+.interactive:hover { will-change: transform; } — actually apply will-change only during hover is fine-ish, but adds layer. I'll skip or use it. I'll include will-change: transform on .interactive — hmm memory. Use on hover only is somewhat pointless. Skip.
+
+Also @media (hover: none) — provide active feedback instead of hover.
+
+Also handle :focus-visible ring consistent with tokens: outline: 2px solid var(--accent, currentColor); outline-offset: 3px; plus border-radius unaffected. Also add .interactive:focus-visible:hover shouldn't double.
+
+Let me write final CSS.
+
+css
 /**
  * HEY GlassSurface — Module CSS
- * 
- * Styles for the three glass tiers and interactive states.
+ * ...
  */
 
 .surface {
-  /* Base glass styles — overridden by tier-specific classes */
+  --_hey-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --_hey-ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --_hey-dur-hover: 180ms;
+  --_hey-dur-press: 90ms;
+
   border-radius: var(--hey-v1-card-radius, 30px);
-  transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    border-color 0.18s ease,
-    background 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.bar {
-  border-radius: var(--hey-v1-control-radius, 18px);
+Hmm, --_hey-ease-spring overshoot for press release — careful. Emil dislikes bouncy for productivity. Use ease-out only.
+
+Transitions on .interactive:
+
+css
+.interactive {
+  transition-property: transform, box-shadow, border-color, background-color;
+  transition-duration: var(--_hey-dur-hover);
+  transition-timing-function: var(--_hey-ease-out);
+  transition-behavior: normal;
+  will-change: auto;
 }
 
-.card {
-  border-radius: var(--hey-v1-card-radius, 30px);
+Wait .interactive is a class applied along with .surface. Transitions on the class itself fine.
+
+Press:
+
+css
+.interactive:active {
+  transform: translateY(0) scale(0.995);
+  transition-duration: var(--_hey-dur-press);
+  transition-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
 }
 
-.elevated {
-  border-radius: var(--hey-v1-shell-radius, 36px);
-}
+But original excludes focus-visible. Keep :active:not(:focus-visible)? Keyboard activation with space: focus-visible applies, and pressing space triggers :active — showing a press scale for keyboard is arguably good feedback. I'll just use :active and let reduced-motion handle it. Hmm but the original author had a reason: maybe avoiding the scale when pressing enter? Enter doesn't trigger :active in most browsers for divs. I'll keep simple :active.
 
-/* Interactive states */
-.interactive:hover {
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow:
-    var(--hey-glass-shadow),
-    var(--hey-glass-inner-highlight),
-    0 0 42px var(--accent-glow-soft);
-}
+Actually there's a subtlety: on touch, :hover applies before :active and sticks. The @media (hover: hover) guard fixes that.
 
-.interactive:active:not(:focus-visible) {
-  transform: translateY(0) scale(0.99);
-  transition-duration: 0.08s;
-}
+Hover block:
 
-.interactive:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .surface {
-    transition: none;
-  }
-  
+css
+@media (hover: hover) and (pointer: fine) {
   .interactive:hover {
-    transform: none;
-  }
-  
-  .interactive:active:not(:focus-visible) {
-    transform: scale(0.99);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.18);
+    box-shadow: var(--hey-glass-shadow), var(--hey-glass-inner-highlight), 0 0 42px var(--accent-glow-soft, transparent);
   }
 }
 
-/* Reduced transparency fallback */
-@media (prefers-reduced-transparency: reduce) {
-  .surface {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+But the border-color rgba(255,255,255,0.18) is white-based; in light mode glass that's wrong. Use a token: var(--hey-glass-border-hover, rgba(255,255,255,0.18)). Good improvement.
+
+Also add @media (hover: none) active feedback: transform: scale(0.985).
+
+Reduce motion:
+
+css
+@media (prefers-reduced-motion: reduce) {
+  .interactive {
+    transition-property: background-color, border-color, box-shadow;
+    transition-duration: 120ms;
+    transition-timing-function: linear;
   }
-  
-  .bar {
-    background: var(--hey-glass-bar-fill) !important;
-  }
-  
-  .card {
-    background: var(--hey-glass-card-fill) !important;
-  }
-  
-  .elevated {
-    background: var(--hey-glass-elevated-fill) !important;
-  }
+  .interactive:hover { transform: none; }
+  .interactive:active { transform: none; }
 }
 
-/* High contrast mode */
-@media (prefers-contrast: more) {
-  .surface {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-  
-  .bar {
-    background: var(--hey-glass-bar-fill) !important;
-    border-color: var(--hey-glass-bar-border);
-  }
-  
-  .card {
-    background: var(--hey-glass-card-fill) !important;
-    border-color: var(--hey-glass-card-border);
-  }
-  
-  .elevated {
-    background: var(--hey-glass-elevated-fill) !important;
-    border-color: var(--hey-glass-elevated-border);
-  }
+Hmm but hover block is inside @media (hover: hover); the reduced-motion block later overrides transform to none — order matters, later wins if same specificity. Since reduced-motion block comes after, it wins. Good.
+
+Reduced transparency: keep borders/shadows; set opaque fills; also backdrop-filter: none. Keep !important? Since the component might set backdrop-filter inline or via other class with higher specificity. Keep !important.
+
+Also for reduced transparency, glass should still have a border — add border-color fallbacks.
+
+High contrast: same + forced-colors.
+
+Print: reset transforms, remove shadows/filters, use borders.
+
+Also add @media (prefers-reduced-transparency: reduce) — note browser support is Safari only; fine.
+
+Add @supports not (backdrop-filter: blur(1px)) fallback? The component handles it probably. Could add a fallback fill for browsers without backdrop-filter. That's a genuine improvement:
+
+css
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .bar { background: var(--hey-glass-bar-fill); }
+  ...
 }
 
-/* Print styles — no glass on paper */
-@media print {
-  .surface {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: none !important;
-  }
-}
+Hmm, but that could double-up. It's a safe enhancement. Include.
+
+Also for prefers-contrast: more, focus outline thicker.
+
+Let me also add .surface { position: relative; isolation: isolate; }? Might affect layout of component. Skip position.
+
+I'll finalize. Now format: JSON array with write_file, path absolute. The path given: src\components\glass\GlassSurface.module.css. Use /src/components/glass/GlassSurface.module.css? They said abs path. Use /src/components/glass/GlassSurface.module.css. Hmm. I'll use /src/components/glass/GlassSurface.module.css.
+
+Now write the content with escaped quotes. The CSS contains " characters? Only in comments maybe. Avoid quotes in CSS content entirely to simplify — but rgba etc. no quotes. 
+@
+supports
+ no quotes. Comments I'll avoid quotes. Good, minimal escaping needed.
+
+Write JSON.
+
+[{"tool": "write_file", "path": "/src/components/glass/GlassSurface.module.css", "content": "/**\n * HEY GlassSurface — Module CSS\n *\n * Three glass tiers +
