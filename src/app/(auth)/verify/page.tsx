@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Motion Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\(auth)\verify\page.tsx
+CURRENT CODE:
 The user wants me to upgrade the file. But the current code is truncated — it ends mid-import. I don't have the full file. I should reconstruct a complete, high-quality verify page.
 
 The instruction says output ONLY raw upgraded code, but the format requirement at the top says I MUST wrap ALL JSON tool call arrays in a  code block. There's a conflict. The format requirement says I must wrap JSON tool call arrays in a code block. But the mission says output ONLY raw upgraded code, no markdown.
@@ -86,244 +184,6 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, AlertCircle, Loader2, MailCheck, ArrowLeft, ShieldCheck } from 'lucide-react';
 
-Need to be careful about assuming lucide-react exists. The original imports Button and Card from shadcn-ish paths, so lucide-react is likely available. I'll keep icons minimal — actually I could inline SVG to avoid dependency risk. Hmm, safer to use inline SVGs? Using lucide-react is standard with shadcn. I'll use lucide-react but keep it small. Actually, to reduce risk of build break, I'll use inline SVG components. That's safer and also gives me control over path-draw animation. Let me do inline SVGs.
-
-Let me write the code.
-
-States: 'verifying' | 'success' | 'error' | 'invalid' (missing token)
-
-tsx
-type Status = 'verifying' | 'success' | 'error' | 'invalid';
-
-Verify function:
-
-tsx
-const verify = useCallback(async (signal: AbortSignal) => {
-  const res = await fetch('/api/auth/verify', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token }),
-    signal,
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.message ?? 'Verification failed');
-  return data;
-}, [token]);
-
-Guard with ref.
-
-Redirect on success after delay (3.5s) with countdown maybe. Keep simple: show "Continue" button + auto redirect.
-
-Resend: POST /api/auth/resend-verification with email. Cooldown 30s.
-
-Liquid glass styling:
-
-Card: bg-white/60 backdrop-blur-2xl border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.7)]
-
-Dark mode variants using dark:bg-white/[0.06] dark:border-white/10
-
-Ambient blobs: absolute positioned gradient divs with blur-3xl, animate with framer motion slow loop.
-
-Reduced motion: const reduce = useReducedMotion().
-
-Let me now write out the whole thing carefully.
-
-Transition constants:
-
-tsx
-const EASE = [0.22, 1, 0.36, 1] as const;
-
-Framer Motion v11 types might complain about readonly tuple; use [0.22, 1, 0.36, 1] as [number, number, number, number]. I'll define const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
-Variants for state swap:
-
-tsx
-const swap: Variants = {
-  initial: { opacity: 0, y: 8, filter: 'blur(4px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.35, ease: EASE } },
-  exit: { opacity: 0, y: -8, filter: 'blur(4px)', transition: { duration: 0.2, ease: 'easeIn' } },
-};
-
-Success check SVG with pathLength animation:
-
-tsx
-<motion.path
-  d="M4 12.5 9.5 18 20 6.5"
-  initial={{ pathLength: 0 }}
-  animate={{ pathLength: 1 }}
-  transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
-  ...
-/>
-
-Use strokeDasharray via pathLength on motion.path — framer handles.
-
-Also a ring that scales in.
-
-Error state: shake via animate x keyframes only once, respecting reduced motion.
-
-Let me write the aurora background:
-
-tsx
-function AmbientBackdrop({ reduce }: { reduce: boolean | null }) {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -top-1/3 left-1/2 h-[42rem] w-[42rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.28),transparent_65%)] blur-3xl" />
-      ...
-    </div>
-  );
-}
-
-Actually use motion divs with slow looping scale/opacity when not reduced.
-
-Now, careful with JSX escaping in JSON content: all " must become \". That's a lot. Alternative: output raw code without JSON.
-
-Hmm, the JSON escaping is going to be error-prone but doable. Honestly... risk of producing invalid JSON is high.
-
-Let me reconsider one more time. The mission says: "Otherwise, output ONLY the raw upgraded code. No markdown. No truncation." The FORMAT REQUIREMENT file is titled "[FORMAT REQUIREMENT — READ CAREFULLY]" and is part of the input. It says JSON tool call arrays must be in code blocks.
-
-Given both, and given that "PREVIOUSLY SUCCESSFUL PATTERN" indicates this has worked before, I think the harness expects the write_file tool call. I'll do it. Escaping is mechanical — I'll be careful.
-
-Actually wait — the content contains backticks and template literals. In JSON those are fine. Only ", \, and newlines need escaping. I'll use \n for newlines. That makes it one giant line — hard but doable.
-
-Hmm, that's really long. Alternatively... I could just output the raw code. Let me weigh: if the harness only looks for JSON code blocks and finds none, it might just take the raw text. Many such harnesses fall back.
-
-I'll go with the JSON block. Let me commit and be very careful.
-
-Actually, let me reconsider size: ~300 lines of code into a single JSON string. That's a lot of escape work but I can do it. Let me minimize line count a bit while keeping quality — maybe 220 lines.
-
-Let me write the code first (normal form), then escape.
-
-tsx
-'use client';
-
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-const REDIRECT_DELAY = 3200;
-const RESEND_COOLDOWN = 30;
-
-type Status = 'verifying' | 'success' | 'error' | 'invalid';
-
-const swap: Variants = {
-  initial: { opacity: 0, y: 10, filter: 'blur(6px)' },
-  animate: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.38, ease: EASE } },
-  exit: { opacity: 0, y: -10, filter: 'blur(6px)', transition: { duration: 0.2, ease: 'easeIn' } },
-};
-
-Icons inline:
-
-tsx
-function Spinner({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.18" strokeWidth="2.5" />
-      <motion.circle
-        cx="12" cy="12" r="9"
-        stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
-        strokeDasharray="56.5"
-        animate={{ strokeDashoffset: [42, 14, 42], rotate: 360 }}
-        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '50% 50%' }}
-      />
-    </svg>
-  );
-}
-
-Hmm rotating a circle is pointless visually unless dashoffset animates — dashoffset animation alone gives the sweep. Fine.
-
-Actually simpler: use animate-spin on the svg. Let's keep the dash animation, it's nicer. But rotate: 360 in animate with repeat Infinity and easeInOut — it'll wobble. Just use linear for rotate. Combine: I'll do two nested motions. Simpler: outer svg with animate-spin class if not reduced. Let's do:
-
-tsx
-<svg className={cn('animate-spin', className)} ...>
-
-with a static circle + a partial arc. Clean. And under reduced motion, motion-reduce:animate-none. Tailwind has motion-reduce: variant. Good, use that.
-
-Let me finalize icons:
-
-Spinner: circle track + arc path with dasharray.
-
-CheckIcon: animated path.
-
-AlertIcon.
-
-MailIcon.
-
-I'll write compact.
-
-Now the main component. Let me write it fully.
-
-tsx
-function VerifyInner() {
-  const params = useSearchParams();
-  const router = useRouter();
-  const reduce = useReducedMotion();
-
-  const token = params.get('token') ?? '';
-  const email = params.get('email') ?? '';
-
-  const [status, setStatus] = useState<Status>(token ? 'verifying' : 'invalid');
-  const [message, setMessage] = useState('');
-  const [resending, setResending] = useState(false);
-  const [resent, setResent] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
-  const [remaining, setRemaining] = useState(Math.ceil(REDIRECT_DELAY / 1000));
-
-  const startedRef = useRef(false);
-
-  // verify once
-  useEffect(() => {
-    if (!token) return;
-    if (startedRef.current) return;
-    startedRef.current = true;
-
-    const controller = new AbortController();
-
-    (async () => {
-      try {
-        const res = await fetch('/api/auth/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token }),
-          signal: controller.signal,
-        });
-        const data = await res.json().catch(() => ({} as { message?: string }));
-        if (!res.ok) throw new Error(data?.message || 'This link is invalid or has expired.');
-        setStatus('success');
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        setMessage(err instanceof Error ? err.message : 'Something went wrong.');
-        setStatus('error');
-      }
-    })();
-
-    return () => controller.abort();
-  }, [token]);
-
-Careful: cleanup aborts on unmount — fine. But in StrictMode dev, effect runs twice: first run aborts, second run guard startedRef.current blocks → promise aborted → nothing happens. That's a bug! The guard plus abort = stuck verifying in dev.
-
-Fix: don't abort in cleanup, or reset guard. Better: don't use AbortController cleanup that kills the request; instead use a cancelled flag. But StrictMode double-mount would still block second run.
-
-Standard approach: keep the ref guard and don't abort on cleanup — just ignore results via a mounted ref. Since the request should complete once. Let's do:
-
-tsx
-useEffect(() => {
-  if (!token || startedRef.current) return;
-  startedRef.current = true;
-  let alive = true;
-  (async () => { ... if (!alive) return; ... })();
-  return () => { alive = false; };
-}, [token]);
-
-In StrictMode: first effect runs, sets ref true, starts fetch, cleanup sets alive=false → result ignored. Second effect: ref is true → returns → status stuck at 'verifying' forever in dev. Bad.
-
-Alternative: don't use ref; use a module-ish approach. Actually in React 18 StrictMode, the component isn't unmounted-and-remounted; effects are mounted, cleaned up, re-mounted with the SAME component instance (refs persist). So ref guard persists. Hmm.
-
-Real solution: rely on the fact that double-fetch is
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
