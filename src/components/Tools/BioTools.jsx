@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\Tools\BioTools.jsx
+CURRENT CODE:
 import React, { useState } from "react";
 import {
   Dna,
@@ -122,258 +220,6 @@ export default function BioTools({ activeToolName = "3D Cell Explorer" }) {
 
       {/* Main Container */}
       <div className="flex-1 overflow-y-auto p-6">
-        {/* TAB 1: CELL EXPLORER */}
-        {activeTab === "cell" && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Eukaryotic Organelle Inspector</h3>
-              <p className="text-xs text-white/50">Explore cellular anatomy, metabolic pathways, and evolutionary origins.</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Organelle Selectors */}
-              <div className="space-y-3">
-                {ORGANELLES.map((org) => (
-                  <button
-                    key={org.name}
-                    onClick={() => setSelectedOrganelle(org)}
-                    className={`w-full p-4 rounded-2xl border text-left transition-all ${
-                      selectedOrganelle.name === org.name
-                        ? "bg-[#10B981]/15 border-[#10B981] text-white shadow-md shadow-[#10B981]/15"
-                        : "bg-white/5 border-white/10 hover:border-white/20 text-white/70"
-                    }`}
-                  >
-                    <div className="font-bold text-sm text-[#10B981]">{org.name}</div>
-                    <div className="text-xs text-white/50 mt-0.5">{org.subtitle}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Inspector Card */}
-              <div className="lg:col-span-2 p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4">
-                <div className="border-b border-white/10 pb-3">
-                  <h4 className="text-xl font-bold text-[#10B981]">{selectedOrganelle.name}</h4>
-                  <span className="text-xs text-white/50">{selectedOrganelle.subtitle}</span>
-                </div>
-
-                <div className="space-y-3 text-xs md:text-sm">
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-white/40 uppercase tracking-wider text-[11px] font-semibold block">Primary Function</span>
-                    <p className="text-white/90 leading-relaxed">{selectedOrganelle.role}</p>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-white/40 uppercase tracking-wider text-[11px] font-semibold block">Ultrastructure</span>
-                    <p className="text-white/90 leading-relaxed">{selectedOrganelle.structure}</p>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-1 text-emerald-200">
-                    <span className="text-emerald-400 uppercase tracking-wider text-[11px] font-semibold block">Evolutionary Context</span>
-                    <p className="leading-relaxed">{selectedOrganelle.symbiosis}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: PUNNETT SQUARE */}
-        {activeTab === "punnett" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Interactive Mendelian Genetics Punnett Cross</h3>
-              <p className="text-xs text-white/50">Determine parental gamete distributions, genotypic ratios, and dominant/recessive phenotypes.</p>
-            </div>
-
-            {/* Parental Alleles Inputs */}
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-white/70">Parent 1 Genotype</label>
-                <select
-                  value={parent1}
-                  onChange={(e) => setParent1(e.target.value)}
-                  className="px-4 py-2 rounded-xl bg-[#0A0B0F] border border-white/10 text-sm font-mono text-white outline-none"
-                >
-                  <option value="BB">BB (Homozygous Dominant)</option>
-                  <option value="Bb">Bb (Heterozygous)</option>
-                  <option value="bb">bb (Homozygous Recessive)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-white/70">Parent 2 Genotype</label>
-                <select
-                  value={parent2}
-                  onChange={(e) => setParent2(e.target.value)}
-                  className="px-4 py-2 rounded-xl bg-[#0A0B0F] border border-white/10 text-sm font-mono text-white outline-none"
-                >
-                  <option value="BB">BB (Homozygous Dominant)</option>
-                  <option value="Bb">Bb (Heterozygous)</option>
-                  <option value="bb">bb (Homozygous Recessive)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* 2x2 Punnett Grid */}
-            <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4 max-w-md">
-              <div className="text-xs uppercase tracking-wider text-white/40 font-semibold text-center">F1 Offspring Matrix</div>
-              <div className="grid grid-cols-2 gap-3">
-                {gridCombos.map((combo, idx) => {
-                  const isDom = combo.includes("B");
-                  return (
-                    <div
-                      key={idx}
-                      className={`p-6 rounded-2xl border text-center font-mono ${
-                        isDom
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                          : "bg-amber-500/10 border-amber-500/30 text-amber-300"
-                      }`}
-                    >
-                      <div className="text-2xl font-bold">{combo}</div>
-                      <div className="text-[10px] uppercase tracking-wider mt-1 opacity-70">
-                        {isDom ? "Dominant Phenotype (75%)" : "Recessive Phenotype (25%)"}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: ECOSYSTEM SIMULATOR */}
-        {activeTab === "ecosystem" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Lotka-Volterra Predator-Prey Dynamic Balance</h3>
-              <p className="text-xs text-white/50">Simulate cyclic population oscillations between herbivore prey and apex predator populations.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-white/60">Prey Reproduction Rate (r)</span>
-                  <span className="font-bold text-[#10B981]">{preyGrowth}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.5"
-                  max="2.0"
-                  step="0.1"
-                  value={preyGrowth}
-                  onChange={(e) => setPreyGrowth(Number(e.target.value))}
-                  className="w-full accent-[#10B981]"
-                />
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 space-y-2">
-                <div className="flex justify-between text-xs">
-                  <span className="text-white/60">Predation Efficiency (a)</span>
-                  <span className="font-bold text-[#10B981]">{predatorEfficiency}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.2"
-                  max="1.5"
-                  step="0.1"
-                  value={predatorEfficiency}
-                  onChange={(e) => setPredatorEfficiency(Number(e.target.value))}
-                  className="w-full accent-[#10B981]"
-                />
-              </div>
-            </div>
-
-            {/* SVG Wave Visualization */}
-            <div className="p-6 rounded-2xl border border-white/10 bg-[#0A0B0F] space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-bold">
-                    <span className="w-3 h-1 bg-emerald-400 rounded-full" /> Rabbits (Prey)
-                  </div>
-                  <div className="flex items-center gap-1.5 text-amber-400 font-bold">
-                    <span className="w-3 h-1 bg-amber-400 rounded-full" /> Foxes (Predators)
-                  </div>
-                </div>
-                <span className="text-white/40">Equilibrium Oscillation</span>
-              </div>
-
-              <svg viewBox="0 0 500 150" className="w-full h-36 overflow-visible">
-                {/* Prey Curve */}
-                <path
-                  d="M 0,75 C 50,20 100,130 150,75 C 200,20 250,130 300,75 C 350,20 400,130 450,75 L 500,75"
-                  fill="none"
-                  stroke="#10B981"
-                  strokeWidth="3"
-                />
-                {/* Predator Curve (Phase-shifted) */}
-                <path
-                  d="M 0,110 C 50,75 100,20 150,110 C 200,75 250,20 300,110 C 350,75 400,20 450,110 L 500,110"
-                  fill="none"
-                  stroke="#F59E0B"
-                  strokeWidth="3"
-                  strokeDasharray="4 2"
-                />
-              </svg>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: DISSECTION LAB GUIDE */}
-        {activeTab === "dissection" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Virtual Anatomical Dissection Protocol</h3>
-              <p className="text-xs text-white/50">Step-by-step dissection procedures, safety checklists, and organ identification.</p>
-            </div>
-
-            <div className="flex gap-2">
-              {["frog", "mammalian heart", "earthworm"].map((s) => (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setSpecimen(s);
-                    setCompletedSteps([]);
-                  }}
-                  className={`px-3 py-1.5 rounded-xl capitalize text-xs border ${
-                    specimen === s
-                      ? "bg-[#10B981]/20 border-[#10B981] text-[#10B981] font-bold"
-                      : "bg-white/5 border-white/10 text-white/60"
-                  }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              {[
-                "1. Secure specimen in wax dissection pan with dorsal side down using T-pins at 45° angles.",
-                "2. Make a mid-ventral incision from the cloaca to the mandible using blunt-end dissection scissors.",
-                "3. Pin back the muscular body wall flaps to expose the coelomic cavity without puncturing organs.",
-                "4. Identify the three-lobed liver and lift gently to reveal the gall bladder and stomach.",
-                "5. Locate the heart in the pericardial sac and trace aortic arches.",
-              ].map((stepText, idx) => {
-                const done = completedSteps.includes(idx);
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleToggleStep(idx)}
-                    className={`w-full p-4 rounded-2xl border text-left flex items-start gap-3 transition-all ${
-                      done
-                        ? "bg-emerald-500/10 border-emerald-500/30 text-white line-through opacity-70"
-                        : "bg-black/40 border-white/10 text-white/90 hover:border-white/20"
-                    }`}
-                  >
-                    <CheckCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${done ? "text-emerald-400" : "text-white/20"}`} />
-                    <span className="text-xs md:text-sm font-medium">{stepText}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+        {/* TAB 1: CELL EXPLORER *
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
