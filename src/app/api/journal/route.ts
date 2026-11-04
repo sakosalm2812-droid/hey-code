@@ -1,3 +1,116 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill is for finding out what they actually want, and why, before
+anything gets built.
+
+People often haven't finished working out what they want. Good questions
+help them think it through. When you understand the why, you make the
+hundred decisions they never mention the way they would have made them.
+
+## First: What Do You Actually Know?
+
+Before you reply, ask yourself: what do I know about what they want, and
+why?
+
+- **Everything that matters is in the request** ("make the icon cornflower
+  blue"). This is a quick, clear task. Do it, and say what you did.
+- **Something non-trivial is missing.** Start the conversation.
+
+Before you start implementing, you must, in order:
+
+1. Lay out the approaches in a message of their own, and have your
+   human partner pick one (see Lay out the approaches).
+2. Write the design doc, short or full (see Size the Work).
+3. Get their approval of that doc.
+4. Invoke the superpowers:writing-plans skill.
+
+If nothing is open when you write your first message and there's one
+sensible way, steps 1 to 3 happen in that message (see Your First
+Message).
+
+Two things aren't implementing: a spike they said yes to (see Spike to
+feel things out), and doing what they asked once they've opted out of
+the questions.
+
+## Look Before You Ask
+
+In an existing project, or when they've given you context (a spec, a plan,
+a handoff, files they pointed at, earlier conversation), dig in before your
+first message. Read what they referred to and the code or material it
+connects to, and keep reading until you can explain how the relevant
+parts work today and what this change would touch. Never ask what the
+project or their context already answers, or reopen what they've
+already decided.
+
+## Your First Message
+
+Move the work forward, with one of these:
+
+- **They've already said what they want** (a spec, a plan, a detailed
+  request): aim for about 200 words for the whole message. Echo their
+  request back in your own words, so they can see whether you've got its
+  shape: what they want, who it's for, and why, as far as they've said.
+  Add what you found that bears on it: how the relevant parts work today
+  and what the change would touch. If you found something they may not
+  have considered that would change what they're asking for or how it
+  has to be built, like a constraint, a conflict, or a cheaper path, say
+  so plainly. How to build it comes later, once you understand what they
+  want (see Lay out the approaches). End with one line inviting
+  corrections. Then, if they haven't told you why they want it, even if
+  you can guess, ask about that: one open question in their own terms,
+  with nothing to pick from. If they have told you, and their request
+  and the project leave open something whose answer would change what
+  gets built, ask about the one that would change it most; when its
+  choices can be named, sketch each concretely, with what it trades off
+  and which you'd pick. If nothing like that is open, there's one
+  sensible way: end with the short design itself (the approach, a line on
+  why the others don't fit, and the design in a few lines) and ask them
+  to approve it. Their approval covers the approach and the design: write
+  the short design doc as approved and go on to the plan.
+  Specs are often incomplete, so confirm before you build on one.
+- **They haven't:** one open question, in their own terms, about the
+  biggest thing their request leaves unsettled. Say why you're asking:
+  what the answer would change about what you build. For "a website for
+  my bakery": "If it's mostly f
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill i
+
+FILE TO UPGRADE: src\app\api\journal\route.ts
+CURRENT CODE:
 We need answer only raw upgraded code. Must obey format requirement: wrap ALL JSON tool call arrays in  code block. But user says "Otherwise, output ONLY the raw upgraded code. No markdown. No truncation." This is file upgrade task. Need decide whether to output code only or use write_file tool? They gave FORMAT REQUIREMENT about JSON tool call arrays. They are HEY Catalog Specialist. Mission: upgrade file. Previous pattern says output raw code. We need produce upgraded code, likely no markdown. But the system-ish file says must wrap JSON tool call arrays in json code block. Since we're not calling tool? We can just output raw code. Need make file 10x better, fix bugs, improve UI to Liquid Glass, optimize logic. It's API route, no UI. Need improve validation, error handling, audit logging not swallowed? Need maybe add Zod? Avoid unknown imports? We can use existing libs. Need fix bugs:
 
 rate limiter only POST, maybe GET/DELETE? likely okay.
@@ -72,134 +185,6 @@ const body = await request.json().catch(() => null); then if not object 400.
 
 Date validation: normalizeDate(value: unknown): string | undefined if string and matches /^\d{4}-\d{2}-\d{2}$/ and valid Date. But listJournalEntries may expect ISO. Current passes any string. Maybe no strict. Use trim and max length. For POST date, if string, trim; if empty undefined. Could validate date is parseable. But if DB accepts date string maybe. We'll implement normalizeOptionalDate returns trimmed string if non-empty and valid Date? For from/to, if invalid maybe return null? Better not break but return 400. Hmm.
 
-Need keep code concise but robust.
-
-Potential bug: auditLog(session.user.id, 'CREATE_JOURNAL', 'journal', { entryId: entry.id }, request); if entry.id undefined? Assume.
-
-Need use chatRateLimiter for POST. For DELETE, maybe chatRateLimiter(\journal:delete:${session.user.id}`)`. The function likely returns { allowed, reset? }. We'll use.
-
-Need maybe handle body tags array with strings only, trim, dedupe, max. If no tags -> [].
-
-Need mood: normalizeMood returns uppercase? Current default 'NEUTRAL'. If body.mood string trim and uppercase? Could change data. Better preserve case? Mood enum likely uppercase. Use moodRaw.trim().toUpperCase() and if length <= 32. If empty -> 'NEUTRAL'. Could validate allowed? Unknown. I'll not restrict allowed but normalize and limit. Actually if DB enum, invalid mood could cause error. Current accepted any, but maybe DB enum. To be safer, fallback to 'NEUTRAL' if not in allowed? But if user has custom mood "grateful" lower, uppercasing to GRATEFUL maybe valid. Need allowed set unknown. We can use MOODS = new Set(['NEUTRAL','HAPPY','SAD','ANGRY','ANXIOUS','EXCITED','CALM','GRATEFUL','TIRED','STRESSED']). If not in set, use NEUTRAL. But that changes behavior. Hmm. Since bug fix, maybe okay. But if app supports other moods, break. I'd rather not restrict. Use string length max 32, default NEUTRAL.
-
-Need title: trim, max length 200, empty undefined.
-Content: trim, required, max 50_000? Use 20_000. Journal content could be long. Maybe 100k. Use 50_000.
-Tags: max 20, each max 50. Dedup via Set.
-Date: optional string trim max 40. Could validate !Number.isNaN(Date.parse(date))? Date.parse accepts many. Use. If invalid return 400? Maybe. We'll validate if provided and invalid -> 400. For list from/to, if invalid return 400. This is improvement.
-tag for GET: trim max 50.
-from/to: validate date optional; if invalid 400. But listJournalEntries might accept date only. Use normalizeDateParam that returns string or undefined, and boolean? Simpler helper parseOptionalDate(value, field) returns { value?: string; error?: NextResponse }. In route use.
-
-Need avoid too complex.
-
-Could define:
-
-const MAX_CONTENT_LENGTH = 50_000;
-const MAX_TITLE_LENGTH = 200;
-const MAX_TAG_LENGTH = 50;
-const MAX_TAGS = 25;
-const MAX_MOOD_LENGTH = 32;
-const MAX_DATE_LENGTH = 40;
-
-function json(data: unknown, init?: ResponseInit) {
-return NextResponse.json(data, {
-...init,
-headers: { 'Cache-Control': 'no-store', ...(init?.headers ?? {}) },
-});
-}
-
-function unauthorized() { return json({ error: 'Unauthorized' }, { status: 401 }); }
-function badRequest(message: string) { return json({ error: message }, { status: 400 }); }
-function serverError(scope: string, error: unknown) { console.error(${scope}:, error); return json({ error: 'Internal server error' }, { status: 500 }); }
-
-async function requireUserId(): Promise<string | null> { const session = await auth(); return session?.user?.id ?? null; }
-
-function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
-
-function cleanString(value: unknown, maxLength: number): string | undefined { if (typeof value !== 'string') return undefined; const trimmed = value.trim(); if (!trimmed) return undefined; return trimmed.slice(0, maxLength); }
-
-function parseOptionalDate(value: unknown, field: string): { value?: string; error?: string } { if (value === undefined || value === null || value === '') return {}; if (typeof value !== 'string') return { error: ${field} must be a string }; const trimmed = value.trim(); if (!trimmed) return {}; if (trimmed.length > MAX_DATE_LENGTH || Number.isNaN(Date.parse(trimmed))) return { error: ${field} must be a valid date }; return { value: trimmed }; }
-
-function normalizeTags(value: unknown): string[] { if (!Array.isArray(value)) return []; const tags = new Set<string>(); for (const tag of value) { if (typeof tag !== 'string') continue; const cleaned = tag.trim().slice(0, MAX_TAG_LENGTH); if (cleaned) tags.add(cleaned); if (tags.size >= MAX_TAGS) break; } return [...tags]; }
-
-function normalizeMood(value: unknown): string { const mood = cleanString(value, MAX_MOOD_LENGTH); return mood ? mood.toUpperCase() : 'NEUTRAL'; }
-
-function safeAudit(...args) { auditLog(...).catch((error)=>console.warn('Audit log failed', error)); } But auditLog might not return Promise? It's await in original. Use try/catch in async.
-
-async function auditSafely(userId: string, action: string, resource: string, metadata: Record<string, unknown>, request: NextRequest) { try { await auditLog(userId, action, resource, metadata, request); } catch (error) { console.warn(Audit log failed for ${action}:, error); } }
-
-Need type of auditLog maybe expects metadata any. Fine.
-
-GET:
-export async function GET(request: NextRequest) {
-try {
-const userId = await requireUserId();
-if (!userId) return unauthorized();
-const { searchParams } = new URL(request.url);
-const from = parseOptionalDate(searchParams.get('from'), 'from');
-if (from.error) return badRequest(from.error);
-const to = ...
-const tag = cleanString(searchParams.get('tag'), MAX_TAG_LENGTH);
-const entries = await listJournalEntries(userId, { from: from.value, to: to.value, tag });
-return json({ entries });
-} catch (error) { return serverError('List journal error', error); }
-}
-
-POST:
-const userId...
-const rateLimit = await chatRateLimiter(journal:create:${userId}); // original journal:${id}. Changing key could bypass existing rate limits? Use original maybe. But for create only. Use journal:${userId} to preserve. DELETE use journal:delete:${userId}.
-if (!rateLimit.allowed) return json({error:'Rate limit exceeded'}, {status:429, headers: maybe 'Retry-After'? We don't know.});
-let body: unknown; try body=await request.json(); catch return badRequest('Invalid JSON body');
-if (!isRecord(body)) return badRequest('Request body must be a JSON object');
-const content = cleanString(body.content, MAX_CONTENT_LENGTH); // but cleanString slices to max. If content > max, it silently truncates. Better detect too long? const rawContent = typeof body.content === 'string' ? body.content.trim() : ''; if (!rawContent) ...; if (rawContent.length > MAX_CONTENT_LENGTH) return badRequest(...). Use helper getTrimmedString returns string.
-title: if body.title string trim; if length > MAX_TITLE_LENGTH return 400? or slice. Better reject too long.
-mood: normalizeMood.
-tags: normalizeTags.
-date: parseOptionalDate(body.date, 'date'); if error return badRequest.
-entry = await createJournalEntry(userId, { title, content, mood, tags, date: date.value });
-await auditSafely(...)
-return json({ entry }, { status: 201 });
-
-Need handle content length exactly. Define function getTrimmedString(value: unknown): string { return typeof value === 'string' ? value.trim() : ''; }
-Then:
-const content = getTrimmedString(body.content);
-if (!content) return badRequest('Journal content is required');
-if (content.length > MAX_CONTENT_LENGTH) return badRequest(Journal content must be at most ${MAX_CONTENT_LENGTH} characters);
-const titleRaw = getTrimmedString(body.title); if (titleRaw.length > MAX_TITLE_LENGTH) return badRequest...
-const title = titleRaw || undefined;
-
-For tags: If body.tags not array? Original allowed any -> []; keep. If array contains non-strings skip. If too many, maybe slice. Good.
-
-DELETE:
-const userId...
-rate limit journal:delete:${userId}? Could use chatRateLimiter. If not allowed 429.
-const entryId = cleanString(searchParams.get('id'), 64); // IDs maybe cuid length 25. Use 100.
-if (!entryId) return badRequest('Entry id is required');
-result = await deleteJournalEntry(userId, entryId);
-if (result.count === 0) return json({ error: 'Entry not found' }, { status: 404 });
-await auditSafely...
-return json({ deleted: result.count });
-
-Need maybe not rate limit DELETE to avoid hidden? But okay.
-
-Need include export const dynamic = 'force-dynamic';? In Next.js API route, no need but can. Could include export const runtime = 'nodejs'; maybe not. Keep.
-
-Need "Liquid Glass" UI? API no UI. Could add response headers? Not relevant. Maybe improve JSON error shape? Could add success? But existing clients expect entries, 
-entry
-, 
-deleted
-. Keep.
-
-Need output only raw code. No markdown. Need ensure code compiles TS. Potential issues:
-
-NextResponse.json(data
-, { ...init, headers: { ... } })
- with 
-init?:
-Init
-; 
-Init.headers
- can be HeadersInit; spreading 
-init?.headers ?? {}
- might be okay? 
-HeadersInit
- can be Headers, array, record; spreading Head
+Need keep code concise but 
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
