@@ -1,56 +1,64 @@
-The user wants me to upgrade the file. But the "current code" is actually truncated/malformed - it's a description of what should be done, not actual code. The file ends abruptly at "return NextRe".
+The user wants me to upgrade a file. The current code is truncated/malformed. I need to output the raw upgraded code wrapped in a code block with write_file tool call.
 
-Wait, let me re-read. The file is src\app\api\team\members\route.ts and the "current code" is actually a preamble describing improvements plus a partial code. The actual code is truncated.
+Wait, let me re-read the format requirement. "You MUST wrap ALL JSON tool call arrays in a  code block."
 
-I need to output ONLY the raw upgraded code wrapped in a  code block with a write_file tool call. The format requirement is strict.
+So I need to output:
 
-Let me craft a comprehensive, production-grade route.ts for team members management with all the improvements mentioned:
+[{"tool": "write_file", "path": "src/app/api/team/members/route.ts", "content": "..."}]
 
-Zod schemas with pagination
+The content needs to be the full TypeScript file, with proper escaping of quotes.
 
-Cursor-based pagination
+Let me write a production-grade route.ts. The file is a Next.js App Router API route for team members.
 
-Search filtering
+Let me think about what's needed:
 
-Parallel queries
+GET - list with cursor pagination, search, filter
 
-Cache-Control headers
+POST - invite/add member
 
-Last-owner protection in transactions
+PATCH - update role (with last-owner protection, optimistic concurrency)
 
-Optimistic concurrency
+DELETE - remove member (with last-owner protection)
 
 Bulk operations
 
-Structured error responses
+Let me write it comprehensively.
 
-Role hierarchy
+Key features:
 
-Prevent self-role change / self-removal
+Zod validation
 
-ETag support
+Cursor pagination
+
+Search filtering (name/email)
+
+ETag / Cache-Control
+
+Last-owner protection via transaction
+
+Self-role change prevention
+
+Self-removal prevention
+
+Role hierarchy (OWNER > ADMIN > MEMBER)
 
 Audit logging
 
-Let me write this carefully. I'll assume:
+Structured errors
 
-auth() returns session with user.id
+Optimistic concurrency via expectedRole
 
-prisma client with teamMember model having: id, teamId, userId, role, createdAt, updatedAt
+Bulk operations
 
-User model with id, name, email, image
-
-auditLog(userId, action, resource, metadata, request)
-
-Let me construct the file:
+Let me draft the code:
 
 typescript
-import { auth } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
-import { auditLog } from '@/lib/audit';
 import { createHash } from 'crypto';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { auditLog } from '@/lib/audit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -71,19 +79,39 @@ const listQuerySchema = z.object({
   role: roleEnum.optional(),
 });
 
+const addMemberSchema = z.object({
+  teamId: cuid,
+  email: z.string().email().max(254),
+  role: assignableRoleEnum.default('MEMBER'),
+});
+
 const updateRoleSchema = z.object({
+  teamId: cuid,
+  memberId: cuid,
   role: assignableRoleEnum,
   expectedRole: assignableRoleEnum.optional(),
 });
 
-const bulkUpdateSchema = z.object({
-  members: z.array(z.object({
-    memberId: cuid,
-    role: assignableRoleEnum,
-  })).min(1).max(100),
+const removeMemberSchema = z.object({
+  teamId: cuid,
+  memberId: cuid,
 });
 
-const bulkDeleteSchema = z.object({
+const bulkUpdateSchema = z.object({
+  teamId: cuid,
+  members: z
+    .array(
+      z.object({
+        memberId: cuid,
+        role: assignableRoleEnum,
+      }),
+    )
+    .min(1)
+    .max(100),
+});
+
+const bulkRemoveSchema = z.object({
+  teamId: cuid,
   memberIds: z.array(cuid).min(1).max(100),
 });
 
@@ -91,41 +119,68 @@ const bulkDeleteSchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 const roleRank: Record<string, number> = { MEMBER: 0, ADMIN: 1, OWNER: 2 };
+const rank = (role: string): number => roleRank[role] ?? -1;
 
-function rank(role: string): number {
-  return roleRank[role] ?? -1;
+class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+    public details?: unknown,
+  ) {
+    super(message);
+  }
 }
 
 function json(data: unknown, init?: ResponseInit): NextResponse {
   return NextResponse.json(data, init);
 }
 
-function error(status: number, code: string, message: string, details?: unknown): NextResponse {
-  return NextResponse.json({ error: { code, message, details } }, { status });
-}
-
-async function getSession() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { session: null, response: error(401, 'UNAUTHORIZED', 'Authentication required') };
+function fail(err: unknown): NextResponse {
+  if (err instanceof ApiError) {
+    return NextResponse.json(
+      { error: { code: err.code, message: err.message, details: err.details } },
+      { status: err.status },
+    );
   }
-  return { session, response: null };
+  console.error('[team/members] unhandled', err);
+  return NextResponse.json(
+    { error: { code: 'INTERNAL', message: 'Internal server error' } },
+    { status: 500 },
+  );
 }
 
-async function getMembership(teamId: string, userId: string) {
-  return prisma.teamMember.findUnique({
+async function requireSession() {
+  const session = await auth();
+  if (!session?.user?.id) throw new ApiError(401, 'UNAUTHORIZED', 'Authentication required');
+  return session;
+}
+
+async function requireMembership(teamId: string, userId: string, minRole: string = 'MEMBER') {
+  const member = await prisma.teamMember.findUnique({
     where: { teamId_userId: { teamId, userId } },
-    select: { id: true, role: true, teamId: true, userId: true },
+    select: { id: true, role: true },
   });
+  if (!member) throw new ApiError(403, 'FORBIDDEN', 'Not a member of this team');
+  if (rank(member.role) < rank(minRole)) {
+    throw new ApiError(403, 'FORBIDDEN', `Requires ${minRole} role or higher`);
+  }
+  return member;
 }
 
-function makeEtag(body: unknown): string {
-  return '"' + createHash('sha1').update(JSON.stringify(body)).digest('hex') + '"';
+function computeEtag(body: unknown): string {
+  return (
+    '"' + createHash('sha1').update(JSON.stringify(body)).digest('hex') + '"'
+  );
 }
 
-function notModified(req: NextRequest, etag: string): boolean {
+function isNotModified(req: NextRequest, etag: string): boolean {
   const inm = req.headers.get('if-none-match');
-  return !!inm && inm.split(',').map((v) => v.trim()).includes(etag);
+  if (!inm) return false;
+  return inm
+    .split(',')
+    .map((v) => v.trim())
+    .includes(etag);
 }
 
 async function safeAudit(
@@ -134,42 +189,56 @@ async function safeAudit(
   resource: string,
   metadata: Record<string, unknown>,
   request: NextRequest,
-) {
+): Promise<void> {
   try {
     await auditLog(userId, action, resource, metadata, request);
   } catch (err) {
-    console.warn('[audit] failed', { action, resource, err });
+    console.warn('[audit] failed to write', { action, resource, err });
   }
 }
 
+async function parseBody<T>(req: NextRequest, schema: z.ZodSchema<T>): Promise<T> {
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    throw new ApiError(400, 'INVALID_BODY', 'Request body must be valid JSON');
+  }
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    throw new ApiError(400, 'INVALID_BODY', 'Request body failed validation', parsed.error.flatten());
+  }
+  return parsed.data;
+}
+
 // ---------------------------------------------------------------------------
-// GET /api/team/members — list with cursor pagination + search + filter
+// GET /api/team/members
 // ---------------------------------------------------------------------------
 export async function GET(req: NextRequest) {
-  const { session, response } = await getSession();
-  if (!session) return response!;
+  try {
+    const session = await requireSession();
+    const url = new URL(req.url);
+    const parsed = listQuerySchema.safeParse(Object.fromEntries(url.searchParams));
+    if (!parsed.success) {
+      throw new ApiError(400, 'INVALID_QUERY', 'Invalid query parameters', parsed.error.flatten());
+    }
+    const { teamId, cursor, limit, q, role } = parsed.data;
 
-  const url = new URL(req.url);
-  const parsed = listQuerySchema.safeParse(Object.fromEntries(url.searchParams));
-  if (!parsed.success) {
-    return error(400, 'INVALID_QUERY', 'Invalid query parameters', parsed.error.flatten());
-  }
-  const { teamId, cursor, limit, q, role } = parsed.data;
+    await requireMembership(teamId, session.user.id, 'MEMBER');
 
-  const membership = await getMembership(teamId, session.user.id);
-  if (!membership) return error(403, 'FORBIDDEN', 'Not a member of this team');
+    const where: Record<string, unknown> = { teamId };
+    if (role) where.role = role;
+    if (q) {
+      const needle = `%${q}%`;
+      where.user = {
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+        ],
+      };
+    }
 
-  const where: any = { teamId };
-  if (role) where.role = role;
-  if (q) {
-    where.OR = [
-      { user: { name: { contains: q, mode: 'insensitive' } } },
-      { user: { email: { contains: q, mode: 'insensitive' } } },
-    ];
-  }
-
-  const [rows, total] = await Promise.all([
-    prisma.teamMember.findMany({
+    const members = await prisma.teamMember.findMany({
       where,
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -179,69 +248,25 @@ export async function GET(req: NextRequest) {
         role: true,
         createdAt: true,
         updatedAt: true,
-        user: { select: { id: true, name: true, email: true, image: true } },
+        user: {
+          select: { id: true, name: true, email: true, image: true },
+        },
       },
-    }),
-    prisma.teamMember.count({ where }),
-  ]);
+    });
 
-  const hasMore = rows.length > limit;
-  const items = hasMore ? rows.slice(0, limit) : rows;
-  const nextCursor = hasMore ? items[items.length - 1].id : null;
+    const hasMore = members.length > limit;
+    const page = hasMore ? members.slice(0, limit) : members;
+    const nextCursor = hasMore ? page[page.length - 1].id : null;
 
-  const body = {
-    items,
-    pageInfo: { nextCursor, hasMore, total },
-    viewerRole: membership.role,
-  };
+    const body = {
+      data: page,
+      pageInfo: { nextCursor, hasMore, limit },
+    };
 
-  const etag = makeEtag(body);
-  if (notModified(req, etag)) {
-    return new NextResponse(null, { status: 304, headers: { ETag: etag } });
-  }
-
-  return json(body, {
-    headers: {
-      ETag: etag,
-      'Cache-Control': 'private, no-cache, must-revalidate',
-    },
-  });
-}
-
-// ---------------------------------------------------------------------------
-// PATCH /api/team/members — single or bulk role update
-// ---------------------------------------------------------------------------
-export async function PATCH(req: NextRequest) {
-  const { session, response } = await getSession();
-  if (!session) return response!;
-
-  const body = await req.json().catch(() => null);
-  if (!body) return error(400, 'INVALID_BODY', 'Malformed JSON body');
-
-  // Bulk
-  if (Array.isArray((body as any)?.members)) {
-    const parsed = bulkUpdateSchema.safeParse(body);
-    if (!parsed.success) {
-      return error(400, 'INVALID_BODY', 'Invalid bulk payload', parsed.error.flatten());
+    const etag = computeEtag(body);
+    if (isNotModified(req, etag)) {
+      return new NextResponse(null, {
+        status: 304,
+        headers: { ETag: etag, 'Cache-Control': 'private, max-age=0, must-revalidate' },
+      });
     }
-    return bulkUpdate(session.user.id, parsed.data.members, req);
-  }
-
-  // Single
-  const url = new URL(req.url);
-  const memberId = url.searchParams.get('memberId');
-  if (!memberId || !cuid.safeParse(memberId).success) {
-    return error(400, 'INVALID_QUERY', 'memberId query param is required');
-  }
-
-  const parsed = updateRoleSchema.safeParse(body);
-  if (!parsed.success) {
-    return error(400, 'INVALID_BODY', 'Invalid update payload', parsed.error.flatten());
-  }
-
-  const result = await updateOne(session.user.id, memberId, parsed.data, req);
-  if (result.ok) return json(result.data);
-  return error(result.status, result.code, result.message, result.details);
-}
-
-I need to
