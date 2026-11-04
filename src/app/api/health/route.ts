@@ -1,3 +1,116 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill is for finding out what they actually want, and why, before
+anything gets built.
+
+People often haven't finished working out what they want. Good questions
+help them think it through. When you understand the why, you make the
+hundred decisions they never mention the way they would have made them.
+
+## First: What Do You Actually Know?
+
+Before you reply, ask yourself: what do I know about what they want, and
+why?
+
+- **Everything that matters is in the request** ("make the icon cornflower
+  blue"). This is a quick, clear task. Do it, and say what you did.
+- **Something non-trivial is missing.** Start the conversation.
+
+Before you start implementing, you must, in order:
+
+1. Lay out the approaches in a message of their own, and have your
+   human partner pick one (see Lay out the approaches).
+2. Write the design doc, short or full (see Size the Work).
+3. Get their approval of that doc.
+4. Invoke the superpowers:writing-plans skill.
+
+If nothing is open when you write your first message and there's one
+sensible way, steps 1 to 3 happen in that message (see Your First
+Message).
+
+Two things aren't implementing: a spike they said yes to (see Spike to
+feel things out), and doing what they asked once they've opted out of
+the questions.
+
+## Look Before You Ask
+
+In an existing project, or when they've given you context (a spec, a plan,
+a handoff, files they pointed at, earlier conversation), dig in before your
+first message. Read what they referred to and the code or material it
+connects to, and keep reading until you can explain how the relevant
+parts work today and what this change would touch. Never ask what the
+project or their context already answers, or reopen what they've
+already decided.
+
+## Your First Message
+
+Move the work forward, with one of these:
+
+- **They've already said what they want** (a spec, a plan, a detailed
+  request): aim for about 200 words for the whole message. Echo their
+  request back in your own words, so they can see whether you've got its
+  shape: what they want, who it's for, and why, as far as they've said.
+  Add what you found that bears on it: how the relevant parts work today
+  and what the change would touch. If you found something they may not
+  have considered that would change what they're asking for or how it
+  has to be built, like a constraint, a conflict, or a cheaper path, say
+  so plainly. How to build it comes later, once you understand what they
+  want (see Lay out the approaches). End with one line inviting
+  corrections. Then, if they haven't told you why they want it, even if
+  you can guess, ask about that: one open question in their own terms,
+  with nothing to pick from. If they have told you, and their request
+  and the project leave open something whose answer would change what
+  gets built, ask about the one that would change it most; when its
+  choices can be named, sketch each concretely, with what it trades off
+  and which you'd pick. If nothing like that is open, there's one
+  sensible way: end with the short design itself (the approach, a line on
+  why the others don't fit, and the design in a few lines) and ask them
+  to approve it. Their approval covers the approach and the design: write
+  the short design doc as approved and go on to the plan.
+  Specs are often incomplete, so confirm before you build on one.
+- **They haven't:** one open question, in their own terms, about the
+  biggest thing their request leaves unsettled. Say why you're asking:
+  what the answer would change about what you build. For "a website for
+  my bakery": "If it's mostly f
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill i
+
+FILE TO UPGRADE: src\app\api\health\route.ts
+CURRENT CODE:
 The user wants an upgraded health route. The format requirement says wrap JSON tool call arrays in  code block. But then "Otherwise, output ONLY the raw upgraded code. No markdown. No truncation."
 
 Hmm, there's a conflict. The format requirement at the top is critical: wrap ALL JSON tool call arrays in a  code block. But the mission says output only raw upgraded code, no markdown.
@@ -162,263 +275,6 @@ interface MemorySnapshot {
   heapUsedMB: number;
   heapTotalMB: number;
   externalMB: number;
-  heapUsedPercent: number;
-}
-
-const isProduction = process.env.NODE_ENV === 'production';
-
-function round(value: number, decimals = 2): number {
-  const factor = 10 ** decimals;
-  return Math.round(value * factor) / factor;
-}
-
-function toMB(bytes: number): number {
-  return round(bytes / 1024 / 1024);
-}
-
-function formatUptime(totalSeconds: number): string {
-  const seconds = Math.max(0, Math.floor(totalSeconds));
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${h}h ${m}m ${s}s`;
-}
-
-function readMemory(): MemorySnapshot {
-  const usage = process.memoryUsage();
-  const heapTotal = usage.heapTotal || 1;
-  return {
-    rssMB: toMB(usage.rss),
-    heapUsedMB: toMB(usage.heapUsed),
-    heapTotalMB: toMB(usage.heapTotal),
-    externalMB: toMB(usage.external),
-    heapUsedPercent: round((usage.heapUsed / heapTotal) * 100, 1),
-  };
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => {
-    if (timer) clearTimeout(timer);
-  });
-}
-
-async function checkDatabase(): Promise<CheckResult> {
-  const startedAt = performance.now();
-  try {
-    await withTimeout(prisma.$queryRaw`SELECT 1`, DB_TIMEOUT_MS, 'Database check');
-    return { status: 'up', latencyMs: round(performance.now() - startedAt) };
-  } catch (error) {
-    return {
-      status: 'down',
-      latencyMs: round(performance.now() - startedAt),
-      error: error instanceof Error ? error.message : 'Unknown database error',
-    };
-  }
-}
-
-Then GET:
-
-ts
-export async function GET() {
-  const startedAt = performance.now();
-  const database = await checkDatabase();
-  const memory = readMemory();
-  const uptimeSeconds = process.uptime();
-  const healthy = database.status === 'up';
-  const totalLatencyMs = round(performance.now() - startedAt);
-
-  const payload = {
-    status: healthy ? 'healthy' : 'unhealthy',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version ?? '1.0.0',
-    commit: process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GIT_COMMIT_SHA ?? null,
-    uptime: {
-      seconds: Math.floor(uptimeSeconds),
-      human: formatUptime(uptimeSeconds),
-    },
-    checks: {
-      database: {
-        status: database.status,
-        latencyMs: database.latencyMs,
-        ...(database.error && !isProduction ? { error: database.error } : {}),
-      },
-    },
-    memory,
-    runtime: {
-      node: process.version,
-      environment: process.env.NODE_ENV ?? 'development',
-      platform: process.platform,
-    },
-    responseTimeMs: totalLatencyMs,
-  };
-
-  return NextResponse.json(payload, {
-    status: healthy ? 200 : 503,
-    headers: NO_STORE_HEADERS,
-  });
-}
-
-Wait — the previous version had latency: "${dbLatency}ms" and top-level database and memory. Changing shape is a breaking change potentially. But mission says make 10x better. Hmm. Better to keep backward-compatible top-level fields? I'd keep database and memory top-level for compatibility, since monitoring may depend. Let me keep it backward-compatible-ish but improved. Actually to be safe, I'll keep database, memory, nodeVersion, environment top-level and add new fields. That's safer.
-
-Let me restructure: keep top-level database: { status, latency, latencyMs }, memory with both MB and percent, nodeVersion, environment, uptime string (human) plus uptimeSeconds. Add checks? Maybe not needed.
-
-Actually simpler: preserve the original keys' semantics, add extras.
-
-Final payload:
-
-text
-{
-  status, timestamp, version, commit,
-  uptime: human, uptimeSeconds,
-  database: { status, latency: '12ms', latencyMs: 12, ...(error when not prod) },
-  memory: { rss, heapUsed, heapTotal, external, heapUsedPercent },  // keep MB numbers
-  nodeVersion, environment, platform,
-  responseTimeMs,
-}
-
-Good. HEAD export too. Let's write.
-
-Also note: prisma.$queryRaw returns promise; fine.
-
-Also performance.now() available in Node 16+. Fine.
-
-Also add a liveness variant via ?probe=liveness? Might overcomplicate. Skip — but maybe include a readiness query check that skips DB? Eh, keep simple but add ?simple=1... no, skip.
-
-Write final raw code.
-
-ts
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
-const DB_TIMEOUT_MS = 3_000;
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-
-const NO_STORE_HEADERS: Record<string, string> = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-  Pragma: 'no-cache',
-  Expires: '0',
-};
-
-type CheckState = 'up' | 'down';
-
-interface CheckResult {
-  status: CheckState;
-  latencyMs: number;
-  error?: string;
-}
-
-interface MemorySnapshot {
-  rss: number;
-  heapUsed: number;
-  heapTotal: number;
-  external: number;
-  heapUsedPercent: number;
-}
-
-function round(value: number, decimals = 2): number {
-  const factor = 10 ** decimals;
-  return Math.round(value * factor) / factor;
-}
-
-function toMB(bytes: number): number {
-  return round(bytes / 1024 / 1024);
-}
-
-function formatUptime(totalSeconds: number): string {
-  const seconds = Math.max(0, Math.floor(totalSeconds));
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${h}h ${m}m ${s}s`;
-}
-
-function readMemory(): MemorySnapshot {
-  const usage = process.memoryUsage();
-  const heapTotal = usage.heapTotal > 0 ? usage.heapTotal : 1;
-  return {
-    rss: toMB(usage.rss),
-    heapUsed: toMB(usage.heapUsed),
-    heapTotal: toMB(usage.heapTotal),
-    external: toMB(usage.external),
-    heapUsedPercent: round((usage.heapUsed / heapTotal) * 100, 1),
-  };
-}
-
-function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => {
-    if (timer) clearTimeout(timer);
-  });
-}
-
-async function checkDatabase(): Promise<CheckResult> {
-  const startedAt = performance.now();
-  try {
-    await withTimeout(prisma.$queryRaw`SELECT 1`, DB_TIMEOUT_MS, 'Database check');
-    return { status: 'up', latencyMs: round(performance.now() - startedAt) };
-  } catch (error) {
-    return {
-      status: 'down',
-      latencyMs: round(performance.now() - startedAt),
-      error: error instanceof Error ? error.message : 'Unknown database error',
-    };
-  }
-}
-
-function buildResponse(healthy: boolean, body: Record<string, unknown>) {
-  return NextResponse.json(body, {
-    status: healthy ? 200 : 503,
-    headers: NO_STORE_HEADERS,
-  });
-}
-
-export async function GET() {
-  const requestStartedAt = performance.now();
-  const database = await checkDatabase();
-  const healthy = database.status === 'up';
-  const uptimeSeconds = process.uptime();
-  const responseTimeMs = round(performance.now() - requestStartedAt);
-
-  const payload: Record<string, unknown> = {
-    status: healthy ? 'healthy' : 'unhealthy',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version ?? '1.0.0',
-    commit:
-      process.env.VERCEL_GIT_COMMIT_SHA ??
-      process.env.GIT_COMMIT_SHA ??
-      process.env.SOURCE_VERSION ??
-      null,
-    uptime: formatUptime(uptimeSeconds),
-    uptimeSeconds: Math.floor(uptimeSeconds),
-    database: {
-      status: database.status,
-      latency: `${database.latencyMs}ms`,
-      latencyMs: database.latencyMs,
-      ...(database.error && !IS_PRODUCTION ? { error: database.error } : {}),
-    },
-    memory: readMemory(),
-    nodeVersion: process.version,
-    environment: process.env.NODE_ENV ?? 'development',
-    platform: process.platform,
-    responseTimeMs,
-  };
-
-  if (!healthy && IS_PRODUCTION) {
-    payload.error = 'Database connection failed';
-  }
-
-  return buildResponse(healthy, payload);
-}
-
-export const HEAD = GET;
+  heapUsedPe
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
