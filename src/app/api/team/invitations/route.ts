@@ -1,3 +1,107 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Catalog Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+id: 00-andruia-consultant
+name: 00-andruia-consultant
+description: "Usar al iniciar o mejorar un proyecto de IA: diagnostica código y restricciones, propone skills existentes y redacta tareas y un plan de implementación en español."
+category: andruia
+risk: safe
+source: personal
+date_added: "2026-02-27"
+---
+
+## When to Use
+Use this skill at the very beginning of a project to diagnose the workspace, determine whether it's a "Pure Engine" (new) or "Evolution" (existing) project, and to set the initial technical roadmap and expert squad.
+
+# 🤖 Andru.ia Solutions Architect - Hybrid Engine (v2.0)
+
+## Description
+
+Diagnóstico y planificación de Andru.ia para un proyecto nuevo o existente. Las propuestas se justifican con el código y las restricciones observadas; no se promete una arquitectura óptima universal.
+
+## 📋 General Instructions (El Estándar Maestro)
+
+- **Idioma Mandatorio:** La comunicación y los artefactos se redactan en **ESPAÑOL** por defecto; una instrucción explícita del usuario sobre idioma o formato tiene prioridad.
+- **Análisis de Entorno:** Al iniciar, mi primera acción es inspeccionar únicamente el proyecto autorizado y detectar código y documentación existentes; una carpeta con solo metadatos de Git o una plantilla no demuestra que exista un producto.
+- **Persistencia:** Materializo el diagnóstico en archivos .md locales cuando la tarea autoriza guardarlos. Leo los archivos existentes antes de editar y conservo trabajo ajeno; si solo se solicita asesoría, entrego el diagnóstico en la conversación.
+
+## 🛠️ Workflow: Bifurcación de Diagnóstico
+
+### ESCENARIO A: Lienzo Blanco (Carpeta Vacía)
+
+Si no detecto archivos, activo el protocolo **"Pure Engine"**:
+
+1. **Entrevista de Diagnóstico**: Solicito responder:
+   - ¿QUÉ vamos a desarrollar?
+   - ¿PARA QUIÉN es?
+   - ¿QUÉ RESULTADO esperas? (Objetivo y estética premium).
+
+### ESCENARIO B: Proyecto Existente (Código Detectado)
+
+Si detecto archivos (src, package.json, etc.), actúo como **Consultor de Evolución**:
+
+1. **Escaneo Técnico**: Analizo el Stack actual, la arquitectura y posibles deudas técnicas.
+2. **Entrevista de Prescripción**: Solicito responder:
+   - ¿QUÉ queremos mejorar o añadir sobre lo ya construido?
+   - ¿CUÁL es el mayor punto de dolor o limitación técnica actual?
+   - ¿A QUÉ estándar de calidad queremos elevar el proyecto?
+3. **Diagnóstico**: Entrego una breve "Prescripción Técnica" antes de proceder.
+
+## 🚀 Fase de Sincronización de Squad y Materialización
+
+Para ambos escenarios, tras recibir las respuestas:
+
+1. **Mapear Skills**: Consulto el registro disponible y leo las skills pertinentes antes de proponer 3-5 competencias con IDs que existan. Si falta una competencia, declaro el hueco en vez de inventar un ID. Proponer competencias no crea agentes ni autoriza delegación.
+2. **Generar Artefactos (En Español)**:
+   - `tareas.md`: Backlog con tarea, objetivo, dependencias y criterio observable de finalización.
+   - `plan_implementacion.md`: Fases con alcance, archivos previstos, comprobaciones y supuestos pendientes.
+
+3. **Verificar Entrega**: Releer el diagnóstico y los artefactos. Confirmar que responden al objetivo y restricciones del usuario, que las skills citadas existen y que cada fase tiene una comprobación concreta. Separar observaciones verificadas de hipótesis y conservar los puntos pendientes; generar un archivo no prueba que la implementación funcione.
+
+## ⚠️ Reglas de Oro
+
+1. **Contexto Inteligente**: No mezcles datos de proyectos anteriores. Cada carpeta es una entidad única.
+2. **Estándar de Diamante**: Prioriza siempre soluciones escalables, seguras y estéticamente superiores.
+
+## Example
+
+**User request:**
+
+> Diagnostica este proyecto de IA existente y propone una mejora; entrega primero el diagnóstico en la conversación.
+
+**Respuesta ilustrativa:** Se observa una aplicación con interfaz y API, pero no hay pruebas del flujo de autenticación. 
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Catalog Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+id: 00-andruia-consultant
+name: 00-andruia-consultant
+description: "Usar al iniciar o mejorar un proyecto de IA: diagnostica código y restricciones, propone skills existentes y redacta tareas y un plan de implementación en español."
+category: andruia
+risk: safe
+source: personal
+date_added: "2026-02-27"
+---
+
+## When to Use
+Use this skill at the very beginning of a project to diagnose the workspace, determine
+
+FILE TO UPGRADE: src\app\api\team\invitations\route.ts
+CURRENT CODE:
 The user wants me to upgrade a file. Let me look at the actual situation carefully.
 
 The file is src\app\api\team\invitations\route.ts. The "current code" shown is actually not the code — it's the assistant's previous reasoning/commentary text. The actual current code content isn't really provided; instead we see a meta-description "The user wants me to output the upgraded file wrapped in a code block..." followed by a description of key upgrades.
@@ -70,251 +174,6 @@ Audit log: auditLog({ action, userId, teamId, metadata }) — assume. I'll call 
 
 Let me also handle resend logic: if invitation exists and not expired and not accepted -> return "already_pending"; if resend true -> rotate token, extend expiry, resend email.
 
-Also role hierarchy: cannot invite someone as ADMIN unless OWNER? Add: only OWNER can invite ADMIN. Good touch.
-
-Let me also add PATCH for resend/revoke? The mission says make file 10x better; adding PATCH and DELETE endpoints is nice. Maybe add PATCH (resend by id) and DELETE (revoke by id). That improves. Let's include them, keeping code reasonable.
-
-Let me write it.
-
-ts
-import { auth } from '@/lib/auth';
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
-import { auditLog } from '@/lib/audit';
-import { sendEmail } from '@/lib/email';
-import { headers } from 'next/headers';
-import crypto from 'crypto';
-
-Wait — headers from next/headers used in route handlers is fine.
-
-Constants:
-
-ts
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_INVITES_PER_HOUR = 50;
-const MAX_BULK = 50;
-const TOKEN_BYTES = 32;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.hey.local';
-
-Schemas:
-
-ts
-const roleSchema = z.enum(['ADMIN', 'MEMBER']);
-const inviteSchema = z.object({
-  email: z.string().trim().toLowerCase().email('Invalid email address'),
-  role: roleSchema.default('MEMBER'),
-  message: z.string().trim().max(500).optional(),
-  resend: z.boolean().optional().default(false),
-});
-const bulkInviteSchema = z.object({ teamId: z.string().min(1).optional(), invites: z.array(inviteSchema).min(1).max(MAX_BULK) });
-const singleInviteSchema = inviteSchema.extend({ teamId: z.string().min(1).optional() });
-
-Hmm, z.string().trim().toLowerCase().email() — zod v3: .trim().toLowerCase() are transforms available in zod 3.20+? Actually .trim(), .toLowerCase() exist on ZodString in zod 3.x (added in 3.20). Then .email() after transform — order matters; .email() on ZodString is fine before transforms. Actually in zod, z.string().trim().toLowerCase().email() — trim/toLowerCase return ZodString so chaining .email() works. Fine.
-
-Role type: prisma enum TeamRole maybe. Keep string casting.
-
-Helper: parse body safely.
-
-Rate limit: in-memory.
-
-ts
-type RateBucket = { count: number; resetAt: number };
-const rateBuckets = new Map<string, RateBucket>();
-function rateLimit(key: string, limit: number, windowMs: number) {
-  const now = Date.now();
-  const b = rateBuckets.get(key);
-  if (!b || b.resetAt <= now) { rateBuckets.set(key, { count: 1, resetAt: now + windowMs }); return { ok: true as const, remaining: limit - 1, resetAt: now + windowMs }; }
-  if (b.count >= limit) return { ok: false as const, remaining: 0, resetAt: b.resetAt };
-  b.count += 1;
-  return { ok: true as const, remaining: limit - b.count, resetAt: b.resetAt };
-}
-
-Also prune occasionally.
-
-Email HTML: build nice template.
-
-Now the transaction. Prisma interactive transaction with per-invite checks. Also need to check existing members: prisma.teamMember.findFirst({ where: { teamId, user: { email } } }) — assuming relation user. Or look up user by email then membership. Safer: prisma.user.findUnique({ where: { email }, select: { id: true, teamMemberships: ... } }) — schema unknown. Simpler: check prisma.teamMember.findFirst({ where: { teamId, user: { email } } }). Hmm, relation name guessed.
-
-Alternative safer approach: query user by email: const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } }) then check prisma.teamMember.findUnique({ where: { teamId_userId: { teamId, userId: existingUser.id } } }). That uses unique constraint from earlier code (teamId_userId confirmed). And prisma.user.findUnique({where:{email}}) — email unique presumably. Good, this is safer.
-
-Do these checks inside the transaction.
-
-Bulk write: use prisma.teamInvitation.create per item within transaction, or createMany for those that don't need returned ids. We need ids for results. Use individual creates; for 50 max that's fine.
-
-Let me structure POST:
-
-ts
-export async function POST(request: NextRequest) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) return errorResponse('UNAUTHORIZED', 'Sign in required', 401);
-
-    const raw = await safeJson(request);
-    if (!raw) return errorResponse('INVALID_JSON', 'Body must be valid JSON', 400);
-
-    const isBulk = Array.isArray((raw as any)?.invites);
-    const parsed = isBulk ? bulkInviteSchema.safeParse(raw) : singleInviteSchema.safeParse(raw);
-    if (!parsed.success) return errorResponse('VALIDATION_ERROR', 'Invalid request body', 422, parsed.error.flatten());
-
-    const sp = request.nextUrl.searchParams;
-    const teamId = sp.get('teamId') ?? (parsed.data as any).teamId;
-    if (!teamId) return errorResponse('TEAM_REQUIRED', 'teamId is required', 400);
-
-    const items: InviteInput[] = isBulk ? (parsed.data as any).invites : [parsed.data as InviteInput];
-
-    // dedupe
-    const seen = new Set<string>();
-    const unique: InviteInput[] = [];
-    const results: InviteResult[] = [];
-    for (const it of items) {
-      if (seen.has(it.email)) { results.push({ email: it.email, status: 'duplicate_in_request' }); continue; }
-      seen.add(it.email);
-      unique.push(it);
-    }
-    if (unique.length === 0) return NextResponse.json({ results }, { status: 200 });
-    ...
-
-Wait, ordering of results — fine.
-
-Authz, then role escalation check: if any role ADMIN and membership.role !== 'OWNER' -> 403.
-
-Rate limit: rateLimit(
-𝑠
-𝑒
-𝑠
-𝑠
-𝑖
-𝑜
-𝑛
-.
-𝑢
-𝑠
-𝑒
-𝑟
-.
-𝑖
-𝑑
-:
-session.user.id:{teamId}, MAX_INVITES_PER_HOUR, 3600_000).
-
-Then DB team-count check maybe skip to reduce complexity. In-memory is enough.
-
-Then transaction:
-
-ts
-const now = new Date();
-const expiresAt = new Date(now.getTime() + INVITE_TTL_MS);
-
-const outcome = await prisma.$transaction(async (tx) => {
-  const out: Array<{ email: string; status: string; id?: string; token?: string; role: string }> = [];
-  for (const item of unique) {
-    // existing member?
-    const existingUser = await tx.user.findUnique({ where: { email: item.email }, select: { id: true } });
-    if (existingUser) {
-      const alreadyMember = await tx.teamMember.findUnique({ where: { teamId_userId: { teamId, userId: existingUser.id } }, select: { id: true } });
-      if (alreadyMember) { out.push({ email: item.email, status: 'already_member', role: item.role }); continue; }
-    }
-    const existing = await tx.teamInvitation.findFirst({
-      where: { teamId, email: item.email, acceptedAt: null },
-      orderBy: { createdAt: 'desc' },
-    });
-    if (existing) {
-      if (existing.expiresAt > now && !item.resend) { out.push({ email: item.email, status: 'already_pending', id: existing.id, role: existing.role }); continue; }
-      const token = generateToken();
-      const updated = await tx.teamInvitation.update({
-        where: { id: existing.id },
-        data: { token: hashToken(token), role: item.role, expiresAt, invitedById: session.user.id, updatedAt: now },
-      });
-      out.push({ email: item.email, status: 'resent', id: updated.id, token, role: item.role });
-      continue;
-    }
-    const token = generateToken();
-    const created = await tx.teamInvitation.create({
-      data: { teamId, email: item.email, role: item.role, token: hashToken(token), invitedById: session.user.id, expiresAt, message: item.message ?? null },
-    });
-    out.push({ email: item.email, status: 'invited', id: created.id, token, role: item.role });
-  }
-  return out;
-}, { timeout: 15_000 });
-
-Hmm invitedById and message fields assumed. The GET selects invitedBy relation so invitedById likely exists. message uncertain — but schema had a message field? The draft schema includes message for the invite. The DB field might be message. I'll include message in create data... risk. Maybe safer to omit message from create data to avoid type error. But then message is lost. Hmm. The draft's schema has message, implying it's supported. I'll include it but guard? Can't guard types. I'll include it — it's a reasonable inference. Actually to minimize breakage, I could pass ...(item.message ? { message: item.message } : {}). Still type error if field absent. I'll include it.
-
-Then send emails for statuses 'invited' and 'resent'. Use Promise.allSettled.
-
-Then audit log.
-
-201 if any invited/resent else 200.
-
-Also results include emails of failures but not tokens.
-
-Note: token only goes to email. Good.
-
-Now email template with escaping.
-
-Let me write buildInviteEmail({ teamName, inviterName, role, token, message, expiresAt }).
-
-Link: ${APP_URL}/invite/${token}.
-
-Now PATCH: resend by invitation id.
-
-ts
-const patchSchema = z.object({ invitationId: z.string().min(1), teamId: z.string().min(1) });
-
-Actually teamId could be derived from invitation. Let's parse { invitationId } and fetch invitation, then authorize with its teamId.
-
-DELETE: ?id= param, revoke pending invitation.
-
-I'll add both, keeping them lean.
-
-Now write everything out. Need to be careful with escaping for JSON: all " become \", backslashes \\, newlines \n.
-
-Writing the whole file content as one JSON string is error-prone but doable. Let me carefully construct.
-
-Let me write the TypeScript file first, cleanly, then convert.
-
-ts
-import { auth } from '@/lib/auth';
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { z } from 'zod';
-import { auditLog } from '@/lib/audit';
-import { sendEmail } from '@/lib/email';
-import { headers } from 'next/headers';
-import crypto from 'crypto';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-
-/* -------------------------------------------------------------------------- */
-/*  Config                                                                    */
-/* -------------------------------------------------------------------------- */
-
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_INVITES_PER_HOUR = 50;
-const MAX_BULK = 50;
-const TOKEN_BYTES = 32;
-const APP_URL = (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000').replace(/\/+$/, '');
-
-/* -------------------------------------------------------------------------- */
-/*  Schemas                                                                   */
-/* -------------------------------------------------------------------------- */
-
-const roleSchema = z.enum(['ADMIN', 'MEMBER']);
-
-const inviteSchema = z.object({
-  email: z.string().trim().toLowerCase().email('Invalid email address'),
-  role: roleSchema.default('MEMBER'),
-  message: z.string().trim().max(500).optional(),
-  resend: z.boolean().optional().default(false),
-});
-
-const singleInviteSchema = inviteSchema.extend({
-  teamId: z.string().min(1).optional(),
-});
-
-const bulkInviteSchema = z.object({
-  teamId: z.string().min(1
+Also role hiera
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
