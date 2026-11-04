@@ -1,8 +1,72 @@
+The user wants an upgraded CSS file. They say output only raw upgraded code, no markdown. But there's a format requirement at top saying wrap JSON tool call arrays in json code block. Hmm — conflicting. The format requirement says ALL JSON tool call arrays must be wrapped injson code block. If I'm writing a file via tool call, I must wrap in . But the mission says output ONLY raw upgraded code, no markdown.
+
+There's ambiguity. The FORMAT REQUIREMENT is a system-level harness instruction: "You MUST wrap ALL JSON tool call arrays in a  code block." That implies I should use a tool call (write_file). Given the harness parses code blocks, and previous successful pattern is likely to write the file.
+
+Hmm, but there's no actual tool definition given. The instructions mention "write_file" tool in the example. I think the safest is to emit a JSON tool call in a  code block with write_file to src/components/ui/AgentCard.css containing the upgraded CSS.
+
+The current code is truncated (".hey-agent-" at end). I should produce a complete, improved file.
+
+Let me write a high-quality Liquid Glass CSS for the agent card, with purposeful motion per the skill (Emil restraint, Jakub polish), respecting prefers-reduced-motion, fixing things like: transitions only on specific properties (good), but missing transform; missing motion tokens fallback; add hover lift with transform on non-reduced motion; add will-change avoidance; use logical properties; add reduced motion media query; fix the status border-left to use border-inline-start; add focus-visible for interactive elements; add transitions for metric/health bar width; add @media (hover: hover) guard for hover; add containment; add isolation: isolate.
+
+Also note: border-left: 3px solid conflicts with border: var(--glass-border) — fine but better to use border-inline-start.
+
+Also missing: --motion-standard maybe; use var with fallbacks like var(--motion-standard, 180ms).
+
+Let me write comprehensive CSS.
+
+Key motion design decisions (Emil): card hover is high-frequency-ish but subtle → keep it fast (~160–200ms), only color/shadow/transform, no scale > 1.01. Use transform: translateY(-1px) only if the card is not huge. Under prefers-reduced-motion, remove transforms and keep instant color changes.
+
+Add: .hey-agent-card position: relative; isolation: isolate; contain: layout style; maybe content-visibility too risky.
+
+Add transition with --motion-fast etc.
+
+Health bar: add transition on width, and gradient fill. Add .hey-agent-card__health-bar > span / .hey-agent-card__health-fill.
+
+Add a subtle top sheen using ::before with gradient, pointer-events: none, opacity transitions.
+
+Add selected state ring animation with @keyframes only if reduced motion not preferred — but keep subtle. Actually Emil would say: avoid pulsing. Skip pulsing; maybe skip keyframes entirely, or use a very subtle one-time enter. I'll skip looping animations entirely — that's the AI-slop pattern. Good.
+
+Add prefers-contrast: more handling maybe. Keep reasonable.
+
+Also fix -webkit-line-clamp with line-clamp standard property and display: -webkit-box.
+
+Add min-width: 0 to grid children to prevent overflow in metrics.
+
+Add .hey-agent-card__metric hover subtle bg change.
+
+Add missing classes with fallback if the HTML uses them: .hey-agent-card__health-fill, .hey-agent-card__actions, .hey-agent-card__footer? Not in original — avoid inventing too much, but a health fill is implied by health-bar. I'll include it as it's harmless.
+
+Also the original had .hey-agent-card__status-badge using --status-color. Fine.
+
+Let me also add :focus-visible inside for actions.
+
+Also add @media (prefers-reduced-motion: reduce) disabling transitions on transform.
+
+Also @supports not (backdrop-filter: blur(1px)) fallback with more opaque background — good polish.
+
+Write the file with proper escaping (no double quotes inside CSS? I can use single quotes or none; CSS content has quotes maybe in font-family — avoid). Use content: "" — that's double quotes. I must escape as ". Alternatively use content: ''. Simpler: use single quotes in CSS to avoid escaping. But I can escape properly anyway. I'll just use single quotes in CSS.
+
+Actually the JSON string must escape newlines? In the example, content is "file content here" — presumably multiline allowed? Safer to use \n escapes... that would be unreadable but valid. Hmm. Many such harnesses accept literal newlines in JSON strings? No — literal newlines in JSON strings are invalid. The example shows single-line content. The prompt says escape double quotes as ". It doesn't mention newlines. To be safe... raw newlines inside a JSON string are invalid JSON and would break parsing.
+
+Hmm, risky either way. I'll use \n escapes for newlines to guarantee valid JSON. That makes a very long single line but it's correct JSON.
+
+That's a lot of tokens but fine. Actually, this will be huge. Let me be reasonably concise while complete.
+
+Let me draft the CSS.
+
+css
 /* =========================================
-   HEY AGENT CARD
+   HEY AGENT CARD — Liquid Glass
+   Motion: purposeful, fast, reduced-motion safe
    ========================================= */
 
 .hey-agent-card {
+  --card-motion-fast: var(--motion-fast, 140ms);
+  --card-motion-standard: var(--motion-standard, 200ms);
+  --card-ease: var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -14,13 +78,136 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   transition:
-    border-color var(--motion-standard) var(--ease),
-    box-shadow var(--motion-standard) var(--ease);
+    border-color var(--card-motion-fast) var(--card-ease),
+    box-shadow var(--card-motion-standard) var(--card-ease),
+    transform var(--card-motion-standard) var(--card-ease);
+  will-change: auto;
 }
 
-.hey-agent-card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--liquid-shadow-hover);
+Hmm will-change: auto is pointless; drop it.
+
+Sheen:
+
+css
+.hey-agent-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(160deg, var(--glass-highlight, rgb(255 255 255 / 0.08)), transparent 55%);
+  opacity: 0.75;
+  transition: opacity var(--card-motion-standard) var(--card-ease);
+  z-index: -1;
+}
+
+Using z-index: -1 with isolation: isolate keeps it behind content. Fine.
+
+Hover only on hover devices:
+
+css
+@media (hover: hover) and (pointer: fine) {
+  .hey-agent-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--liquid-shadow-hover);
+    transform: translate3d(0, -2px, 0);
+  }
+  .hey-agent-card:hover::before { opacity: 1; }
+  .hey-agent-card:hover .hey-agent-card__avatar { transform: scale(1.04); }
+  .hey-agent-card:hover .hey-agent-card__metric { background: var(--surface-hover); }
+}
+
+Careful: transform on hover for a card that's clicked a lot — Emil would say a 2px lift is fine at 200ms. OK.
+
+But note: transform on the card creates containing block; fine.
+
+Status variants: use border-inline-start.
+
+Also selected state should override status color? Selected uses full border-color accent; status uses border-inline-start. Both can coexist.
+
+Add active press: .hey-agent-card:active { transform: translate3d(0,0,0) scale(0.998); } — for clickable card only. Hmm, cards may not be buttons. Keep subtle: only if [role='button'] or button.hey-agent-card. I'll add a.hey-agent-card:active, button.hey-agent-card:active { transform: scale(0.995) }.
+
+Metrics grid: use minmax(0, 1fr).
+
+Health bar fill:
+
+css
+.hey-agent-card__health-bar > * {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green-accent, #4ade80), var(--accent, #7c9cff));
+  transition: width var(--card-motion-standard) var(--card-ease), background-color ...;
+}
+
+Also add @media (prefers-reduced-motion: reduce).
+
+Add @supports not (backdrop-filter: blur(1px)).
+
+Add @media (prefers-contrast: more).
+
+Alright, write full file.
+
+Also .hey-agent-card__status-badge — add a dot? There's .hey-agent-card__status wrapper. Fine.
+
+Also overflow: hidden? No, would clip focus rings.
+
+Let me also ensure min-width: 0 on __identity (already) and on metric-info.
+
+Write it out.
+
+Now for the JSON: content with \n escapes. Long but doable.
+
+Let me finalize CSS text.
+
+I'll write it carefully.
+
+Final CSS:
+
+text
+/* =========================================
+   HEY AGENT CARD
+   Liquid Glass surface + purposeful motion
+   ========================================= */
+
+.hey-agent-card {
+  --card-ease: var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+  --card-motion-fast: var(--motion-fast, 140ms);
+  --card-motion-standard: var(--motion-standard, 200ms);
+
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--liquid-surface);
+  border: var(--glass-border);
+  box-shadow: var(--liquid-shadow);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  transition:
+    border-color var(--card-motion-fast) var(--card-ease),
+    box-shadow var(--card-motion-standard) var(--card-ease),
+    transform var(--card-motion-standard) var(--card-ease);
+}
+
+/* Specular sheen — static, never loops */
+.hey-agent-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    150deg,
+    var(--glass-highlight, rgb(255 255 255 / 0.07)) 0%,
+    transparent 52%
+  );
+  opacity: 0.8;
+  transition: opacity var(--card-motion-standard) var(--card-ease);
 }
 
 .hey-agent-card:focus-visible {
@@ -28,312 +215,78 @@
   outline-offset: 2px;
 }
 
-.hey-agent-card--selected {
-  border-color: var(--accent);
-  box-shadow:
-    var(--liquid-shadow),
-    0 0 0 2px var(--accent-glow-soft),
-    inset 0 0 0 1px var(--accent);
+.hey-agent-card:focus-within {
+  border-color: var(--border-strong);
 }
 
-/* STATUS VARIANTS */
-.hey-agent-card--healthy { border-left: 3px solid var(--green-accent); }
-.hey-agent-card--running { border-left: 3px solid var(--accent); }
-.hey-agent-card--degraded { border-left: 3px solid var(--gold); }
-.hey-agent-card--failed { border-left: 3px solid var(--coral); }
+Hmm focus-within changing border always might be noisy; keep it, it's fine and cheap.
 
-/* HEADER */
-.hey-agent-card__header {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-}
+Continue with hover media query, selected, status variants, etc.
 
-.hey-agent-card__avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-large-glass);
-  background: var(--accent-glow-soft);
-  color: var(--accent);
-  border: var(--glass-border);
-}
+Also add .hey-agent-card--selected::after ring? Original used box-shadow. Keep box-shadow.
 
-.hey-agent-card__identity {
-  flex: 1;
-  min-width: 0;
-}
+Selected + hover: hover transform still fine.
 
-.hey-agent-card__name-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-1);
-}
+Now write out all sections.
 
-.hey-agent-card__name {
-  margin: 0;
-  font-family: var(--font-heading);
-  font-size: var(--text-h3);
-  font-weight: 500;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
+Let me produce final content string.
 
-.hey-agent-card__category {
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--glass-bg);
-  border: var(--glass-border);
-  font-family: var(--font-body);
-  font-size: var(--text-micro);
-  font-weight: 500;
-  color: var(--category-color);
-}
+I need to double check: --text-h3, --radius-large-glass, etc. keep as is.
 
-.hey-agent-card__description {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: var(--text-small);
-  color: var(--text-secondary);
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+Also the original had .hey-agent-card__version with background: var(--surface-hover). Keep.
 
-.hey-agent-card__status {
-  flex-shrink: 0;
-}
+Metrics: grid-template-columns: repeat(4, minmax(0, 1fr));
 
-.hey-agent-card__status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-pill);
-  background: var(--glass-bg);
-  border: var(--glass-border);
-  color: var(--status-color);
-  font-family: var(--font-body);
-  font-size: var(--text-small);
-  font-weight: 500;
-}
+Add @media (max-width: 480px) → repeat(2, ...)? That's a UI improvement. Reasonable and safe. I'll include with container-friendly breakpoint. Actually might conflict with layout; but it's an improvement. I'll include at max-width 420px on the card itself... media queries apply to viewport. It's fine, common practice. I'll include but note nothing. OK, include.
 
-/* MODEL */
-.hey-agent-card__model {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-card);
-  background: var(--glass-bg);
-  border: var(--glass-border);
-}
+Let me write.
 
-.hey-agent-card__model-label {
-  font-family: var(--font-system);
-  font-size: var(--text-micro);
-  font-weight: 600;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+Also add transitions to .hey-agent-card__metric for background-color.
 
-.hey-agent-card__model-name {
-  flex: 1;
-  font-family: var(--font-body);
-  font-size: var(--text-small);
-  font-weight: 500;
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+And .hey-agent-card__avatar transition transform.
 
-.hey-agent-card__version {
-  font-family: var(--font-system);
-  font-size: var(--text-micro);
-  color: var(--text-tertiary);
-  background: var(--surface-hover);
-  padding: 2px 6px;
-  border-radius: var(--radius-pill);
-}
+Also .hey-agent-card__status-badge — add subtle transition: color when status changes? Cheap, keep.
 
-/* METRICS */
-.hey-agent-card__metrics {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-3);
-}
+Reduced motion block at end:
 
-.hey-agent-card__metric {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-2);
-  border-radius: var(--radius-control);
-  background: var(--glass-bg);
-  border: var(--glass-border);
-}
-
-.hey-agent-card__metric-icon {
-  display: inline-flex;
-  color: var(--text-tertiary);
-}
-
-.hey-agent-card__metric-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.hey-agent-card__metric-value {
-  font-family: var(--font-heading);
-  font-size: var(--text-body);
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.hey-agent-card__metric-label {
-  font-family: var(--font-system);
-  font-size: var(--text-micro);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.hey-agent-card__health-bar {
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--field-bg);
-  overflow: hidden;
-  margin-top: var(--space-1);
-}
-
-.hey-agent-card__health-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: var(--green-accent);
-  transition: width var(--motion-standard) var(--ease);
-}
-
-.hey-agent-card--degraded .hey-agent-card__health-fill { background: var(--gold); }
-.hey-agent-card--failed .hey-agent-card__health-fill { background: var(--coral); }
-
-/* DETAILS */
-.hey-agent-card__details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.hey-agent-card__detail-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-2) 0;
-  border-bottom: var(--border-subtle);
-}
-
-.hey-agent-card__detail-row:last-child {
-  border-bottom: none;
-}
-
-.hey-agent-card__detail-label {
-  flex-shrink: 0;
-  min-width: 90px;
-  font-family: var(--font-body);
-  font-size: var(--text-small);
-  color: var(--text-tertiary);
-}
-
-.hey-agent-card__permissions,
-.hey-agent-card__tools,
-.hey-agent-card__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  flex: 1;
-}
-
-.hey-agent-card__permission,
-.hey-agent-card__tool,
-.hey-agent-card__tag {
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  background: var(--glass-bg);
-  border: var(--glass-border);
-  font-family: var(--font-body);
-  font-size: var(--text-micro);
-  color: var(--text-secondary);
-}
-
-.hey-agent-card__permission-more,
-.hey-agent-card__tool-more,
-.hey-agent-card__tag-more {
-  padding: 2px 8px;
-  border-radius: var(--radius-pill);
-  font-family: var(--font-body);
-  font-size: var(--text-micro);
-  color: var(--text-tertiary);
-}
-
-.hey-agent-card__last-run {
-  font-family: var(--font-body);
-  font-size: var(--text-small);
-  color: var(--text-secondary);
-}
-
-/* ACTIONS */
-.hey-agent-card__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  padding-top: var(--space-2);
-  border-top: var(--border-subtle);
-}
-
-.hey-agent-card__actions .hey-button {
-  flex-shrink: 0;
-}
-
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-
-@media (max-width: 900px) {
-  .hey-agent-card__metrics {
-    grid-template-columns: repeat(2, 1fr);
+css
+@media (prefers-reduced-motion: reduce) {
+  .hey-agent-card,
+  .hey-agent-card::before,
+  .hey-agent-card__avatar,
+  .hey-agent-card__metric,
+  .hey-agent-card__health-bar > * {
+    transition-duration: 0.01ms;
+  }
+  .hey-agent-card:hover,
+  .hey-agent-card:active,
+  a.hey-agent-card:active,
+  button.hey-agent-card:active {
+    transform: none;
+  }
+  .hey-agent-card:hover .hey-agent-card__avatar {
+    transform: none;
   }
 }
 
-@media (max-width: 640px) {
-  .hey-agent-card__metrics {
-    grid-template-columns: 1fr;
-  }
+@supports fallback:
 
-  .hey-agent-card__detail-row {
-    flex-direction: column;
-    gap: var(--space-1);
-  }
-
-  .hey-agent-card__detail-label {
-    min-width: 0;
-  }
-
-  .hey-agent-card__actions {
-    width: 100%;
-  }
-
-  .hey-agent-card__actions .hey-button {
-    flex: 1;
+css
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hey-agent-card {
+    background: var(--surface-elevated, var(--liquid-surface));
+    box-shadow: var(--liquid-shadow);
   }
 }
+
+OK, build the JSON.
+
+Escaping: no double quotes in CSS — I'll use single quotes for content: ''. Yes.
+
+Now assemble with \n.
+
+I'll write the tool call for write_file with path "src/components/ui/AgentCard.css" — the example shows /abs/path. I'll use "src/components/ui/AgentCard.css" as given. Hmm, better to give a relative path as the file was specified relative. I'll keep relative.
+
+Let's write it out.
+
+[{"tool": "write_file", "path": "src/components/ui/AgentCard.css", "content": "/* =========================================\n   HEY AGENT CARD\n   Liquid Glass surface + purposeful motion\n   ========================================= */\n\n.hey-agent-card {\n  --card-ease: var(--ease, cubic-bezier(0.22, 1, 0.36, 1));\n  --card-motion-fast: var(--motion-fast, 140ms);\n  --card-motion-standard: var(--motion-standard, 200ms);\n\n  position: relative;\n  isolation: isolate;\n  display: flex;\n  flex-direction: column;\n  gap: var(--space-4);\n  padding: var(--space-4);\n  border-radius: var(--radius-card);\n  background: var(--liquid-surface);\n  border: var(--glass-border);\n  box-shadow: var(--liquid-shadow);\n  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));\n  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));\n  transition:\n    border-color var(--card-motion-fast) var(--card-ease),\n    box-shadow var(--card-motion-standard) var(--card-ease),\n    transform var(--card-motion-standard) var(--card-ease);\n}\n\n/* Static specular sheen. No looping, no pulsing — ever. */\n.hey-agent-card::before {\n  content: '';\n  position: absolute;\n  inset: 0;\n  z-index: -1;\n  border-radius: inherit;\n  pointer-events: none;\n  background: linear-gradient(\n    150deg,\n    var(--glass-highlight, rgb(255 255 255 / 0.07)) 0%,\n    transparent 52%\n  );\n  opacity: 0.8;\n  transition: opacity var(--card-motion-standard) var(--card-ease);\n}\n\n/* Hover is gated: touch devices never get stuck-hover states. */\n@media (hover: hover) and (pointer: fine) {\n  .hey-agent-card:hover {\n    border-color: var(--border-strong);\n    box-shadow: var(--liquid-shadow-hover);\n    transform: translate3d(0, -2px, 0);\n  }\n\n  .hey-agent-card:hover::before {\n    opacity: 1;\n  }\n\n  .hey-agent-card:hover .hey-agent-card__avatar {\n    transform: scale(1.04);\n  }\n\n  .hey-agent-card:hover .hey-agent-card__metric {\n    background: var(--surface-hover);\n  }\n}\n\n/* Press feedback: only for cards that actually act as controls. */\na.hey-agent-card:active,\nbutton.hey-agent-card:active,\n[role='button'].hey-agent-card:active {\n  transform: scale(0.995);\n  transition-duration: 90ms;\n}\n\n.hey-agent-card:focus-visible {\n  outline: var(--focus-ring);\n  outline-offset: 2px;\n}\n\n.hey-agent-card:focus-within {\n  border-color: var(--border-strong);\n}\n\n.hey-agent-card--selected {\n  border-color: var(--accent);\n  box-shadow:\n    var(--liquid-shadow),\n    0 0 0 2px var(--accent-glow-soft),\n    inset 0 0 0 1px var(--accent);\n}\n\n/* STATUS VARIANTS — logical property so RTL mirrors correctly */\n.hey-agent-card--healthy { border-inline-start: 3px solid var(--green-accent); }\n.hey-agent-card--running { border-inline-start: 3px solid var(--accent); }\n.hey-agent-card--degraded { border-inline-start: 3px solid var(--gold); }\n.hey-agent-card--failed { border-inline-start: 3px solid var(--coral); }\n\n/* HEADER */\n.hey-agent-card__header {\n  display: flex;\n  align-items: flex-start;\n  gap: var(--space-3);\n}\n\n.hey-agent-card__avatar {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;\n  flex-shrink: 0;\n  width: 48px;\n  height: 48px;\n  border-radius: var(--radius-large-glass);\n  background: var(--accent-glow-soft);\n  color: var(--accent);\n  border: var(--glass-border);\n  transition: transform var(--card-motion-standard) var(--card-ease);\n}\n\n.hey-agent-card__identity {\n  flex: 1;\n  min-width: 0;\n}\n\n.hey-agent-card__name-row {\
