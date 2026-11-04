@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\dpa\page.tsx
+CURRENT CODE:
 import { Metadata } from 'next';
 import Link from 'next/link';
 
@@ -108,94 +206,6 @@ export default function DpaPage() {
             <h2 className="text-2xl font-semibold tracking-tight mb-3">
               3. Processor obligations
             </h2>
-            <ul className="list-disc pl-5 space-y-1.5 text-[15px] leading-relaxed">
-              <li>Process personal data only on documented instructions, as described in this DPA and the Terms.</li>
-              <li>Ensure persons authorized to process the data are under appropriate confidentiality obligations.</li>
-              <li>Not use or disclose processed data for HEY&rsquo;s own purposes, except as permitted by this DPA or applicable law.</li>
-              <li>Enable the customer to exercise their data-subject and account rights, including through the self-serve export and deletion tools in Settings.</li>
-            </ul>
-          </section>
-
-          <section id="security">
-            <h2 className="text-2xl font-semibold tracking-tight mb-3">4. Security</h2>
-            <p className="text-[15px] leading-relaxed">
-              HEY maintains appropriate technical and organizational measures to protect personal
-              data against accidental or unlawful destruction, loss, alteration, or unauthorized
-              disclosure, including encryption of data in transit, access control tied to
-              authenticated accounts, and secure deletion on request. Details are described in the{' '}
-              <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
-            </p>
-          </section>
-
-          <section id="subprocessors">
-            <h2 className="text-2xl font-semibold tracking-tight mb-3">5. Sub-processors</h2>
-            <p className="text-[15px] leading-relaxed">
-              HEY may engage sub-processors to provide parts of the Service (for example, AI model
-              providers, database hosting, and email delivery). When it does, HEY imposes
-              contractual obligations on them that are substantially similar to this DPA and
-              remains responsible to the customer for their acts and omissions. A current list of
-              sub-processors is available on request at {contact}.
-            </p>
-          </section>
-
-          <section id="international">
-            <h2 className="text-2xl font-semibold tracking-tight mb-3">
-              6. International transfers and standard contractual clauses
-            </h2>
-            <p className="text-[15px] leading-relaxed">
-              Personal data may be transferred outside the EEA, UK, and Switzerland to countries
-              whose laws may not provide the same data-protection safeguards. Where such transfers
-              occur and an appropriate adequacy decision does not apply, HEY relies on the European
-              Commission&rsquo;s Standard Contractual Clauses (&ldquo;SCCs&rdquo;, EU 2021/914,
-              including the relevant controller-to-processor and processor-to-processor modules) and
-              any supplementary measures required, so that the data is afforded protection
-              materially consistent with the <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>. An executed copy of the SCCs is
-              available on request at {contact}.
-            </p>
-          </section>
-
-          <section id="data-subject-rights">
-            <h2 className="text-2xl font-semibold tracking-tight mb-3">
-              7. Assistance with data-subject rights
-            </h2>
-            <p className="text-[15px] leading-relaxed">
-              HEY supports the customer&rsquo;s obligations to respond to requests from data subjects
-              under applicable law. Data subjects may exercise access, rectification, erasure,
-              restriction, portability, and objection rights directly through the Service (including
-              the export and delete tools in Settings) or by contacting us at {contact}.
-            </p>
-          </section>
-
-          <section id="retention">
-            <h2 className="text-2xl font-semibold tracking-tight mb-3">
-              8. Retention and deletion
-            </h2>
-            <p className="text-[15px] leading-relaxed">
-              After the end of the customer&rsquo;s relationship with the Service, or upon the
-              customer&rsquo;s request, HEY deletes or returns the customer&rsquo;s personal data in
-              line with our retention commitments and legal obligations, unless retaining it is
-              required by law.
-            </p>
-          </section>
-
-          <section id="contact">
-            <h2 className="text-2xl font-semibold tracking-tight mb-3">9. Contact</h2>
-            <p className="text-[15px] leading-relaxed">
-              For DPA, SCC, sub-processor, or audit inquiries, contact us at {contact} with the
-              subject line &ldquo;DPA&rdquo;.
-            </p>
-          </section>
-
-          <section id="disclaimer">
-            <h2 className="text-2xl font-semibold tracking-tight mb-3">10. Disclaimer</h2>
-            <p className="text-[15px] leading-relaxed text-muted-foreground">
-              This page is a general description of the data-processing terms that apply to the
-              Service and is provided for informational purposes only. It is not legal advice. For
-              binding, organization-specific terms, request an executed DPA at {contact}.
-            </p>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-}
+            <ul classNam
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
