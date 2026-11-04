@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\Tools\EnglishTools.jsx
+CURRENT CODE:
 import React, { useState } from "react";
 import {
   BookOpen,
@@ -103,295 +201,6 @@ export default function EnglishTools({ activeToolName = "Essay Grader & Rubric" 
     if (text.includes("summer") || text.includes("compare")) {
       setMeterScan({
         meter: "Iambic Pentameter",
-        feet: "5 Metric Feet (da-DUM da-DUM da-DUM da-DUM da-DUM)",
-        syllables: 10,
-        stressPattern: "˘ ¯ | ˘ ¯ | ˘ ¯ | ˘ ¯ | ˘ ¯",
-      });
-    } else {
-      setMeterScan({
-        meter: "Trochaic Tetrameter",
-        feet: "4 Metric Feet (DUM-da DUM-da DUM-da DUM-da)",
-        syllables: 8,
-        stressPattern: "¯ ˘ | ¯ ˘ | ¯ ˘ | ¯ ˘",
-      });
-    }
-  };
-
-  return (
-    <div
-      className="h-full flex flex-col rounded-3xl border border-white/10 bg-[#131419]/90 backdrop-blur-[24px] text-[#F5F6F8] overflow-hidden"
-      style={{ backdropFilter: "blur(24px)" }}
-    >
-      {/* Top Header */}
-      <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/10 bg-black/20 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-[#3B82F6]" />
-          <span className="text-sm font-bold tracking-tight text-[#F5F6F8]">English &amp; Comparative Literature Suite</span>
-        </div>
-
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#0A0B0F]/80 border border-white/10 text-xs">
-          {[
-            { id: "essay", label: "Essay Grader & Rubric" },
-            { id: "grammar", label: "Syntax Analyzer" },
-            { id: "poetry", label: "Poetry Meter Scanner" },
-            { id: "literature", label: "Literature Prompts" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-3 py-1.5 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? "bg-[#3B82F6] text-white font-bold shadow-md shadow-[#3B82F6]/30"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Container */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {/* TAB 1: ESSAY GRADER & RUBRIC */}
-        {activeTab === "essay" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">AP-Style 6-Point Analytical Essay Rubric</h3>
-              <p className="text-xs text-white/50">Evaluate thesis defensibility, evidence contextualization, and analytical sophistication.</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/70">Student Draft Passage</label>
-              <textarea
-                rows={5}
-                value={essayDraft}
-                onChange={(e) => setEssayDraft(e.target.value)}
-                className="w-full p-4 rounded-2xl bg-[#0A0B0F] border border-white/10 text-xs md:text-sm text-white/90 outline-none focus:border-[#3B82F6] resize-y"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleGradeEssay}
-              className="px-6 py-3 rounded-2xl bg-[#3B82F6] text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md shadow-[#3B82F6]/30 flex items-center gap-2"
-            >
-              <Sparkles className="w-4 h-4" /> Evaluate Essay Rubric
-            </button>
-
-            {rubricResult && (
-              <div className="p-6 rounded-2xl border border-blue-500/30 bg-blue-500/10 space-y-4">
-                <div className="flex items-center justify-between border-b border-blue-500/20 pb-3">
-                  <h4 className="text-base font-bold text-white flex items-center gap-2">
-                    <Award className="w-4 h-4 text-[#3B82F6]" />
-                    <span>Evaluation Score: {rubricResult.totalScore}</span>
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
-                    <span className="text-white/40 block">Thesis (Row A)</span>
-                    <span className="font-semibold text-emerald-400">{rubricResult.thesisScore}</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
-                    <span className="text-white/40 block">Evidence (Row B)</span>
-                    <span className="font-semibold text-[#3B82F6]">{rubricResult.evidenceScore}</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1">
-                    <span className="text-white/40 block">Sophistication (Row C)</span>
-                    <span className="font-semibold text-purple-400">{rubricResult.sophisticationScore}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs md:text-sm pt-2">
-                  <p className="text-white/90">
-                    <strong className="text-emerald-400">Strengths:</strong> {rubricResult.strengths}
-                  </p>
-                  <p className="text-white/90">
-                    <strong className="text-amber-400">Growth Directive:</strong> {rubricResult.growth}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 2: SYNTAX ANALYZER */}
-        {activeTab === "grammar" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Syntax Variation &amp; Readability Analyzer</h3>
-              <p className="text-xs text-white/50">Detects passive voice, sentence length distribution, and stylistic cadence.</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-white/70">Analyze Text Sample</label>
-              <textarea
-                rows={4}
-                value={syntaxText}
-                onChange={(e) => setSyntaxText(e.target.value)}
-                className="w-full p-4 rounded-2xl bg-[#0A0B0F] border border-white/10 text-xs md:text-sm text-white/90 outline-none focus:border-[#3B82F6]"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleAnalyzeSyntax}
-              className="px-6 py-3 rounded-2xl bg-[#3B82F6] text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md shadow-[#3B82F6]/30"
-            >
-              Run Syntactic Scan
-            </button>
-
-            {syntaxAnalysis && (
-              <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
-                  <div className="p-3 rounded-xl bg-white/5">
-                    <span className="text-white/40 block">Words</span>
-                    <span className="text-base font-bold text-white">{syntaxAnalysis.wordCount}</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5">
-                    <span className="text-white/40 block">Sentences</span>
-                    <span className="text-base font-bold text-white">{syntaxAnalysis.sentenceCount}</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5">
-                    <span className="text-white/40 block">Avg Length</span>
-                    <span className="text-xs font-bold text-[#3B82F6]">{syntaxAnalysis.avgSentenceLength}</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5">
-                    <span className="text-white/40 block">Grade Level</span>
-                    <span className="text-xs font-bold text-emerald-400">{syntaxAnalysis.readabilityGrade}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200">
-                    ⚠️ {syntaxAnalysis.passiveVoiceFound}
-                  </div>
-                  <div className="p-3 rounded-xl bg-white/5 border border-white/5 text-white/80">
-                    💡 <strong>Style Recommendation:</strong> {syntaxAnalysis.varietyAdvice}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB 3: POETRY METER SCANNER */}
-        {activeTab === "poetry" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Poetry Scansion &amp; Metric Feet Analyzer</h3>
-              <p className="text-xs text-white/50">Determine poetic feet (iamb, trochee, dactyl, anapest) and scansion stress patterns.</p>
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={poemLine}
-                onChange={(e) => setPoemLine(e.target.value)}
-                placeholder="Enter poetic verse line..."
-                className="flex-1 px-4 py-3 rounded-2xl bg-[#0A0B0F] border border-white/10 text-sm font-serif text-white outline-none italic"
-              />
-              <button
-                type="button"
-                onClick={() => handleScanPoem(poemLine)}
-                className="px-5 py-3 rounded-2xl bg-[#3B82F6] text-white font-bold text-sm hover:scale-105 active:scale-95 transition-all shadow-md shadow-[#3B82F6]/30"
-              >
-                Scan Meter
-              </button>
-            </div>
-
-            {/* Presets */}
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="text-white/40 py-1">Sample Verses:</span>
-              {[
-                "Shall I compare thee to a summer's day?",
-                "Double, double toil and trouble; Fire burn and caldron bubble.",
-                "Tyger Tyger, burning bright, In the forests of the night",
-              ].map((v) => (
-                <button
-                  key={v}
-                  onClick={() => {
-                    setPoemLine(v);
-                    handleScanPoem(v);
-                  }}
-                  className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 italic text-[11px]"
-                >
-                  &ldquo;{v.slice(0, 30)}...&rdquo;
-                </button>
-              ))}
-            </div>
-
-            {/* Scansion Card */}
-            <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4">
-              <div className="border-b border-white/10 pb-3">
-                <span className="text-xs uppercase tracking-wider text-white/40 font-semibold block">Primary Metric Meter</span>
-                <span className="text-xl font-bold font-serif text-[#3B82F6]">{meterScan.meter}</span>
-              </div>
-
-              <div className="space-y-3 text-xs">
-                <div className="p-4 rounded-xl bg-[#0A0B0F] border border-white/10 font-mono text-center">
-                  <div className="text-lg text-[#3B82F6] font-bold tracking-widest">{meterScan.stressPattern}</div>
-                  <div className="text-[10px] text-white/40 mt-1">Breve (˘) = Unstressed • Macron (¯) = Stressed</div>
-                </div>
-
-                <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="text-white/50">Foot Rhythm</span>
-                  <span className="text-white/90">{meterScan.feet}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-white/5">
-                  <span className="text-white/50">Total Syllables</span>
-                  <span className="font-mono text-[#3B82F6]">{meterScan.syllables}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: LITERATURE PROMPTS */}
-        {activeTab === "literature" && (
-          <div className="space-y-6 max-w-3xl">
-            <div>
-              <h3 className="text-lg font-bold text-[#F5F6F8]">Socratic Seminar Inquiry Prompts</h3>
-              <p className="text-xs text-white/50">High-order conceptual discussion questions targeting theme, motif, and human condition.</p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              {NOVEL_PROMPTS.map((b) => (
-                <button
-                  key={b.book}
-                  onClick={() => setSelectedBook(b)}
-                  className={`px-3 py-1.5 rounded-xl text-xs border transition-all ${
-                    selectedBook.book === b.book
-                      ? "bg-[#3B82F6]/20 border-[#3B82F6] text-[#3B82F6] font-bold"
-                      : "bg-white/5 border-white/10 text-white/60 hover:text-white"
-                  }`}
-                >
-                  {b.book.split("(")[0]}
-                </button>
-              ))}
-            </div>
-
-            <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4">
-              <div className="border-b border-white/10 pb-3">
-                <h4 className="text-base font-bold text-white">{selectedBook.book}</h4>
-                <span className="text-xs text-[#3B82F6] font-semibold">{selectedBook.theme}</span>
-              </div>
-
-              <div className="space-y-3">
-                {selectedBook.questions.map((q, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-1">
-                    <span className="text-[10px] font-bold text-[#3B82F6] uppercase tracking-wider block">
-                      Seminar Question {idx + 1}
-                    </span>
-                    <p className="text-xs md:text-sm text-white/90 leading-relaxed">{q}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+        feet: "5 Metric Feet (da-DUM da-DUM da-DUM da-DUM 
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
