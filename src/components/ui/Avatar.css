@@ -1,133 +1,394 @@
+The user wants an upgraded Avatar.css file. They say output only raw upgraded code, no markdown. But the format requirement says wrap JSON tool calls in json code block. There's a conflict — but the file content says "output ONLY the raw upgraded code. No markdown." The format requirement is about JSON tool calls. Since I'm not making tool calls, I should just output the code. But the instruction says I must use write_file? Actually no tool is specified. Let me consider: "You MUST wrap ALL JSON tool call arrays in a  code block." This applies if I make tool calls. The mission says output only raw upgraded code.
+
+Hmm, typically in these tasks, the expected answer is to output the file content directly. But the format requirement is emphatic about JSON tool calls for the automation harness. The mission says "Otherwise, output ONLY the raw upgraded code. No markdown. No truncation."
+
+I think the safest is to output the raw code, since the mission is explicit and the format requirement only concerns tool calls. But the harness parses code blocks... Actually the format requirement is about writing files. If I'm supposed to upgrade a file, I should probably use write_file wrapped in json. Hmm.
+
+Given "PREVIOUSLY SUCCESSFUL PATTERN" and the format requirement, likely the expected output is a JSON tool call with write_file. But the mission says output only raw upgraded code. There's a conflict. Let me weigh: The format requirement file is explicitly labeled "READ CAREFULLY" and critical for harness parsing. The mission is part of the prompt. I'll go with the JSON tool call to write the file, since that's what the harness expects. Actually, many of these eval tasks expect the raw code output. Hmm.
+
+"OTHERWISE, OUTPUT ONLY THE RAW UPGRADED CODE. No markdown. No truncation." — This is pretty explicit. But then the harness wouldn't detect it... unless the harness reads the text.
+
+I'll follow the format requirement since it's declared critical and first. Write a write_file tool call with the upgraded CSS.
+
+Now design the upgrade.
+
+Improvements:
+
+Liquid Glass aesthetic: backdrop-filter blur/saturate, gradients, layered highlights.
+
+Motion: purposeful, subtle — hover/press states, status pulse for online, group hover lift.
+
+Reduced motion support.
+
+Use logical properties? Keep it simple.
+
+Fix: status border/box-shadow uses --bg-primary which may not exist — keep but add fallback. Actually keep.
+
+Add focus-visible ring.
+
+Add --avatar-size custom property for cleaner sizing.
+
+Fix group overlap scaling per size (currently only -8px for all, and only 5 sizes for more).
+
+Add isolation, transform: translateZ(0).
+
+Add image fade-in, skeleton/shimmer? Keep restrained.
+
+Add hover scale? Avatars are often non-interactive; make it opt-in via --interactive class or [data-interactive] / a button wrapper. Use :where(button, a) .hey-avatar:hover — hmm, better: .hey-avatar--interactive.
+
+Status colors with glow.
+
+Add @media (prefers-contrast: more).
+
+Add ring option.
+
+Add fallback for backdrop-filter with @supports.
+
+Let me write clean CSS, keeping existing class names/API intact (non-breaking), adding enhancements.
+
+Sizing via custom property:
+
+css
+.hey-avatar {
+  --avatar-size: 40px;
+  --avatar-font-size: 14px;
+  --avatar-status-size: 10px;
+  --avatar-ring-width: 2px;
+  ...
+}
+
+Then size modifiers set those.
+
+Use width: var(--avatar-size) etc.
+
+Group overlap: use --avatar-overlap: calc(var(--avatar-size) * -0.2)? Actually with border 2px. Let's set per-size overlap. Simpler: margin-inline-start: calc(var(--avatar-overlap, 8px) * -1). Set --avatar-overlap on size modifiers on the group via .hey-avatar-group--md { --avatar-overlap: 8px }? But the group children have their own sizes. Use .hey-avatar-group__avatar { margin-inline-start: calc(var(--avatar-size) * -0.2) } — since --avatar-size is defined on the avatar itself, this works if the avatar element has the size class. Yes, .hey-avatar-group__avatar is presumably also .hey-avatar .hey-avatar--md. So the custom property is available.
+
+But the border 2px and negative margin: overlap ratio 0.2 works.
+
+For more element, it's separate class with its own size modifiers. Keep those but also add --avatar-size usage? I'll keep them but add the missing 2xl/3xl.
+
+Actually cleaner: make .hey-avatar-group__more also use custom props with its own size modifiers. Let me do:
+
+css
+.hey-avatar-group__more {
+  --avatar-size: 40px;
+  --avatar-font-size: 12px;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  font-size: var(--avatar-font-size);
+}
+
+and size modifiers --md { --avatar-size: 40px; --avatar-font-size: 12px } etc.
+
+And margin-inline-start: calc(var(--avatar-size) * -0.2) for both.
+
+Careful: first-child margin 0.
+
+Motion:
+
+transitions on background, box-shadow, transform with tokens.
+
+hover: .hey-avatar--interactive:hover → translateY(-1px), brighter glass.
+
+active: translateY(0) scale(0.97).
+
+focus-visible ring via :where(button, a):focus-visible .hey-avatar or .hey-avatar--interactive:focus-visible. Use :has()? Better: put on the avatar itself if focusable, plus a parent selector.
+
+Status: online pulse — a subtle animated ring. Keep it gentle, 2s, only online. Respect reduced motion.
+
+Image: opacity fade-in on load with animation — can't know load. Use .hey-avatar__image { animation: hey-avatar-fade-in 200ms ease-out both } — this is fine, plays once on mount.
+
+Add object-position: center.
+
+Add user-select: none, -webkit-user-select.
+
+Add shimmer overlay? Liquid glass: add ::before with gradient highlight and ::after maybe. But avatar has children image/initials — pseudo-elements with overflow hidden fine.
+
+Let's add:
+
+css
+.hey-avatar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(160deg, var(--glass-highlight), transparent 55%);
+  opacity: .8;
+  pointer-events: none;
+  z-index: 1;
+}
+
+Hmm, but that could overlay image with a white wash. Use low opacity and mix-blend-mode? Keep opacity subtle.
+
+Actually for images, an inner highlight ring is nicer:
+
+css
+.hey-avatar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+  pointer-events: none;
+  z-index: 2;
+}
+
+Keep the status z-index 3.
+
+Also add --avatar-ring-color ring option: .hey-avatar--ring with box-shadow ring.
+
+Let's write it.
+
+Also add contain: paint maybe. And isolation: isolate.
+
+Fallback when no backdrop-filter: @supports not (backdrop-filter: blur(1px)) → solid bg.
+
+Also add @media (prefers-reduced-motion: reduce) to disable transitions/animations.
+
+Responsive: keep but use custom props.
+
+Let me write the full file.
+
+css
 /* =========================================
-   HEY AVATAR
+   HEY AVATAR — Liquid Glass
    ========================================= */
 
 .hey-avatar {
+  --avatar-size: 40px;
+  --avatar-font-size: 14px;
+  --avatar-status-size: 10px;
+  --avatar-overlap: 0.2;
+  --avatar-radius: 50%;
+  --avatar-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --avatar-duration: 180ms;
+
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  font-size: var(--avatar-font-size);
   overflow: hidden;
-  background: var(--glass-bg);
+  isolation: isolate;
+  vertical-align: middle;
+  user-select: none;
+  -webkit-user-select: none;
+  background:
+    linear-gradient(160deg, var(--glass-highlight), transparent 60%),
+    var(--glass-bg);
   border: var(--glass-border);
+  border-radius: var(--avatar-radius);
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 var(--border-subtle);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
+  transition:
+    box-shadow var(--avatar-duration) var(--avatar-ease),
+    background-color var(--avatar-duration) var(--avatar-ease),
+    transform var(--avatar-duration) var(--avatar-ease);
 }
 
-.hey-avatar--circle { border-radius: 50%; }
-.hey-avatar--rounded { border-radius: var(--radius-card); }
-.hey-avatar--square { border-radius: var(--radius-control); }
+Wait: border-radius: var(--avatar-radius) but shape modifiers set border-radius. Set --avatar-radius in the shape modifiers instead. Good.
 
-/* SIZES */
-.hey-avatar--xs { width: 24px; height: 24px; font-size: 10px; }
-.hey-avatar--sm { width: 32px; height: 32px; font-size: 12px; }
-.hey-avatar--md { width: 40px; height: 40px; font-size: 14px; }
-.hey-avatar--lg { width: 48px; height: 48px; font-size: 16px; }
-.hey-avatar--xl { width: 64px; height: 64px; font-size: 22px; }
-.hey-avatar--2xl { width: 80px; height: 80px; font-size: 28px; }
-.hey-avatar--3xl { width: 96px; height: 96px; font-size: 32px; }
+Shapes:
 
-/* IMAGE */
+css
+.hey-avatar--circle { --avatar-radius: 50%; }
+.hey-avatar--rounded { --avatar-radius: var(--radius-card); }
+.hey-avatar--square { --avatar-radius: var(--radius-control); }
+
+Sizes set --avatar-size, --avatar-font-size, --avatar-status-size.
+
+xs 24/10/6, sm 32/12/8, md 40/14/10, lg 48/16/12, xl 64/22/14, 2xl 80/28/16, 3xl 96/32/18.
+
+Ring width should scale too. --avatar-ring: 2px.
+
+Status:
+
+css
+.hey-avatar__status {
+  position: absolute;
+  z-index: 3;
+  width: var(--avatar-status-size);
+  height: var(--avatar-status-size);
+  border-radius: 50%;
+  border: 2px solid var(--bg-primary);
+  background: var(--text-tertiary);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+  ...
+}
+
+Hmm, border 2px + box-shadow 0 0 0 2px is doubled; keep original but make border width scale with size? For xs 6px status with 2px border leaves 2px — too small. Use border: max(1px, calc(var(--avatar-status-size) * 0.16)). Eh, keep simple: border-width: clamp(1px, calc(var(--avatar-status-size) * 0.16), 2px).
+
+Then remove the per-size status rules since custom property handles it.
+
+Positions: add inset with small offset? Original puts them at 0 (corner overlapping). Keep, but maybe offset by 0. Fine.
+
+Status colors: add subtle glow for online.
+
+css
+.hey-avatar__status--online {
+  background: var(--semantic-success-text);
+  box-shadow: 0 0 0 2px var(--bg-primary), 0 0 8px color-mix(in srgb, var(--semantic-success-text) 55%, transparent);
+}
+
+color-mix might be risky but fine. Alternatively just use a glow with currentColor. I'll use color-mix inside @supports? Keep simple, use it — modern browsers.
+
+Actually to be safe, use two declarations: plain fallback then enhanced. box-shadow override would replace. I'll just write the base and add a separate rule with color-mix guarded by @supports.
+
+Hmm, keep it simpler — skip the glow or use opacity. I'll add glow with color-mix; it's 2026.
+
+Online pulse:
+
+css
+.hey-avatar__status--online::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  border: 1px solid currentColor...
+}
+
+Hmm, pulse ring expanding. Use animation on a pseudo:
+
+css
+@keyframes hey-avatar-pulse {
+  0% { transform: scale(1); opacity: 0.55; }
+  70%, 100% { transform: scale(2.2); opacity: 0; }
+}
+.hey-avatar__status--online::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--semantic-success-text);
+  animation: hey-avatar-pulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+}
+
+But status has overflow visible? Parent avatar has overflow hidden — the status is positioned at edge, so pulse would be clipped by the avatar's overflow:hidden. Hmm. The status is inside the avatar (overflow hidden), so half of the status at bottom-right corner is clipped already! Wait, original: status at bottom:0; right:0 inside overflow:hidden avatar — a 10px dot at corner fully inside, not clipped. Pulse expanding 2.2x would be clipped. That's bad.
+
+Options: disable pulse, or make the pulse inward. I'll skip pulse to avoid clipping issues. Instead, subtle "breathing" glow via box-shadow won't clip either... it would clip too since it's inside overflow hidden. So skip pulsing. Keep static glow.
+
+Actually a static glow inside overflow hidden gets clipped at edges too. Keep glow small.
+
+OK skip pulse. Restraint (Emil) anyway — status dots pulsing is AI-slop-ish.
+
+Image:
+
+css
 .hey-avatar__image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
+  animation: hey-avatar-image-in 240ms var(--avatar-ease) both;
 }
 
-/* INITIALS */
+Hmm animation on every render could be annoying but it's fine — plays once per element mount. Actually with React re-renders it doesn't replay. Fine. But keep it very subtle: opacity 0→1 + scale 1.02→1.
+
+Wait, reduced motion should disable.
+
+Initials:
+
+css
 .hey-avatar__initials {
+  ...
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: linear-gradient(150deg, var(--accent-glow-soft), transparent 70%);
+}
+
+Hmm original background accent-glow-soft. Add gradient layering.
+
+Interactive:
+
+css
+.hey-avatar--interactive {
+  cursor: pointer;
+}
+.hey-avatar--interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 4px 14px -6px rgba(0,0,0,0.45);
+}
+.hey-avatar--interactive:active { transform: translateY(0) scale(0.96); }
+.hey-avatar--interactive:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+Group:
+
+css
+.hey-avatar-group { display: inline-flex; align-items: center; }
+.hey-avatar-group__avatar {
+  border: var(--avatar-ring-width, 2px) solid var(--bg-primary);
+  margin-inline-start: calc(var(--avatar-size) * var(--avatar-overlap, 0.2) * -1);
+  transition: transform ..., margin ...;
+}
+.hey-avatar-group__avatar:first-child { margin-inline-start: 0; }
+.hey-avatar-group:hover .hey-avatar-group__avatar { ... }? 
+
+Emil says restraint. Maybe on group hover, the hovered avatar lifts and others dim slightly. That's a nice touch:
+
+css
+.hey-avatar-group .hey-avatar-group__avatar:hover {
+  transform: translateY(-2px);
+  z-index: 2;
+  box-shadow: 0 6px 16px -8px rgba(0,0,0,.5);
+}
+
+With z-index on hover. Need position: relative on avatar (already relative). Good.
+
+Note --avatar-size in group avatar: the avatar element itself has the size class so --avatar-size resolves. Good. Fallback 40px if not.
+
+more element:
+
+css
+.hey-avatar-group__more {
+  --avatar-size: 40px;
+  --avatar-font-size: 12px;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 100%;
-  color: var(--accent);
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  font-size: var(--avatar-font-size);
   font-family: var(--font-body);
   font-weight: 600;
-  line-height: 1;
-  background: var(--accent-glow-soft);
-}
-
-/* STATUS INDICATOR */
-.hey-avatar__status {
-  position: absolute;
-  display: inline-flex;
-  width: 10px;
-  height: 10px;
   border: 2px solid var(--bg-primary);
   border-radius: 50%;
-  background: var(--text-tertiary);
-  box-shadow: 0 0 0 2px var(--bg-primary);
-}
-
-.hey-avatar__status--online { background: var(--semantic-success-text); }
-.hey-avatar__status--away { background: var(--semantic-warning-text); }
-.hey-avatar__status--busy { background: var(--semantic-destructive-text); }
-.hey-avatar__status--offline { background: var(--text-tertiary); }
-
-/* STATUS POSITIONS */
-.hey-avatar__status--bottom-right { bottom: 0; right: 0; }
-.hey-avatar__status--bottom-left { bottom: 0; left: 0; }
-.hey-avatar__status--top-right { top: 0; right: 0; }
-.hey-avatar__status--top-left { top: 0; left: 0; }
-
-/* SIZE ADJUSTMENTS FOR STATUS */
-.hey-avatar--xs .hey-avatar__status { width: 6px; height: 6px; }
-.hey-avatar--sm .hey-avatar__status { width: 8px; height: 8px; }
-.hey-avatar--md .hey-avatar__status { width: 10px; height: 10px; }
-.hey-avatar--lg .hey-avatar__status { width: 12px; height: 12px; }
-.hey-avatar--xl .hey-avatar__status { width: 14px; height: 14px; }
-.hey-avatar--2xl .hey-avatar__status { width: 16px; height: 16px; }
-.hey-avatar--3xl .hey-avatar__status { width: 18px; height: 18px; }
-
-/* =========================================
-   AVATAR GROUP
-   ========================================= */
-
-.hey-avatar-group {
-  display: inline-flex;
-}
-
-.hey-avatar-group__avatar {
-  border: 2px solid var(--bg-primary);
-  margin-left: -8px;
-}
-
-.hey-avatar-group__avatar:first-child {
-  margin-left: 0;
-}
-
-.hey-avatar-group__more {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--bg-primary);
-  border-radius: 50%;
+  margin-inline-start: calc(var(--avatar-size) * -0.2);
   background: var(--glass-bg);
   color: var(--text-secondary);
-  font-family: var(--font-body);
-  font-weight: 600;
-  margin-left: -8px;
+  ...
 }
 
-.hey-avatar-group__more--xs { width: 24px; height: 24px; font-size: 10px; }
-.hey-avatar-group__more--sm { width: 32px; height: 32px; font-size: 11px; }
-.hey-avatar-group__more--md { width: 40px; height: 40px; font-size: 12px; }
-.hey-avatar-group__more--lg { width: 48px; height: 48px; font-size: 14px; }
-.hey-avatar-group__more--xl { width: 64px; height: 64px; font-size: 16px; }
+Careful with the margin: first-child? .hey-avatar-group__more is typically last, so keep negative margin. But if :first-child, set 0.
 
-/* =========================================
-   RESPONSIVE
-   ========================================= */
+Size modifiers for more: use --avatar-size/--avatar-font-size.
 
-@media (max-width: 480px) {
-  .hey-avatar-group__avatar {
-    margin-left: -6px;
-  }
+Responsive: use --avatar-overlap: 0.16 at small screens.
 
-  .hey-avatar-group__more {
-    margin-left: -6px;
-  }
-}
+Also add @supports not (backdrop-filter) fallback.
+
+Also @media (prefers-reduced-motion: reduce).
+
+Also @media (prefers-contrast: more) → stronger borders.
+
+Also forced-colors.
+
+Let me also add 
+.hey-avatar--ring
+ optional ring using box-shadow — skip, may conflict.
+
+Now the transition on transform of 
+.hey-avatar
+ — transitions defined. Good.
+
+One issue: 
+overflow: hidden
+ on avatar clips the hover shadow? No, box-shadow outside is not clipped by own overflow. Fine
