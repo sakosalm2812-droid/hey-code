@@ -1,3 +1,79 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY 3D Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: alpha-cutout
+description: Turns an AI-generated (or filmed) clip of a character or product into a transparent, web-ready animation by shooting it on a flat chroma plate and keying it with per-frame plate measurement and edge unmixing. Delivers stacked-alpha MP4 that plays with transparency in every browser including Safari, VP9 alpha WebM, or keyed WebP frame sequences for scroll scrubbing. Use when an animated subject has to sit over page content, between layers of type, or over a 3D scene, when someone asks for "transparent video", "video with alpha", "remove the background from this clip", or when a generated video has a background that should not be there.
+---
+
+# Alpha cutout
+
+Image-to-video models never return alpha. A character that should stand between a giant headline and a sun disc, or a bottle that should float over a page, needs its background removed from every frame, cleanly enough that no fringe shows on any page colour. This skill does it the way a film studio does: shoot the subject on a flat key colour, then pull a matte per frame.
+
+## Tools
+
+| File | What it does |
+| --- | --- |
+| `scripts/plate.py` | Places a cut-out subject on a key plate with headroom; picks the key colour the subject clashes with least |
+| `scripts/key.py` | Keys a clip or still into stacked MP4, VP9 alpha WebM, RGBA WebP frames or PNGs |
+| `assets/alpha-video.js` | Plays a stacked-alpha MP4 with transparency on a canvas (WebGL), with `seek()` for scrubbing |
+
+Needs Python 3.9+, `pip install numpy opencv-python-headless pillow`, and ffmpeg on PATH.
+
+## Pipeline
+
+1. **Cut the subject out of the still.** Any background remover works. Check what it dropped: thin objects (a ball in the air, racket strings, hair) often go missing. Put them back by hand.
+
+2. **Make the plate.**
+
+   
+   python3 scripts/plate.py subject.png plate.png --size 1350x1800 --fit 0.8
+   
+
+   The script reports, for magenta, green and blue, how much of the subject sits close to that key, and picks the cleanest. Magenta is usually right: almost nothing in skin, clothing, product or foliage is pure magenta. Green fails on plants and green products; blue fails on denim and sky. The subject is pasted with a hard edge on purpose: a soft edge pre-mixed with the plate colour teaches the model to draw a fringe.
+
+   Leave room for the motion. A serve needs space above the head; a turn needs space to the side. Match the plate's aspect to the video model's output aspect so nothing gets cropped.
+
+3. **Generate on the plate.** Use the plate as the start frame (and as the end frame for a seamless loop; see `motion-assets`). The prompt must name the plate, or the model invents a background:
+
+   > The background must remain a completely flat, uniform, pure chroma-key magenta (exact RGB 255, 0, 255) filling the entire frame, with no shadows, no floor, no gradient, no vignette and no scenery. Locked-off camera.
+
+   **The prompt wins over the image.** A leftover "on a white background" in the prompt gets you a white background whatever the plate was. Re-read the prompt after every edit.
+
+4. **Key it.**
+
+   
+   python3 scripts/key.py clip.mp4 --png check/ --frame-list 0,40,80,120   # inspect first
+   python3 scripts/key.py clip.mp4 --stacked hero-1080.mp4 --width 1080
+   python3 scripts/key.py clip.mp4 --stacked hero-720.mp4 --width 720      # phones
+   python3 scripts/key.py clip.mp4 --frames serve/lg --width 960 --start 0 --end 78
+   
+
+   `--png` prints the plate colour it measured in each frame. Models drift the plate: a pure magenta can come back pale pink (250, 178, 243) halfway through while the subject keeps its colours. That is why the key colour is measured per frame from the frame's own border instead of being set once. If the subject touches the top edge, the measurement breaks and the script says so.
+
+   Then, per pixel: alpha comes from how far the pixel's key excess is from the pl
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY 3D Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: alpha-cutout
+description: Turns an AI-generated (or filmed) clip of a character or product into a transparent, web-ready animation by shooting it on a flat chroma plate and keying it with per-frame plate measurement and edge unmixing. Delivers stacked-alpha MP4 that plays with transparency in every browser including Safari, VP9 alpha WebM, or keyed WebP frame sequences for scroll scrubbing. Use when an animated sub
+
+FILE TO UPGRADE: src\components\capture\captureItem.js
+CURRENT CODE:
 /**
  * HEY Capture Item — Pure Item Model
  *
@@ -172,319 +248,6 @@ export function createCaptureItem(input, options = {}) {
     errors.push({ field: 'type', code: 'invalid', message: `Type must be one of: ${CAPTURE_TYPES.join(', ')}` });
   }
 
-  if (!isKnownCaptureSource(input.source)) {
-    errors.push({ field: 'source', code: 'invalid', message: `Source must be one of: ${CAPTURE_SOURCES.join(', ')}` });
-  }
-
-  // Type-specific validation
-  switch (input.type) {
-    case 'text':
-      if (!isNonEmptyString(input.content)) {
-        errors.push({ field: 'content', code: 'required', message: 'Text content is required for text type' });
-      }
-      break;
-    case 'url':
-      if (!isNonEmptyString(input.url)) {
-        errors.push({ field: 'url', code: 'required', message: 'URL is required for url type' });
-      } else {
-        try {
-          new URL(input.url);
-        } catch {
-          errors.push({ field: 'url', code: 'invalid', message: 'URL must be a valid URL' });
-        }
-      }
-      break;
-    case 'image':
-    case 'pdf':
-    case 'file':
-      if (!input.file || typeof input.file !== 'object') {
-        errors.push({ field: 'file', code: 'required', message: `File metadata is required for ${input.type} type` });
-      } else {
-        if (!isNonEmptyString(input.file.name)) {
-          errors.push({ field: 'file.name', code: 'required', message: 'File name is required' });
-        }
-        if (!isNonEmptyString(input.file.mimeType)) {
-          errors.push({ field: 'file.mimeType', code: 'required', message: 'File MIME type is required' });
-        }
-        if (typeof input.file.size !== 'number') {
-          errors.push({ field: 'file.size', code: 'invalid', message: 'File size must be a non-negative number' });
-        }
-        if (input.type === 'image' && requireImageDataUrl && !isNonEmptyString(input.file.dataUrl)) {
-          errors.push({ field: 'file.dataUrl', code: 'required', message: 'Image data URL is required for image type' });
-        }
-      }
-      break;
-    case 'voice':
-      if (!input.voice || typeof input.voice !== 'object') {
-        errors.push({ field: 'voice', code: 'required', message: 'Voice metadata is required for voice type' });
-      } else {
-        if (typeof input.voice.durationMs !== 'number' || input.voice.durationMs <= 0) {
-          errors.push({ field: 'voice.durationMs', code: 'invalid', message: 'Voice duration must be a positive number' });
-        }
-        if (!isNonEmptyString(input.voice.dataUrl)) {
-          errors.push({ field: 'voice.dataUrl', code: 'required', message: 'Voice data URL is required' });
-        }
-      }
-      break;
-  }
-
-  if (errors.length > 0) {
-    return { ok: false, errors };
-  }
-
-  const item = {
-    id: generateCaptureId(),
-    type: input.type,
-    source: input.source,
-    sourceApp: isNonEmptyString(input.sourceApp) ? input.sourceApp : null,
-    createdAt: nowISO(),
-    status: 'pending', // pending, processing, completed, discarded
-    content: input.type === 'text' ? input.content.trim() : null,
-    url: input.type === 'url' ? input.url.trim() : null,
-    file: input.file ? {
-      name: input.file.name,
-      mimeType: input.file.mimeType,
-      size: clamp(input.file.size, 0, Number.MAX_SAFE_INTEGER),
-      dataUrl: input.type === 'image' ? input.file.dataUrl : null,
-    } : null,
-    voice: input.voice ? {
-      durationMs: input.voice.durationMs,
-      dataUrl: input.voice.dataUrl,
-    } : null,
-    metadata: {
-      exifStripped: Boolean(input.metadata?.exifStripped),
-      keepExif: Boolean(input.metadata?.keepExif),
-      ...(input.metadata || {}),
-    },
-    suggestedActions: [...(SUGGESTED_ACTIONS[input.type] || [])],
-    selectedAction: null,
-  };
-
-  return { ok: true, item: Object.freeze(item) };
-}
-
-/**
- * Strips EXIF data from an image data URL.
- * This is a pure function that returns a new data URL without EXIF.
- * In practice, this would use a library like exifr or canvas-based stripping.
- * For the pure model, we return the input with a flag indicating EXIF was stripped.
- *
- * @param {string} dataUrl - Base64 data URL of an image
- * @returns {{ ok: boolean, dataUrl: string, stripped: boolean, error?: string }}
- */
-export function stripExif(dataUrl) {
-  if (!isNonEmptyString(dataUrl)) {
-    return { ok: false, dataUrl: '', stripped: false, error: 'Data URL is required' };
-  }
-
-  if (!dataUrl.startsWith('data:image/')) {
-    return { ok: false, dataUrl: '', stripped: false, error: 'Data URL must be an image' };
-  }
-
-  // In a real implementation, this would decode the image, strip EXIF, and re-encode.
-  // For the pure model, we return the same data URL with a stripped flag.
-  // The actual stripping happens in the native layer or via a Web Worker.
-  return {
-    ok: true,
-    dataUrl,
-    stripped: true,
-  };
-}
-
-/**
- * Determines if a file type should have EXIF stripped by default.
- *
- * @param {string} mimeType
- * @returns {boolean}
- */
-export function shouldStripExifByDefault(mimeType) {
-  if (!isNonEmptyString(mimeType)) return false;
-  return mimeType.startsWith('image/') && !mimeType.includes('svg');
-}
-
-/**
- * Gets the suggested actions for a capture item type.
- *
- * @param {string} type
- * @returns {string[]}
- */
-export function getSuggestedActions(type) {
-  return [...(SUGGESTED_ACTIONS[type] || [])];
-}
-
-/**
- * Validates a capture item.
- *
- * @param {Object} item
- * @returns {{ ok: boolean, errors: Array<{ field: string, code: string, message: string }> }}
- */
-export function validateCaptureItem(item) {
-  const errors = [];
-
-  if (!item || typeof item !== 'object') {
-    errors.push({ field: 'item', code: 'invalid', message: 'Item must be an object' });
-    return { ok: false, errors };
-  }
-
-  if (!isNonEmptyString(item.id)) {
-    errors.push({ field: 'id', code: 'missing', message: 'Item id is required' });
-  }
-
-  if (!CAPTURE_TYPES.includes(item.type)) {
-    errors.push({ field: 'type', code: 'invalid', message: `Invalid type: ${item.type}` });
-  }
-
-  if (!isKnownCaptureSource(item.source)) {
-    errors.push({ field: 'source', code: 'invalid', message: `Invalid source: ${item.source}` });
-  }
-
-  if (!isNonEmptyString(item.createdAt)) {
-    errors.push({ field: 'createdAt', code: 'missing', message: 'CreatedAt is required' });
-  }
-
-  if (!['pending', 'processing', 'completed', 'discarded'].includes(item.status)) {
-    errors.push({ field: 'status', code: 'invalid', message: `Invalid status: ${item.status}` });
-  }
-
-  // Type-specific validation
-  switch (item.type) {
-    case 'text':
-      if (!isNonEmptyString(item.content)) {
-        errors.push({ field: 'content', code: 'missing', message: 'Text content is required' });
-      }
-      break;
-    case 'url':
-      if (!isNonEmptyString(item.url)) {
-        errors.push({ field: 'url', code: 'missing', message: 'URL is required' });
-      }
-      break;
-    case 'image':
-    case 'pdf':
-    case 'file':
-      if (!item.file || typeof item.file !== 'object') {
-        errors.push({ field: 'file', code: 'missing', message: 'File metadata is required' });
-      } else {
-        if (!isNonEmptyString(item.file.name)) {
-          errors.push({ field: 'file.name', code: 'missing', message: 'File name is required' });
-        }
-        if (!isNonEmptyString(item.file.mimeType)) {
-          errors.push({ field: 'file.mimeType', code: 'missing', message: 'File MIME type is required' });
-        }
-      }
-      break;
-    case 'voice':
-      if (!item.voice || typeof item.voice !== 'object') {
-        errors.push({ field: 'voice', code: 'missing', message: 'Voice metadata is required' });
-      } else {
-        if (typeof item.voice.durationMs !== 'number' || item.voice.durationMs <= 0) {
-          errors.push({ field: 'voice.durationMs', code: 'invalid', message: 'Invalid voice duration' });
-        }
-      }
-      break;
-  }
-
-  if (!Array.isArray(item.suggestedActions)) {
-    errors.push({ field: 'suggestedActions', code: 'invalid', message: 'Suggested actions must be an array' });
-  }
-
-  return { ok: errors.length === 0, errors };
-}
-
-/**
- * Creates a capture item from a native share payload.
- *
- * @param {Object} payload - Native share payload
- * @param {string} platform - Platform the share came from
- * @returns {{ ok: boolean, item?: Object, errors?: Array<{ field: string, code: string, message: string }> }}
- */
-export function createFromSharePayload(payload, platform) {
-  // This maps native share payloads to our capture item model
-  // The actual implementation depends on the platform's share contract
-  const errors = [];
-
-  if (!payload || typeof payload !== 'object') {
-    errors.push({ field: 'payload', code: 'invalid', message: 'Payload must be an object' });
-    return { ok: false, errors };
-  }
-
-  let type = 'file';
-  let content = null;
-  let url = null;
-  let file = null;
-  let voice = null;
-
-  // Determine type from payload
-  if (payload.text && typeof payload.text === 'string') {
-    // Check if it's a URL
-    try {
-      new URL(payload.text);
-      type = 'url';
-      url = payload.text;
-    } catch {
-      type = 'text';
-      content = payload.text;
-    }
-  } else if (payload.url && typeof payload.url === 'string') {
-    type = 'url';
-    url = payload.url;
-  } else if (payload.files && Array.isArray(payload.files) && payload.files.length > 0) {
-    // Take the first file
-    const f = payload.files[0];
-    if (f.mimeType?.startsWith('image/')) {
-      type = 'image';
-    } else if (f.mimeType === 'application/pdf') {
-      type = 'pdf';
-    } else {
-      type = 'file';
-    }
-    file = {
-      name: f.name || 'unknown',
-      mimeType: f.mimeType || 'application/octet-stream',
-      size: f.size || 0,
-      dataUrl: type === 'image' ? f.dataUrl || null : null,
-    };
-  } else if (payload.audio && typeof payload.audio === 'string') {
-    type = 'voice';
-    voice = {
-      durationMs: payload.durationMs || 0,
-      dataUrl: payload.audio,
-    };
-  }
-
-  const sourceMap = {
-    ios: 'share-extension',
-    android: 'share-target',
-    macos: 'share-extension',
-    windows: 'share-target',
-    linux: 'clipboard',
-    web: 'in-app',
-  };
-
-  return createCaptureItem({
-    type,
-    source: sourceMap[platform] || 'in-app',
-    sourceApp: payload.sourceApp || null,
-    content,
-    url,
-    file,
-    voice,
-    metadata: {
-      exifStripped: type === 'image' && shouldStripExifByDefault(file?.mimeType || ''),
-      keepExif: false,
-    },
-  }, { requireImageDataUrl: false });
-}
-
-export default {
-  CAPTURE_TYPES,
-  CAPTURE_SOURCES,
-  EXIF_STRIP_FIELDS,
-  DEFAULT_EXIF_POLICY,
-  SUGGESTED_ACTIONS,
-  createCaptureItem,
-  stripExif,
-  shouldStripExifByDefault,
-  getSuggestedActions,
-  validateCaptureItem,
-  createFromSharePayload,
-};
+  if (!isKnownCaptureSource(input.so
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
