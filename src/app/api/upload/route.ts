@@ -1,86 +1,54 @@
-The user wants me to upgrade the file. But there's a conflicting format requirement: wrap JSON tool call arrays in  code block. However the mission says "output ONLY the raw upgraded code. No markdown. No truncation."
+The user wants me to upgrade the file. The format requirement says to wrap JSON tool call arrays in a code block. The mission says output only raw upgraded code.
 
-Wait, let me re-read. The FORMAT REQUIREMENT says I MUST wrap ALL JSON tool call arrays in  code block. But the mission says output only raw upgraded code.
+There's tension. But the format requirement is critical for the automation harness. Let me output a write_file tool call wrapped in a json code block, with the upgraded code as content.
 
-Hmm, this is a conflict. The format requirement seems to be about tool calls. The mission says output raw code. Since there's no actual tool harness mentioned except this format requirement, and the mission explicitly says "output ONLY the raw upgraded code. No markdown."
+Wait, but the mission says "output ONLY the raw upgraded code." Let me think about what's being asked. The system prompt has a FORMAT REQUIREMENT that says I MUST wrap ALL JSON tool call arrays in a  code block. And gives an example of write_file.
 
-But the FORMAT REQUIREMENT says "You MUST wrap ALL JSON tool call arrays in a  code block" — this applies to tool calls, not to code output. The mission is about outputting code, not making a tool call.
+I think the intent is: output a tool call to write the file. The "raw upgraded code" goes in the content field. Let me do that.
 
-Wait but "PREVIOUSLY SUCCESSFUL PATTERN" is shown. The system prompt says "You are the HEY Catalog Specialist." This seems to be a task where I upgrade the file.
+Let me write a genuinely improved version of this API route. Improvements:
 
-Let me think — the format requirement is a system-level instruction to wrap JSON tool calls. But the actual task says output raw code. If I output raw code directly, that's not a tool call, so the wrapping requirement may not apply. But maybe the intended output is a write_file tool call? The example shows [{"tool": "write_file", "path": "/abs/path", "content": "file content here"}].
+Magic-byte validation to prevent MIME spoofing
 
-Given the format requirement is very explicit and critical ("This is critical: the automation harness parses your response by looking for code blocks first"), I should output a JSON tool call wrapped in a code block to write the file.
+Filename sanitization (strip path, control chars, null bytes, limit length)
 
-But mission says "output ONLY the raw upgraded code." Hmm. Actually if I use write_file tool, the content field would contain the raw code. That satisfies both — the automation harness parses the tool call, and the file gets written with raw code.
+Early content-length check before parsing
 
-Let me output a write_file tool call with the upgraded code.
+Validate formData.get('file') is actually a File
 
-Now let me actually upgrade the file. The file is a Next.js API route for file upload. Let me improve it:
+Normalize MIME types (image/jpg -> image/jpeg)
 
-Bugs / issues in current code:
+Better error messages, no info leak
 
-file.type from client is user-controlled and can be spoofed — need magic-byte validation.
+Deterministic content-type storage (use detected mime)
 
-formData.get('file') as File — if not a File, this could fail weirdly. Should validate it's a File/Blob.
+Add runtime/dynamic exports
 
-Filename not sanitized — though only fileId used in path, so ok, but audit logs raw name.
+Handle empty files
 
-file.arrayBuffer() loads whole file into memory — could be an issue but limited to 10MB.
+Use file.size vs MAX_FILE_SIZE
 
-No content-length pre-check.
+Rate limit should be checked after auth (or as is — order depends)
 
-Missing filename length validation.
+Add proper try/catch around formData parsing
 
-putFile path chat/${fileId} — no extension, means serving relies on content-type.
+Storage path with extension preserved? Use sanitized extension.
 
-No Content-Disposition considerations.
+Header injection prevention in returned URL
 
-Rate limit: fine.
+Add request-id for tracing
 
-Error handling leaks nothing good.
+Let me also fix potential issues:
 
-No request.headers.get('content-length') check before parsing formData.
+file.type can be spoofed
 
-File name with null bytes / path traversal — not used in path, ok.
+Need magic bytes for text types too? Text is hard to validate; use as-is but allow.
 
-Should validate file.name length and strip control chars.
+For image/webp actually starts with RIFF....WEBP at offset 8, so RIFF check is loose. Improve.
 
-Could add runtime = 'nodejs' export.
+Handle the case where file.size is 0
 
-Add export const dynamic = 'force-dynamic' or similar.
-
-Audit log should sanitize fileName.
-
-Should pass request to auditLog — it does.
-
-Could set Content-Type from detected mime, not user supplied.
-
-Should limit file count/size of formData.
-
-ALLOWED_TYPES — image/svg+xml excluded (good, XSS risk).
-
-Should normalize mime (some browsers send image/jpg sometimes).
-
-Add streaming for large files? 10MB is fine.
-
-The returned URL uses /api/uploads/chat/${fileId} but stored at chat/${fileId} — route probably handles it.
-
-Let me also add:
-
-magic byte detection to prevent mime spoofing (basic)
-
-filename sanitization
-
-content-length early check
-
-better error messages
-
-constant-time-ish type check
-
-use instanceof File check
-
-Also "improve UI to Liquid Glass" — this is an API route, no UI. So skip UI aspect.
+Ensure fileId is UUID (randomUUID gives that)
 
 Let me write the improved code.
 
@@ -110,27 +78,320 @@ const ALLOWED_TYPES = new Set([
   'image/webp',
 ]);
 
-// magic-byte signatures for binary types
-const MAGIC_SIGNATURES: Record<string, number[][]> = {
-  'application/pdf': [[0x25, 0x50, 0x44, 0x46]], // %PDF
-  'image/png': [[0x89, 0x50, 0x4e, 0x47]],
-  'image/jpeg': [[0xff, 0xd8, 0xff]],
-  'image/gif': [[0x47, 0x49, 0x46, 0x38]],
-  'image/webp': [[0x52, 0x49, 0x46, 0x46]], // RIFF (webp starts with RIFF)
+// MIME aliases some clients send
+const MIME_ALIASES: Record<string, string> = {
+  'image/jpg': 'image/jpeg',
+  'image/pjpeg': 'image/jpeg',
+  'text/x-markdown': 'text/markdown',
+  'application/x-pdf': 'application/pdf',
 };
 
-function matchesMagic(buffer: Uint8Array, sigs: number[][]): boolean {
-  return sigs.some((sig) => sig.every((byte, i) => buffer[i] === byte));
+function normalizeMime(mime: string): string {
+  const lower = mime.toLowerCase().split(';')[0].trim();
+  return MIME_ALIASES[lower] ?? lower;
+}
+
+type Signature = { bytes: number[]; offset?: number };
+
+const MAGIC_SIGNATURES: Record<string, Signature[]> = {
+  'application/pdf': [{ bytes: [0x25, 0x50, 0x44, 0x46] }],
+  'image/png': [{ bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] }],
+  'image/jpeg': [{ bytes: [0xff, 0xd8, 0xff] }],
+  'image/gif': [
+    { bytes: [0x47, 0x49, 0x46, 0x38, 0x37, 0x61] },
+    { bytes: [0x47, 0x49, 0x46, 0x38, 0x39, 0x61] },
+  ],
+  'image/webp': [
+    { bytes: [0x52, 0x49, 0x46, 0x46], offset: 0 },
+    { bytes: [0x57, 0x45, 0x42, 0x50], offset: 8 },
+  ],
+};
+
+function matchesMagic(buffer: Uint8Array, sigs: Signature[]): boolean {
+  return sigs.every((sig) => {
+    const offset = sig.offset ?? 0;
+    if (buffer.length < offset + sig.bytes.length) return false;
+    return sig.bytes.every((byte, i) => buffer[offset + i] === byte);
+  });
+}
+
+Wait, for webp the check should be AND of the two signatures (RIFF + WEBP), so .every is right but I have them as an array of signatures and it should require both. Let me fix: each entry in MAGIC_SIGNATURES[type] should be a "signature group" — an array of signature parts all of which must match. Let me refactor:
+
+ts
+type SignaturePart = { bytes: number[]; offset?: number };
+const MAGIC_SIGNATURES: Record<string, SignaturePart[][]> = {
+  'application/pdf': [[{ bytes: [0x25, 0x50, 0x44, 0x46] }]],
+  'image/png': [[{ bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] }]],
+  'image/jpeg': [[{ bytes: [0xff, 0xd8, 0xff] }]],
+  'image/gif': [
+    [{ bytes: [0x47, 0x49, 0x46, 0x38, 0x37, 0x61] }],
+    [{ bytes: [0x47, 0x49, 0x46, 0x38, 0x39, 0x61] }],
+  ],
+  'image/webp': [[
+    { bytes: [0x52, 0x49, 0x46, 0x46] },
+    { bytes: [0x57, 0x45, 0x42, 0x50], offset: 8 },
+  ]],
+};
+
+function matchesMagic(buffer: Uint8Array, sigGroup: SignaturePart[]): boolean {
+  return sigGroup.every((sig) => {
+    const offset = sig.offset ?? 0;
+    if (buffer.length < offset + sig.bytes.length) return false;
+    return sig.bytes.every((byte, i) => buffer[offset + i] === byte);
+  });
+}
+
+function hasValidMagic(buffer: Uint8Array, mime: string): boolean {
+  const groups = MAGIC_SIGNATURES[mime];
+  if (!groups) return true; // text types — no magic check
+  return groups.some((group) => matchesMagic(buffer, group));
+}
+
+Filename sanitization:
+
+ts
+function sanitizeFilename(name: string): string {
+  // strip path components
+  const base = name.split(/[/\\]/).pop() ?? 'file';
+  // remove null bytes and control chars
+  const cleaned = base.replace(/[\x00-\x1f\x7f]/g, '').trim();
+  if (!cleaned || cleaned === '.' || cleaned === '..') return 'file';
+  return cleaned.length > MAX_FILENAME_LENGTH
+    ? cleaned.slice(-MAX_FILENAME_LENGTH)
+    : cleaned;
+}
+
+Wait, slicing to last 255 preserves extension. That's better.
+
+Also enforce content-length early:
+
+ts
+const contentLength = request.headers.get('content-length');
+if (contentLength && Number(contentLength) > MAX_FILE_SIZE + 1024 * 1024) {
+  // formData overhead — allow some slack
+  return NextResponse.json({ error: 'File too large' }, { status: 413 });
+}
+
+Hmm actually MULTIPART overhead can add some. But 1MB slack is a lot. Let me use a reasonable slack. Actually let's not be too clever — just check it against max plus overhead margin.
+
+Actually formData overhead is small (a few hundred bytes typically for the file field). But safer to just check file.size after. I'll add the content-length check as a fast path.
+
+Let me finish the route:
+
+ts
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(session.user.id);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please slow down.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } }
+      );
+    }
+
+    const contentLength = Number(request.headers.get('content-length') ?? 0);
+    if (contentLength && contentLength > MAX_FILE_SIZE + 64 * 1024) {
+      return NextResponse.json({ error: 'File too large. Maximum size is 10MB.' }, { status: 413 });
+    }
+
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const file = formData.get('file');
+    if (!(file instanceof File)) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    if (file.size === 0) {
+      return NextResponse.json({ error: 'Empty file' }, { status: 400 });
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: 'File too large. Maximum size is 10MB.' }, { status: 413 });
+    }
+
+    const mime = normalizeMime(file.type || 'application/octet-stream');
+    if (!ALLOWED_TYPES.has(mime)) {
+      return NextResponse.json(
+        { error: 'Unsupported file type. Allowed: images (png/jpg/gif/webp), pdf, plain text, markdown, csv, json.' },
+        { status: 415 }
+      );
+    }
+
+    const safeName = sanitizeFilename(file.name);
+    const buffer = new Uint8Array(await file.arrayBuffer());
+
+    if (!hasValidMagic(buffer, mime)) {
+      return NextResponse.json({ error: 'File content does not match its declared type' }, { status: 415 });
+    }
+
+    const fileId = randomUUID();
+    const storagePath = `chat/${fileId}`;
+
+    await putFile(storagePath, Buffer.from(buffer), mime);
+
+    await auditLog({
+      userId: session.user.id,
+      action: 'file.upload',
+      resource: `file:${fileId}`,
+      metadata: {
+        fileName: safeName,
+        size: file.size,
+        type: mime,
+      },
+      request,
+    });
+
+    return NextResponse.json({
+      fileId,
+      fileName: safeName,
+      size: file.size,
+      type: mime,
+      url: `/api/uploads/chat/${fileId}`,
+    });
+  } catch (err) {
+    console.error('[upload] failed', err);
+    await auditLog({
+      userId: 'anonymous',
+      action: 'file.upload.error',
+      resource: 'upload',
+      metadata: { message: err instanceof Error ? err.message : 'unknown' },
+      request,
+    }).catch(() => {});
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+  }
+}
+
+Hmm, but the "Liquid Glass" UI improvement — this is an API route, no UI. So there's nothing to do for that. I'll note nothing about it.
+
+Actually wait, the current code shown in the prompt is truncated mid-way (in the "CURRENT CODE" section it's a mix of thinking). Let me re-read.
+
+The user's message has a confusing structure — it starts with FORMAT REQUIREMENT, then the skill library (truncated), then "PREVIOUSLY SUCCESSFUL PATTERN", then a bunch of thinking that appears to be the "CURRENT CODE" section. But actually the "CURRENT CODE" isn't given in full — it's just this rambling thinking. Then MISSION, then "[file content end]".
+
+So the actual current file is described as src\app\api\upload\route.ts. The thinking shows what the assistant was planning to do. So I need to produce the upgraded version.
+
+The thinking mentions specifics:
+
+MAX_FILE_SIZE = 10 * 1024 * 1024
+
+ALLOWED_TYPES list
+
+auth from '@/lib/auth'
+
+checkRateLimit from '@/lib/rate-limit'
+
+auditLog from '@/lib/audit'
+
+randomUUID from 'crypto'
+
+putFile from '@/lib/storage'
+
+path: chat/${fileId}
+
+url: /api/uploads/chat/${fileId}
+
+Let me write clean upgraded code based on this. Since the exact current code isn't fully given, I'll produce a complete, well-structured version consistent with what's described.
+
+Let me finalize:
+
+ts
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { auditLog } from '@/lib/audit';
+import { randomUUID } from 'crypto';
+import { putFile } from '@/lib/storage';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILENAME_LENGTH = 255;
+const FORM_OVERHEAD_SLACK = 64 * 1024;
+
+const ALLOWED_TYPES = new Set([
+  'text/plain',
+  'text/markdown',
+  'text/csv',
+  'application/json',
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/gif',
+  'image/webp',
+]);
+
+const MIME_ALIASES: Record<string, string> = {
+  'image/jpg': 'image/jpeg',
+  'image/pjpeg': 'image/jpeg',
+  'image/x-png': 'image/png',
+  'text/x-markdown': 'text/markdown',
+  'application/x-pdf': 'application/pdf',
+};
+
+function normalizeMime(raw: string): string {
+  const lower = raw.toLowerCase().split(';', 1)[0].trim();
+  return MIME_ALIASES[lower] ?? lower;
+}
+
+type SignaturePart = { bytes: number[]; offset?: number };
+// Each entry is a list of groups; a match is any group whose parts all match.
+const MAGIC_SIGNATURES: Record<string, SignaturePart[][]> = {
+  'application/pdf': [[{ bytes: [0x25, 0x50, 0x44, 0x46] }]], // %PDF
+  'image/png': [[{ bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] }]],
+  'image/jpeg': [[{ bytes: [0xff, 0xd8, 0xff] }]],
+  'image/gif': [
+    [{ bytes: [0x47, 0x49, 0x46, 0x38, 0x37, 0x61] }], // GIF87a
+    [{ bytes: [0x47, 0x49, 0x46, 0x38, 0x39, 0x61] }], // GIF89a
+  ],
+  'image/webp': [
+    [
+      { bytes: [0x52, 0x49, 0x46, 0x46] },              // "RIFF"
+      { bytes: [0x57, 0x45, 0x42, 0x50], offset: 8 },   // "WEBP"
+    ],
+  ],
+};
+
+function matchesGroup(buffer: Uint8Array, group: SignaturePart[]): boolean {
+  return group.every((part) => {
+    const offset = part.offset ?? 0;
+    if (buffer.length < offset + part.bytes.length) return false;
+    return part.bytes.every((byte, i) => buffer[offset + i] === byte);
+  });
+}
+
+function hasValidMagic(buffer: Uint8Array, mime: string): boolean {
+  const groups = MAGIC_SIGNATURES[mime];
+  if (!groups) return true; // text/json/csv — validated as UTF-8 below
+  return groups.some((group) => matchesGroup(buffer, group));
+}
+
+const decoder = new TextDecoder('utf-8', { fatal: true });
+function isUtf8(buffer: Uint8Array): boolean {
+  try {
+    decoder.decode(buffer);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function sanitizeFilename(name: string): string {
-  const base = name.split(/[\\/]/).pop() ?? 'file';
+  const base = name.split(/[/\\]/).pop() ?? 'file';
   const cleaned = base.replace(/[\u0000-\u001f\u007f]/g, '').trim();
-  return cleaned.slice(0, MAX_FILENAME_LENGTH) || 'file';
-}
-
-function isFileLike(v: unknown): v is File {
-  return typeof v === 'object' && v !== null && typeof (v as File).arrayBuffer === 'function' && typeof (v as File).size === 'number';
+  if (!cleaned || cleaned === '.' || cleaned === '..') return 'file';
+  return cleaned.length > MAX_FILENAME_LENGTH
+    ? cleaned.slice(-MAX_FILENAME_LENGTH)
+    : cleaned;
 }
 
 export async function POST(request: NextRequest) {
@@ -139,70 +400,45 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const userId = session.user.id;
 
-    const rateLimit = await checkRateLimit(userId, { windowMs: 60_000, maxRequests: 20, keyPrefix: 'upload' });
-    if (!rateLimit.allowed) {
-      return NextResponse.json({ error: 'Upload rate limit exceeded' }, { status: 429 });
+    const rl = await checkRateLimit(session.user.id);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: 'Too many uploads. Please try again shortly.' },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter ?? 60) } }
+      );
     }
 
-    const contentLength = Number(request.headers.get('content-length') ?? 0);
-    if (contentLength > MAX_FILE_SIZE + 1024 * 1024) {
-      return NextResponse.json({ error: 'Payload too large (max 10MB)' }, { status: 413 });
+    const declaredLength = Number(request.headers.get('content-length') ?? 0);
+    if (declaredLength && declaredLength > MAX_FILE_SIZE + FORM_OVERHEAD_SLACK) {
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 10 MB.' },
+        { status: 413 }
+      );
     }
 
-    const formData = await request.formData();
-    const candidate = formData.get('file');
-    if (!isFileLike(candidate)) {
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const file = formData.get('file');
+    if (!(file instanceof File)) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
-    const file = candidate;
 
     if (file.size === 0) {
-      return NextResponse.json({ error: 'Empty file' }, { status: 400 });
+      return NextResponse.json({ error: 'File is empty' }, { status: 400 });
     }
+
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 413 });
+      return NextResponse.json(
+        { error: 'File too large. Maximum size is 10 MB.' },
+        { status: 413 }
+      );
     }
 
-    const declaredType = (file.type || '').toLowerCase();
-    if (!ALLOWED_TYPES.has(declaredType)) {
-      return NextResponse.json({ error: 'File type not allowed' }, { status: 415 });
-    }
-
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    const sigs = MAGIC_SIGNATURES[declaredType];
-    if (sigs && !matchesMagic(buffer, sigs)) {
-      return NextResponse.json({ error: 'File content does not match declared type' }, { status: 415 });
-    }
-
-    const safeName = sanitizeFilename(file.name);
-    const fileId = randomUUID();
-    await putFile(`chat/${fileId}`, buffer, declaredType);
-    const url = `/api/uploads/chat/${fileId}`;
-
-    await auditLog(userId, 'FILE_UPLOAD', 'file', {
-      fileName: safeName,
-      fileSize: file.size,
-      fileType: declaredType,
-      fileId,
-    }, request);
-
-    return NextResponse.json({
-      url,
-      fileName: safeName,
-      fileSize: file.size,
-      fileType: declaredType,
-    });
-  } catch (error) {
-    console.error('File upload error:', error);
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
-  }
-}
-
-Wait, I should check — 
-matchesMagic
- for webp: RIFF then at offset 8 "WEBP". Just checking RIFF is weak. Let me add proper WEBP check. Actually simpler to just check 
-RIFF
- at
+    const mime = normalizeMime(file.type || 'application/octet-stream');
+    if (!
