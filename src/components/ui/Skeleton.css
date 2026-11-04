@@ -1,12 +1,61 @@
+The user wants an upgraded version of the Skeleton.css file. They say output ONLY the raw upgraded code, no markdown. But there's a format requirement at the top saying to wrap JSON tool call arrays in json code blocks. Hmm. The instruction says "You MUST wrap ALL JSON tool call arrays in ajson code block." But the mission says output ONLY raw upgraded code.
+
+There's tension. The file content instruction (mission) says output only raw upgraded code. But the FORMAT REQUIREMENT says wrap JSON tool call arrays in code blocks. The format requirement is about tool calls, not about final output. Since we're not making tool calls here, we just output the raw CSS.
+
+Actually, the harness parses code blocks for JSON tool calls. But the mission explicitly says "output ONLY the raw upgraded code. No markdown. No truncation." I'll follow the mission for the file output.
+
+Let me upgrade this skeleton CSS with Liquid Glass aesthetics and motion principles.
+
+Key improvements:
+
+Bug fix: var(--ease) — if undefined, animation breaks. Should fall back. Also shimmer uses translateX(-100%) → 100% but the gradient element uses inset: 0 with transform — this works because transform on the pseudo-element. Actually there's a subtle bug: with inset:0 and translateX(-100%), at 100% it's translateX(100%), so it moves across. That's fine. But width is same as container so shimmer is only visible during the sweep. Actually the gradient covers the whole skeleton, and translating it moves the highlight. OK.
+
+Better motion: use ease-in-out cubic bezier, smoother gradient, add subtle opacity pulse for reduced motion instead of static.
+
+Liquid Glass: add subtle inner highlight, use backdrop-filter on card, layered backgrounds, more sophisticated shimmer with multiple stops.
+
+Add will-change, use transform for GPU, contain: paint.
+
+Reduce motion: instead of killing it, use a gentle opacity pulse (respects motion but still signals loading). Actually prefers-reduced-motion users may be fine with subtle pulse. The skill library likely suggests this.
+
+Add --skeleton-shimmer-duration variable for tuning.
+
+Add proper aspect ratio and variants.
+
+Fix: --radius-control etc — use fallbacks.
+
+Add @media (prefers-contrast: more) support.
+
+Add dark mode / light mode shimmer that adapts — use a CSS variable for highlight color.
+
+Let me write the improved CSS.
+
+Shimmer details: Use a linear-gradient with transparent → highlight → transparent, and animate background-position OR translateX. translateX is better for perf.
+
+For Liquid Glass: skeleton cards should have glass background with subtle border and inner shadow. Add inset highlight.
+
+Add --hey-skeleton-highlight variable defaulting to rgba(255,255,255,0.08), but adapt for light themes via a media or via color-mix.
+
+Let me create:
+
+css
 /* =========================================
-   HEY SKELETON
+   HEY SKELETON — Liquid Glass Edition
    ========================================= */
 
 .hey-skeleton {
+  --hey-skeleton-base: var(--surface-hover, rgba(255,255,255,0.06));
+  --hey-skeleton-highlight: rgba(255, 255, 255, 0.10);
+  --hey-skeleton-duration: 1.6s;
+  --hey-skeleton-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
   position: relative;
   overflow: hidden;
-  background: var(--surface-hover);
-  border-radius: var(--radius-control);
+  isolation: isolate;
+  background: var(--hey-skeleton-base);
+  border-radius: var(--radius-control, 0.5rem);
+  contain: paint;
+  will-change: auto;
 }
 
 .hey-skeleton::after {
@@ -15,116 +64,249 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    transparent,
-    rgba(255, 255, 255, 0.08),
-    transparent
+    transparent 0%,
+    transparent 35%,
+    var(--hey-skeleton-highlight) 50%,
+    transparent 65%,
+    transparent 100%
   );
   transform: translateX(-100%);
-  animation: hey-skeleton-shimmer 1.4s var(--ease) infinite;
+  animation: hey-skeleton-shimmer var(--hey-skeleton-duration) var(--hey-skeleton-ease) infinite;
+  pointer-events: none;
 }
 
 @keyframes hey-skeleton-shimmer {
-  0% { transform: translateX(-100%); }
+  0%   { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hey-skeleton::after {
-    animation: none;
-    background: rgba(255, 255, 255, 0.04);
+For light theme support via color-mix? Could add:
+
+css
+@media (prefers-color-scheme: light) {
+  .hey-skeleton { --hey-skeleton-highlight: rgba(255,255,255,0.6); ... }
+}
+
+Hmm but the design system likely has its own theming. Use a variable driven approach.
+
+Reduced motion: replace shimmer with gentle opacity pulse — but skill library often says just disable. Actually gentle pulse still counts as motion. prefers-reduced-motion should minimize non-essential motion. A loading indicator is arguably essential — a subtle opacity pulse is acceptable. Let me use a very subtle pulse (opacity 0.85→1) at 2s, which communicates loading without translation.
+
+Actually many guidelines say for reduced-motion keep a gentle fade. I'll do that.
+
+Add @media (prefers-reduced-motion: reduce) -> animation: hey-skeleton-pulse 2.4s ease-in-out infinite;
+
+Also add @supports for backdrop-filter.
+
+Add glass card improvements: layered box-shadow, inner highlight.
+
+Let me also fix the button/input height 44px — good for touch targets. Keep.
+
+Add new variants: pill, chart bars? Keep scope reasonable but add a few.
+
+Add aria-hidden hint? Can't in CSS.
+
+Also add .hey-skeleton-card with liquid glass: box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.04);
+
+Add dark/light adaptation for glass border via color-mix fallback.
+
+Let me also add staggered shimmer option: .hey-skeleton--stagger uses animation-delay via CSS var.
+
+I'll add a --hey-skeleton-delay var.
+
+Also fix: pseudo-element should not animate when [data-loaded]? Out of scope.
+
+Let me write final.
+
+Also add @media (prefers-contrast: more) to increase highlight.
+
+Write it clean.
+
+css
+/* =========================================
+   HEY SKELETON — Liquid Glass Edition
+   =========================================
+   Purposeful loading motion:
+   - Single GPU-friendly transform animation (no layout thrash)
+   - Theme-aware shimmer via CSS custom properties
+   - Reduced-motion: gentle opacity pulse (still signals loading)
+   - Liquid Glass cards with layered inset highlights
+   ========================================= */
+
+.hey-skeleton {
+  /* Tunables — override per-instance or at :root */
+  --hey-skeleton-base: var(--surface-hover, rgba(255, 255, 255, 0.06));
+  --hey-skeleton-highlight: rgba(255, 255, 255, 0.10);
+  --hey-skeleton-duration: 1.6s;
+  --hey-skeleton-delay: 0s;
+  --hey-skeleton-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--hey-skeleton-base);
+  border-radius: var(--radius-control, 0.5rem);
+  contain: paint;
+}
+
+.hey-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 30%,
+    var(--hey-skeleton-highlight) 50%,
+    transparent 70%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: hey-skeleton-shimmer var(--hey-skeleton-duration) var(--hey-skeleton-ease) var(--hey-skeleton-delay) infinite;
+  pointer-events: none;
+  will-change: transform;
+}
+
+@keyframes hey-skeleton-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Light theme — brighter highlight reads better on pale surfaces */
+@media (prefers-color-scheme: light) {
+  .hey-skeleton {
+    --hey-skeleton-highlight: rgba(255, 255, 255, 0.65);
   }
 }
 
-/* VARIANTS */
+/* High contrast — strengthen the highlight without speeding it up */
+@media (prefers-contrast: more) {
+  .hey-skeleton {
+    --hey-skeleton-highlight: rgba(255, 255, 255, 0.22);
+    --hey-skeleton-base: var(--surface-hover, rgba(255, 255, 255, 0.10));
+  }
+}
+
+/* Reduced motion — swap translation for a soft, non-vestibular pulse */
+@media (prefers-reduced-motion: reduce) {
+  .hey-skeleton::after {
+    animation: hey-skeleton-pulse 2.4s ease-in-out var(--hey-skeleton-delay) infinite;
+    background: var(--hey-skeleton-base);
+    transform: none;
+    will-change: auto;
+  }
+}
+
+@keyframes hey-skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.72; }
+}
+
+/* =========================================
+   VARIANTS
+   ========================================= */
+
 .hey-skeleton--text {
   height: 1rem;
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-control, 0.5rem);
 }
 
-.hey-skeleton--circular {
-  border-radius: 50%;
-}
+.hey-skeleton--circular { border-radius: 50%; }
 
-.hey-skeleton--rectangular {
-  border-radius: var(--radius-card);
-}
+.hey-skeleton--rectangular { border-radius: var(--radius-card, 0.75rem); }
 
-.hey-skeleton--card {
-  border-radius: var(--radius-card);
-}
+.hey-skeleton--card { border-radius: var(--radius-card, 0.75rem); }
 
 .hey-skeleton--button {
   height: 44px;
-  border-radius: var(--radius-button);
+  border-radius: var(--radius-button, 0.5rem);
 }
 
 .hey-skeleton--input {
   height: 44px;
-  border-radius: var(--radius-field);
+  border-radius: var(--radius-field, 0.5rem);
 }
 
-.hey-skeleton--avatar {
-  border-radius: 50%;
-}
+.hey-skeleton--avatar { border-radius: 50%; }
 
 .hey-skeleton--avatar-sm { width: 32px; height: 32px; }
 .hey-skeleton--avatar-md { width: 40px; height: 40px; }
 .hey-skeleton--avatar-lg { width: 48px; height: 48px; }
 .hey-skeleton--avatar-xl { width: 64px; height: 64px; }
 
-/* SKELETON CARD */
+/* Stagger a row of skeletons — set --hey-skeleton-delay per child in markup */
+.hey-skeleton--stagger:nth-child(2n) { --hey-skeleton-delay: 0.12s; }
+.hey-skeleton--stagger:nth-child(3n) { --hey-skeleton-delay: 0.24s; }
+.hey-skeleton--stagger:nth-child(4n) { --hey-skeleton-delay: 0.36s; }
+
+/* =========================================
+   SKELETON CARD — Liquid Glass surface
+   ========================================= */
+
 .hey-skeleton-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border: var(--glass-border);
-  border-radius: var(--radius-card);
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  gap: var(--space-4, 1rem);
+  padding: var(--space-4, 1rem);
+  border: var(--glass-border, 1px solid rgba(255, 255, 255, 0.10));
+  border-radius: var(--radius-card, 0.75rem);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(var(--glass-blur, 16px)) saturate(var(--glass-saturate, 180%));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px)) saturate(var(--glass-saturate, 180%));
+}
+
+/* Fallback when backdrop-filter is unsupported — deepen the base fill */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hey-skeleton-card {
+    background: var(--surface-hover, rgba(255, 255, 255, 0.08));
+  }
 }
 
 .hey-skeleton-card__image {
   aspect-ratio: 16 / 9;
-  border-radius: var(--radius-card);
+  border-radius: var(--radius-card, 0.75rem);
 }
 
 .hey-skeleton-card__content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-3, 0.75rem);
 }
 
 .hey-skeleton-card__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-3, 0.75rem);
 }
 
 .hey-skeleton-card__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-2, 0.5rem);
 }
 
 .hey-skeleton-card__actions {
   display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  gap: var(--space-2, 0.5rem);
+  margin-top: var(--space-2, 0.5rem);
 }
 
-/* SKELETON CHAT */
+/* =========================================
+   SKELETON CHAT
+   ========================================= */
+
 .hey-skeleton-chat {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-4, 1rem);
 }
 
 .hey-skeleton-chat__message {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-3, 0.75rem);
   align-items: flex-start;
 }
 
@@ -132,11 +314,12 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-card);
-  background: var(--glass-bg);
-  border: var(--glass-border);
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-3, 0.75rem) var(--space-4, 1rem);
+  border-radius: var(--radius-card, 0.75rem);
+  background: var(--glass-bg, rgba(255, 255, 255, 0.04));
+  border: var(--glass-border, 1px solid rgba(255, 255, 255, 0.10));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 /* =========================================
@@ -145,6 +328,6 @@
 
 @media (max-width: 640px) {
   .hey-skeleton-card {
-    padding: var(--space-3);
+    padding: var(--space-3, 0.75rem);
   }
 }
