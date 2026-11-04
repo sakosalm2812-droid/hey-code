@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\(dashboard)\dashboard\chats\[id]\page.tsx
+CURRENT CODE:
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -131,513 +229,6 @@ export default function ChatPage() {
         );
       } catch (err) {
         if (!cancelled) setHistoryError(err instanceof Error ? err.message : 'Failed to load chat history');
-      } finally {
-        if (!cancelled) setHistoryLoading(false);
-      }
-    };
-
-    loadHistory();
-    return () => {
-      cancelled = true;
-    };
-  }, [chatId, isNew, historyReload]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/agents')
-      .then((res) => (res.ok ? res.json() : Promise.resolve({ agents: [] })))
-      .then((data) => {
-        if (cancelled) return;
-        setAgents(data.agents || []);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || streaming) return;
-
-    // The unified command router intercepts prefixed terminal commands (>, !, /)
-    // before they ever reach the chat model, keeping every input in one pipeline.
-    if (await tryDispatchCommand(input)) {
-      setInput('');
-      return;
-    }
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
-      createdAt: new Date(),
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    const currentInput = input;
-    setInput('');
-    setError(null);
-    setStreaming(true);
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
-          model,
-          agentId,
-          mode,
-          personality,
-          style,
-          chatId: isNew ? undefined : chatId,
-        }),
-      });
-
-      if (!res.ok) {
-        let message = `Request failed with status ${res.status}`;
-        try {
-          const body = await res.json();
-          if (body?.error) message = body.error;
-        } catch {}
-        throw new Error(message);
-      }
-
-      let assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: '',
-        createdAt: new Date(),
-      };
-
-      spokenTTSRef.current = '';
-      setMessages(prev => [...prev, assistantMessage]);
-
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder('utf-8');
-      let buffer = '';
-
-      const processBuffer = () => {
-        let eventEnd = buffer.indexOf('\n\n');
-        while (eventEnd !== -1) {
-          const rawEvent = buffer.slice(0, eventEnd);
-          buffer = buffer.slice(eventEnd + 2);
-
-          const dataLine = rawEvent.split('\n').find(line => line.startsWith('data: '));
-          if (dataLine) {
-            let data: Record<string, unknown>;
-            try {
-              data = JSON.parse(dataLine.slice(6));
-            } catch {
-              data = {};
-            }
-
-            if (data.error) {
-              throw new Error(typeof data.error === 'string' ? data.error : 'Failed to generate response');
-            }
-            if (data.chunk) {
-              assistantMessage.content += String(data.chunk);
-              setMessages(prev => prev.map(m => m.id === assistantMessage.id ? { ...m, content: assistantMessage.content } : m));
-
-              if (spokenReplies) {
-                const next = newCompleteSentences(assistantMessage.content, spokenTTSRef.current);
-                if (next) {
-                  spokenTTSRef.current = (spokenTTSRef.current + ' ' + next).trim();
-                  enqueueSpeech(next);
-                }
-              }
-            }
-            if (data.done) {
-              if (spokenReplies && assistantMessage.content.trim()) {
-                const remaining = extractSentences(assistantMessage.content)
-                  .join(' ')
-                  .slice(spokenTTSRef.current.length)
-                  .trim();
-                if (remaining) enqueueSpeech(shortSpokenReply(remaining));
-              }
-              if (isNew && data.chatId) {
-                router.push(`/dashboard/chats/${String(data.chatId)}`);
-                router.refresh();
-              }
-            }
-          }
-
-          eventEnd = buffer.indexOf('\n\n');
-        }
-      };
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          processBuffer();
-          if (controller.signal.aborted) break;
-        }
-
-        buffer += decoder.decode();
-        processBuffer();
-      }
-    } catch (error) {
-      if (controller.signal.aborted) {
-        // User stopped generation — keep the partial response as-is.
-      } else {
-        console.error('Failed to send message:', error);
-        setMessages(prev => prev.slice(0, -1));
-        if (currentInput) setInput(currentInput);
-        setError(error instanceof Error && error.message ? error.message : 'Failed to send message');
-      }
-    } finally {
-      setStreaming(false);
-      abortControllerRef.current = null;
-    }
-  };
-
-  const handleStop = () => {
-    stopSpeaking();
-    abortControllerRef.current?.abort();
-  };
-
-  const [activeTool, setActiveTool] = useState<'voice' | 'files' | 'images' | null>(null);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [spokenReplies, setSpokenReplies] = useState(false);
-
-  const handleVoiceTranscript = (text: string) => {
-    setInput(prev => prev + (prev ? ' ' : '') + text);
-  };
-
-  const handleUserSpeech = () => {
-    stopSpeaking();
-  };
-
-  const handleFilesChange = (files: File[]) => {
-    setAttachments(files);
-    if (files.length > 0) {
-      setActiveTool('files');
-    }
-  };
-
-  const handleImageGenerated = (image: { url: string; prompt: string }) => {
-    setInput(prev => prev + (prev ? '\n\n' : '') + `[Generated Image: ${image.prompt}](${image.url})`);
-    setActiveTool(null);
-  };
-
-  return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex-1">
-              {isNew ? (
-                <input
-                  type="text"
-                  placeholder="Untitled chat"
-                  className="bg-transparent border-none text-xl font-semibold w-full focus:outline-none"
-                  defaultValue="New Chat"
-                />
-              ) : (
-                <h1 className="text-xl font-semibold truncate">{chatTitle || 'Chat Title'}</h1>
-              )}
-              <p className="text-sm text-muted-foreground">
-                {model} · {messages.length} messages
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Select value={agentId ?? 'none'} onValueChange={(v) => setAgentId(v === 'none' ? undefined : v)}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Agent" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">General</SelectItem>
-                  {agents.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={mode} onValueChange={setMode}>
-                <SelectTrigger className="w-[130px]">
-                  <SelectValue placeholder="Mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  {MODE_IDS.map(id => (
-                    <SelectItem key={id} value={id}>
-                      <div className="flex flex-col">
-                        <span>{MODES[id].label}</span>
-                        <span className="text-xs text-muted-foreground">{MODES[id].description}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={style} onValueChange={setStyle}>
-                <SelectTrigger className="w-[118px]">
-                  <SelectValue placeholder="Style" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STYLES.map(s => (
-                    <SelectItem key={s.id} value={s.id}>
-                      <div className="flex flex-col">
-                        <span>{s.label}</span>
-                        <span className="text-xs text-muted-foreground">{s.description}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={personality} onValueChange={setPersonality}>
-                <SelectTrigger className="w-[118px]">
-                  <SelectValue placeholder="Voice" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PERSONALITY_IDS.map(id => (
-                    <SelectItem key={id} value={id}>
-                      <div className="flex flex-col">
-                        <span>{PERSONALITIES[id].label}</span>
-                        <span className="text-xs text-muted-foreground">{PERSONALITIES[id].description}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={model} onValueChange={setModel}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Model" />
-                </SelectTrigger>
-                <SelectContent>
-                  {models.map(m => (
-                    <SelectItem key={m.value} value={m.value}>
-                      <div className="flex flex-col">
-                        <span>{m.label}</span>
-                        <span className="text-xs text-muted-foreground">{m.description}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <TooltipProvider><Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={spokenReplies ? 'default' : 'ghost'}
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setSpokenReplies(v => { if (v) stopSpeaking(); return !v; })}
-                    aria-label="Toggle spoken replies"
-                    aria-pressed={spokenReplies}
-                  >
-                    <Volume2 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Spoken replies: {spokenReplies ? 'on' : 'off'}</TooltipContent>
-              </Tooltip></TooltipProvider>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          <ScrollArea className="flex-1 overflow-y-auto p-4 space-y-6">
-            {messages.length === 0 ? (
-              historyLoading ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                  <Loader2 className="h-8 w-8 mb-4 animate-spin opacity-50" />
-                  <p className="text-sm">Loading conversation...</p>
-                </div>
-              ) : isNew ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                  <Sparkles className="h-16 w-16 mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Start a conversation</h3>
-                  <p className="max-w-xs">Ask me anything - code, writing, analysis, creative tasks, or just chat.</p>
-                  <div className="mt-6 flex flex-wrap gap-2 justify-center text-sm">
-                    {['Write a React component', 'Explain quantum computing', 'Debug this Python code', 'Plan a marketing campaign'].map((suggestion, i) => (
-                      <Button key={i} variant="outline" size="sm" onClick={() => { setInput(suggestion); textareaRef.current?.focus(); }}>
-                        {suggestion}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              ) : historyError ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                  <h3 className="text-lg font-medium mb-2">Unable to load this chat</h3>
-                  <p className="max-w-xs text-sm">{historyError}</p>
-                  <Button variant="outline" size="sm" className="mt-6" onClick={() => setHistoryReload(k => k + 1)}>
-                    Retry
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                  <Sparkles className="h-16 w-16 mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium mb-2">Empty conversation</h3>
-                  <p className="max-w-xs text-sm">No messages here yet. Send the first message below.</p>
-                </div>
-              )
-            ) : (
-              messages.map((message) => (
-                <div key={message.id} className={cn('flex gap-3', message.role === 'user' ? 'flex-row-reverse' : '')}>
-                  <div className={cn('flex-1 max-w-[85%]', message.role === 'user' ? 'text-right' : '')}>
-                    <div className={cn(
-                        'inline-block rounded-2xl px-4 py-3',
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground rounded-tr-sm'
-                          : 'bg-muted rounded-tl-sm'
-                      )}>
-                        {message.role === 'user' ? (
-                          <div className="whitespace-pre-wrap break-words">{message.content}</div>
-                        ) : (
-                          <Markdown content={message.content} className="min-w-0" />
-                        )}
-                      {message.attachments && message.attachments.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {message.attachments.map((att, i) => (
-                            <span key={i} className="px-2 py-1 text-xs bg-background/50 rounded">📎 {att.name}</span>
-                          ))}
-                        </div>
-                      )}
-                      {message.images && message.images.length > 0 && (
-                        <div className="mt-2 grid gap-2 sm:grid-cols-2">
-                          {message.images.map((img, i) => (
-                            <img key={i} src={img.url} alt={img.prompt} className="rounded max-h-48 object-cover" />
-                          ))}
-                        </div>
-                      )}
-                      {message.tokens && (
-                        <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground/70">
-                          <span>{message.tokens} tokens</span>
-                          {message.model && <span>· {message.model}</span>}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-6 w-6">
-                        <Copy className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
-            {streaming && (
-              <div className="flex gap-3">
-                <div className="flex-1 max-w-[85%]">
-                  <div className="inline-block rounded-2xl bg-muted rounded-tl-sm px-4 py-3 animate-pulse">
-                    <div className="h-4 bg-muted-foreground/20 rounded w-3/4" />
-                    <div className="h-4 bg-muted-foreground/20 rounded w-1/2 mt-2" />
-                  </div>
-                </div>
-              </div>
-            )}
-          </ScrollArea>
-
-          {activeTool && (
-            <div className="border-t bg-muted/30 p-4 animate-slide-up">
-              <Tabs value={activeTool} onValueChange={(v) => setActiveTool(v as any)} className="w-full max-w-2xl mx-auto">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="voice"><Mic2 className="h-4 w-4 mr-2" /> Voice</TabsTrigger>
-                  <TabsTrigger value="files"><Paperclip className="h-4 w-4 mr-2" /> Files</TabsTrigger>
-                  <TabsTrigger value="images"><ImageIcon className="h-4 w-4 mr-2" /> Images</TabsTrigger>
-                </TabsList>
-                <TabsContent value="voice">
-                  <VoiceInput onTranscript={handleVoiceTranscript} onSpeech={handleUserSpeech} disabled={streaming} />
-                </TabsContent>
-                <TabsContent value="files">
-                  <FileUpload onFilesChange={handleFilesChange} maxFiles={5} disabled={streaming} />
-                </TabsContent>
-                <TabsContent value="images">
-                  <ImageGenerator onImageGenerated={handleImageGenerated} disabled={streaming} />
-                </TabsContent>
-              </Tabs>
-              <Button variant="ghost" size="sm" className="w-full max-w-2xl mx-auto mt-2" onClick={() => setActiveTool(null)}>
-                Close
-              </Button>
-            </div>
-          )}
-
-          {error && (
-            <div className="border-t px-4 py-3 bg-destructive/10 text-sm text-destructive">
-              <div className="mx-auto flex max-w-2xl items-center justify-between gap-2">
-                <span>{error}</span>
-                <button
-                  type="button"
-                  onClick={() => setError(null)}
-                  className="shrink-0 font-medium underline underline-offset-2"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="border-t p-4">
-            <div className="flex items-end gap-2">
-              <Button
-                type="button"
-                variant={activeTool === 'files' ? 'default' : 'outline'}
-                size="icon"
-                className="h-10 w-10 shrink-0"
-                onClick={() => setActiveTool(activeTool === 'files' ? null : 'files')}
-                disabled={streaming}
-              >
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              <Button
-                type="button"
-                variant={activeTool === 'images' ? 'default' : 'outline'}
-                size="icon"
-                className="h-10 w-10 shrink-0"
-                onClick={() => setActiveTool(activeTool === 'images' ? null : 'images')}
-                disabled={streaming}
-              >
-                <ImageIcon className="h-5 w-5" />
-              </Button>
-              <Button
-                type="button"
-                variant={activeTool === 'voice' ? 'default' : 'outline'}
-                size="icon"
-                className="h-10 w-10 shrink-0"
-                onClick={() => setActiveTool(activeTool === 'voice' ? null : 'voice')}
-                disabled={streaming}
-                aria-label="Voice input"
-              >
-                <Mic className="h-5 w-5" />
-              </Button>
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Message HEY..."
-                className="flex-1 min-h-[44px] max-h-48 px-4 py-3 text-base bg-background border border-input rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-ring"
-                rows={1}
-                disabled={streaming}
-              />
-              {streaming ? (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="h-10 w-10 shrink-0"
-                  onClick={handleStop}
-                  aria-label="Stop generating"
-                >
-                  <Square className="h-5 w-5" />
-                </Button>
-              ) : (
-                <Button type="submit" size="icon" className="h-10 w-10 shrink-0" disabled={!input.trim()}>
-                  <Send className="h-5 w-5" />
-                </Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              Press Enter to send, Shift+Enter for new line
-            </p>
-          </form>
-        </div>
-    </div>
-  );
-}
+   
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
