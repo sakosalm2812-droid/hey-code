@@ -1,32 +1,105 @@
-The user wants me to upgrade the forgot-password page. I need to output JSON tool call arrays wrapped in  code blocks. Let me write the complete upgraded file.
+The user wants me to output the entire upgraded file. The instructions say "Output ONLY the raw code. No markdown blocks." But the format requirement says wrap in json code block with tool call array. There's a conflict. The FORMAT REQUIREMENT is critical and at the top — I should follow it: output a JSON tool call array in ajson code block, with write_file tool.
 
-Let me design the improvements:
+Wait — the final "CRITICAL INSTRUCTIONS" says "Output ONLY the raw code. No markdown blocks." But the FORMAT REQUIREMENT says wrap in json code block. The format requirement is more specific about the harness parsing. I'll follow the format requirement:  code block with a write_file tool call.
 
-Glassmorphism card with backdrop-blur
+I need to complete the file. Let me write the full TSX.
 
-Animated gradient blobs
+Path: C:\Users\DELL\Documents\hey\src\app(auth)\forgot-password\page.tsx — in JSON: "C:\Users\DELL\Documents\hey\src\app\(auth)\forgot-password\page.tsx"
 
-Cooldown/resend timer
+Let me write the complete component carefully.
 
-AbortController with timeout
-
-Better error handling (429, network errors)
-
-Generic success message (no email enumeration)
-
-Auto-focus
-
-Accessibility (aria-live, proper labels)
-
-Back button / different email
-
-CSS animations respecting prefers-reduced-motion
-
-Let me write the full TSX file carefully, escaping all double quotes as " for the JSON string.
-
-I'll write the file content with proper escaping. Let me draft the TSX:
+Full file:
 
 tsx
+'use client';
+
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'react-hot-toast';
+import { ArrowLeft, CheckCircle2, Mail, ShieldCheck, Send } from 'lucide-react';
+
+const RESEND_COOLDOWN_SECONDS = 60;
+const REQUEST_TIMEOUT_MS = 15000;
+
+const forgotSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Email is required')
+    .email('Enter a valid email address')
+    .max(254, 'Email is too long'),
+});
+
+type ForgotForm = z.infer<typeof forgotSchema>;
+type Step = 'form' | 'sent';
+type SendResult = { ok: true } | { ok: false; message: string; retryAfter?: number };
+
+export default function ForgotPasswordPage() {
+  ...
+}
+
+Let me write everything carefully. I'll make sure to properly escape.
+
+In JSON, \" for quotes, \\n for newlines, \\\\ for backslashes (only path).
+
+Let me write out the JSX carefully.
+
+For the success step:
+
+tsx
+) : (
+  <Card className="hey-fade-up relative w-full max-w-md ...">
+    <CardHeader className="text-center">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10">
+        <CheckCircle2 className="hey-pop h-9 w-9 text-green-500" />
+      </div>
+      <CardTitle className="text-2xl">Check your inbox</CardTitle>
+      <CardDescription>
+        We&apos;ve sent a reset link to{' '}
+        <span className="font-medium text-foreground">{submittedEmail}</span>. It expires in 30 minutes.
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      <div role="status" aria-live="polite" className="...">
+        ...
+      </div>
+      <Button onClick={onResend} disabled={loading || cooldown > 0} ...>
+        {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend email'}
+      </Button>
+      ...
+    </CardContent>
+  </Card>
+)
+
+Let me finalize the full content. I need to be careful about the emailField spread — in the draft there's {...emailField cut off. I'll fix that properly:
+
+tsx
+<Input
+  {...emailField}
+  ref={setEmailRef}
+  type="email"
+  ...
+/>
+
+Now let me write the full file. I need to ensure no unescaped quotes. Let me be very careful.
+
+I'll write it out as raw text first, then escape.
+
+Actually let me just produce the JSON directly, writing the content with all escapes carefully.
+
+Path in JSON: "C:\Users\DELL\Documents\hey\src\app\(auth)\forgot-password\page.tsx"
+
+Content — every " becomes \", every newline becomes \n, backslash in \\ no.
+
+Let me write the complete content text:
+
+text
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -178,36 +251,4 @@ export default function ForgotPasswordPage() {
   const styles = `
     @keyframes heyFadeUp { from { opacity: 0; transform: translateY(14px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
     @keyframes heyPop { 0% { opacity: 0; transform: scale(0.6); } 60% { opacity: 1; transform: scale(1.08); } 100% { transform: scale(1); } }
-    @keyframes heyFloat { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(22px, -26px); } }
-    .hey-fade-up { animation: heyFadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .hey-pop { animation: heyPop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
-    .hey-blob { animation: heyFloat 14s ease-in-out infinite; }
-    @media (prefers-reduced-motion: reduce) {
-      .hey-fade-up, .hey-pop, .hey-blob { animation: none !important; }
-    }
-  `;
-
-  return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-background to-primary/5 dark:from-zinc-950 dark:via-background dark:to-primary/10 px-4 py-12">
-      <style dangerouslySetInnerHTML={{ __html: styles }} />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="hey-blob absolute -top-32 -left-32 h-80 w-80 rounded-full bg-primary/25 blur-3xl" />
-        <div className="hey-blob absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-fuchsia-500/20 blur-3xl" style={{ animationDelay: '-7s' }} />
-      </div>
-
-      {step === 'form' ? (
-        <Card className="hey-fade-up relative w-full max-w-md border-white/40 bg-white/70 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/60">
-          <CardHeader className="text-center">
-            <Link href="/" className="inline-flex items-center gap-2 mb-6 justify-center" aria-label="HEY Home">
-              <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">HEY</span>
-            </Link>
-            <CardTitle className="text-2xl">Forgot password?</CardTitle>
-            <CardDescription>
-              Enter the email tied to your HEY account and we&apos;ll send a secure reset link.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-              <div>
-                <Input
-                  {...emailField
+    @keyframes heyFloat
