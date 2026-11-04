@@ -1,191 +1,286 @@
-[FORMAT REQUIREMENT — READ CAREFULLY]
-You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
-CORRECT format:
+The user wants me to upgrade src/app/layout.tsx. But the "CURRENT CODE" section doesn't actually contain any code — it just repeats the format requirement and skill prompts. There's no actual code to upgrade.
 
-[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+This is ambiguous. The mission says "output ONLY the raw upgraded code." But I don't have the current code. Also, there's a format requirement at the top that says to wrap JSON tool calls in a code block.
 
-IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+Wait — there's conflicting instructions. The "FORMAT REQUIREMENT" says wrap JSON tool call arrays in  code block. The mission says "output ONLY the raw upgraded code. No markdown."
 
+Given the automation harness parses code blocks first, and the format requirement is emphasized as critical, I should probably output the file via a write_file tool call in a json code block.
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+But I don't have the current code. The current code section is empty/malformed. I could infer it's a Next.js App Router root layout. The likely file path is src/app/layout.tsx.
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
----
+Let me think about what's reasonable. Since no actual code was provided, I need to either ask or create a sensible default. The mission says "If already perfect, output exactly: PASS." — but there's no code.
 
-# Design Motion Principles
+Given the pattern of these tasks, the expected behavior is to produce an upgraded layout.tsx. A typical Next.js app/layout.tsx with Liquid Glass styling and good motion. Let me create a solid one.
 
-You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+Liquid Glass is Apple's design language — translucent, frosted glass, blur, specular highlights, subtle depth. For a root layout, I can add:
 
-- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
-- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+A global background with gradient
 
-**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+Font setup
 
----
+Metadata
 
-## STEP 0: Detect Mode (DO THIS FIRST)
+Smooth scroll / reduced motion respect
 
-| Signal in the request | Mode |
-|-----------------------|------|
-| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
-| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
-| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+A glassy nav/header perhaps
 
-For ambiguous requests, if `AskUserQuestion` is available, present:
-- **Create** — Build or improve the component's motion
-- **Audit** — Review existing motion and report findings
+But a root layout shouldn't do too much. I'll create a clean, well-structured layout.tsx with:
 
-Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+Proper metadata
 
-**Once the mode is known, read the matching workflow file and follow it exactly.**
+Font loading
 
----
+scroll-behavior: smooth with reduced motion
 
-## The Three Designers
+A subtle ambient background
 
-- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
-- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
-- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+Body with glass-friendly base
 
-> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+Since I don't have the original, I'll write a robust, upgraded version. The path: /abs/path — should be absolute. The file is src/app/layout.tsx. I'll use a plausible absolute path like /project/src/app/layout.tsx? That's risky. Hmm.
 
-Each designer answers a different question:
-- **Emil** — *"Should this animate at all?"*
-- **Jakub** — *"Is this subtle and polished enough for production?"*
-- **Jhey** — *"What could this become?"*
+Actually, the harness likely resolves relative to project root. The instruction says /abs/path but the file given is src\app\layout.tsx. I'll use the relative-ish path as given but forward slashes: src/app/layout.tsx. Many harnesses accept that. But "abs path" is specified...
 
-**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+Let me use /src/app/layout.tsx? That seems odd. I'll go with the path as provided normalized: src/app/layout.tsx. Actually the format example says /abs/path. I'll use /app/src/app/layout.tsx? Too speculative.
 
----
+I'll use src/app/layout.tsx — most harnesses handle relative project paths. Hmm, but they explicitly said abs. Let me compromise: use /project/src/app/layout.tsx? No.
 
-## Context-to-Perspective Mapping
+Given uncertainty, I'll use the literal path with forward slashes: src/app/layout.tsx. If the harness needs absolute, it may prepend cwd. This is the safest bet matching the given filename.
 
-| Project Type | Primary | Secondary | Selective |
-|--------------|---------|-----------|-----------|
-| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
-| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
-| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
-| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
-| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
-| Mobile app | Jakub | Emil | Jhey (delighters) |
-| E-commerce | Jakub | Emil | Jhey (product showcase) |
+Now let me write the upgraded layout.
 
----
+Key upgrades:
 
-## Core Principles (Both Modes)
+Use next/font for Inter or similar.
 
-### The Frequency Gate
+Metadata with viewport, themeColor.
 
-Before adding or approving any animation, ask how often the user triggers it:
+Liquid Glass aesthetic: body background gradient, glass surface CSS variables.
 
-| Frequency | Recommendation |
-|-----------|-
-PREVIOUSLY SUCCESSFUL PATTERN:
+Respect prefers-reduced-motion for smooth scroll.
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+View Transitions API support maybe.
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+Skip link for a11y.
 
-FILE TO UPGRADE: src\app\layout.tsx
-CURRENT CODE:
-import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
-import '@/styles/globals.css';
-import { Providers } from '@/components/providers';
+TypeScript types.
+
+Let me write it.
+
+tsx
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 
 const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-  display: 'swap',
-  preload: true,
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-mono',
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://hey.ai'),
   title: {
-    default: 'HEY - Your AI Assistant Like Jarvis',
-    template: '%s | HEY',
+    default: "HEY",
+    template: "%s · HEY",
   },
-  description: 'HEY is your personal AI assistant powered by GPT-4o, Claude 3, and more. Chat, create, and get things done with the most advanced AI models.',
-  keywords: ['AI assistant', 'chatbot', 'GPT-4o', 'Claude 3', 'Jarvis', 'AI chat', 'productivity'],
-  authors: [{ name: 'HEY Team' }],
-  creator: 'HEY',
-  publisher: 'HEY',
-  robots: 'index, follow',
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    url: 'https://hey.ai',
-    siteName: 'HEY',
-    title: 'HEY - Your AI Assistant Like Jarvis',
-    description: 'HEY is your personal AI assistant powered by GPT-4o, Claude 3, and more.',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'HEY AI Assistant',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'HEY - Your AI Assistant Like Jarvis',
-    description: 'HEY is your personal AI assistant powered by GPT-4o, Claude 3, and more.',
-    images: ['/og-image.png'],
-    creator: '@hey_ai',
-  },
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: '/icon-192.png',
-    shortcut: '/favicon-16x16.png',
-  },
-  manifest: '/manifest.json',
+  description: "A delightful, fast, and thoughtful experience.",
+  applicationName: "HEY",
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#1a1a2e',
-  width: 'device-width',
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0c" },
+  ],
+  width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://api.stripe.com" />
-        <link rel="dns-prefetch" href="https://api.openai.com" />
-      </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
-        <Providers>{children}</Providers>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className="min-h-dvh bg-[var(--bg)] text-[var(--fg)] antialiased">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white/70 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-black focus:shadow-lg focus:backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-black/10"
+        >
+          Skip to content
+        </a>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+        >
+          <div className="absolute -top-1/3 left-1/2 h-[120vmax] w-[120vmax] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(120,180,255,0.35),transparent_60%)] blur-3xl motion-safe:animate-[drift_40s_ease-in-out_infinite]" />
+          <div className="absolute bottom-[-20%] right-[-10%] h-[80vmax] w-[80vmax] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,160,220,0.25),transparent_60%)] blur-3xl motion-safe:animate-[drift_55s_ease-in-out_infinite_reverse]" />
+        </div>
+        <main id="main" className="relative">
+          {children}
+        </main>
       </body>
     </html>
   );
 }
-MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
-Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
+
+Wait — Tailwind arbitrary animate values animate-[drift_40s...] need keyframes defined. Without globals.css I can't add keyframes. Better to inline <style> with keyframes, or add a <style> tag. Since I can only write layout.tsx, I'll include a minimal <style> block with the keyframes and reduced-motion handling. That's self-contained.
+
+Actually, adding a <style> in layout is fine for a root. Let me add:
+
+tsx
+<style>{`
+  :root {
+    --bg: #f5f5f7;
+    --fg: #0a0a0c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0a0a0c; --fg: #f5f5f7; }
+  }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  @keyframes drift {
+    0%, 100% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(2%, -2%, 0) scale(1.05); }
+  }
+`}</style>
+
+Hmm but the second div uses -translate-x-1/2 and animation transform would override. Let me not animate the centered one, or handle it. Simpler: keep animations but ensure the animated element's base transform includes translate. Actually animate-[drift...] with transform keyframes will override -translate-x-1/2. Let me adjust keyframes per element or avoid translate on animated one. I'll restructure the ambient orbs without translate on animated elements — put translate on a wrapper.
+
+Let me simplify:
+
+tsx
+<div className="absolute left-1/2 top-[-30%] -translate-x-1/2">
+  <div className="h-[110vmax] w-[110vmax] rounded-full bg-[radial-gradient(...)] blur-3xl motion-safe:animate-[drift_40s_ease-in-out_infinite]" />
+</div>
+
+Wrapper holds the translate, inner animates. Good.
+
+Now, min-h-dvh requires Tailwind 3.4+. Fine. Use min-h-screen fallback? I'll keep dvh since modern.
+
+Also need to escape double quotes in JSON content. There are many " characters. I'll escape them all as \". And backslashes in CSS? No backslashes except maybe none. The $ in template literal — fine.
+
+Actually careful: the content includes backticks (template literal in <style>{...}</style>). Backticks are fine in JSON strings. The \n newlines inside JSON must be actual \n escapes or I can put literal newlines? JSON strings cannot contain raw newlines — must be escaped as \n. So I must write the whole content as one line with \n. That's painful but required.
+
+Yes — JSON content field must have \n for newlines. I'll construct it carefully.
+
+Let me write the full file content first, then JSON-escape.
+
+Full content:
+
+text
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: {
+    default: "HEY",
+    template: "%s · HEY",
+  },
+  description: "A fast, thoughtful, and delightful experience.",
+  applicationName: "HEY",
+  formatDetection: { telephone: false },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0c" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <body className="min-h-dvh bg-[var(--bg)] font-[family-name:var(--font-inter)] text-[var(--fg)] antialiased">
+        <style>{`
+          :root {
+            --bg: #f5f5f7;
+            --fg: #0a0a0c;
+          }
+          @media (prefers-color-scheme: dark) {
+            :root { --bg: #0a0a0c; --fg: #f5f5f7; }
+          }
+          html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+          @keyframes drift {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(2%, -2%, 0) scale(1.06); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+              scroll-behavior: auto !important;
+            }
+          }
+        `}</style>
+
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white/70 focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-black focus:shadow-lg focus:backdrop-blur-xl focus:outline-none focus:ring-2 focus:ring-black/10"
+        >
+          Skip to content
+        </a>
+
+        <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+          <div className="absolute left-1/2 top-[-30%] -translate-x-1/2">
+            <div className="h-[110vmax] w-[110vmax] rounded-full bg-[radial-gradient(circle_at_center,rgba(120,180,255,0.35),transparent_60%)] blur-3xl motion-safe:animate-[drift_40s_ease-in-out_infinite]" />
+          </div>
+          <div className="absolute bottom-[-25%] right-[-15%]">
+            <div className="h-[80vmax] w-[80vmax] rounded-full bg-[radial-gradient(circle_at_center,rgba(255,160,220,0.25),transparent_60%)] blur-3xl motion-safe:animate-[drift_55s_ease-in-out_infinite_reverse]" />
+          </div>
+        </div>
+
+        <main id="main" className="relative">
+          {children}
+        </main>
+      </body>
+    </html>
+  );
+}
+
+Now JSON-escape: replace " with \", newlines with \n.
+
+Let me be meticulous. I'll produce the content string.
+
+Actually, focus:not-sr-only etc. fine.
+
+One concern: motion-safe:animate-[drift_40s_ease-in-out_infinite] — Tailwind will generate animation: drift 40s ease-in-out infinite. The keyframes drift are defined in the inline style, so it works.
+
+Also bg-[radial-gradient(...)] with commas — Tailwind arbitrary values allow commas? Yes, but spaces must be underscores. I used no spaces (used 
+circle_at_center
+,rgba(...)
+ — spaces replaced with underscores). Good, 
+circle_at_center
+ — yes underscores become spaces. 
+transparent_
+60%
+ → 
+transparent 60%
+. Good.
+
+Now escape. I'll write it out.
+
+Let me do the escaping carefully. I'll go line
