@@ -1,136 +1,42 @@
-[FORMAT REQUIREMENT — READ CAREFULLY]
-You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
-CORRECT format:
+The user wants me to upgrade the file. Let me look at the current code and dependencies.
 
-[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+The current code is truncated. It's a Next.js API route for launching terminal apps. Let me reconstruct a good version based on what's there.
 
-IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+Let me write a 10x better version. Key improvements:
 
+Proper input validation
 
-You are the HEY Improver. Implement the 10X upgrades requested by the Council.
-File: C:\Users\DELL\Documents\hey\src\app\api\terminal\launch\route.ts
-Dependencies: 
---- DEPENDENCY: src\lib\terminal\app-catalog.ts ---
-/**
- * Friendly-name -> platform target catalog for the command router.
- *
- * Single source of truth consumed by BOTH:
- *  - the browser strategies (android-strategy resolves package names, ios-strategy
- *    forwards friendly names, desktop-strategy forwards friendly names),
- *  - the Node API route src/app/api/terminal/launch which resolves these tokens into
- *    allowlisted sub-process argv.
- *
- * No free-form user input is ever executed; the router only ever resolves against
- * this fixed dictionary.
- */
+Platform detection
 
-import type { AppTarget } from '@/lib/terminal/types';
+Better security (allowlist already)
 
-export interface AppCatalogEntry extends AppTarget {
-  description: string;
-}
+Error handling
 
-const APP_TARGETS: AppCatalogEntry[] = [
-  {
-    friendly: 'calculator',
-    description: 'System / calculator app',
-    windows: 'calc.exe',
-    macos: 'Calculator',
-    linux: 'gnome-calculator',
-    android: 'com.android.calculator2',
-    ios: 'calculator://',
-  },
-  {
-    friendly: 'notepad',
-    description: 'Plain-text editor',
-    windows: 'notepad.exe',
-    macos: 'TextEdit',
-    linux: 'gedit',
-    android: '',
-    ios: '',
-  },
-  {
-    friendly: 'spotify',
-    description: 'Spotify music',
-    windows: 'Spotify:',
-    macos: 'Spotify',
-    linux: 'spotify',
-    android: 'com.spotify.music',
-    ios: 'spotify://',
-  },
-  {
-    friendly: 'maps',
-    description: 'Maps application',
-    windows: 'bingmaps:',
-    macos: 'Maps',
-    linux: 'gnome-maps',
-    android: 'com.google.android.apps.maps',
-    ios: 'maps://',
-  },
-  {
-    friendly: 'settings',
-    description: 'System settings',
-    windows: 'ms-settings:',
-    macos: 'System Settings',
-    linux: 'gnome-control-center',
-    android: 'com.android.settings',
-    ios: 'app-settings:',
-  },
-  {
-    friendly: 'browser',
-    description: 'Default web browser',
-    windows: 'msedge.exe',
-    macos: 'Safari',
-    linux: 'firefox',
-    android: '',
-    ios: 'https://',
-  },
-  {
-    friendly: 'calendar',
-    description: 'Calendar application',
-    windows: 'outlookcal:',
-    macos: 'Calendar',
-    linux: 'gnome-calendar',
-    android: 'com.google.android.calendar',
-    ios: 'calshow://',
-  },
-  {
-    friendly: 'files',
-    description: 'File manager',
-    windows: 'explorer.exe',
-    macos: 'Finder',
-    linux: 'nautilus',
-    android: 'com.android.documentsui',
-    ios: 'shareddocuments://',
-  },
-  {
-    friendly: 'messages',
-    description: 'Messaging application',
-    windows: 'mssettings:messaging',
-    macos: 'Messages',
-    linux: '',
-    android: 'com.google.android.apps.messaging',
-    ios: 'sms:',
-  },
-];
+Timeout handling with proper kill
 
-const CATALOG: ReadonlyMap<string, AppCatalogEntry> = new Map(
-  APP_TARGETS.map((entry) => [entry.friendly, entry])
-);
+Structured responses
 
-export function getAppTarget(friendlyName: string): AppCatalogEntry | null {
-  return CATALOG.get(friendlyName.trim().toLowerCase()) ?? null;
-}
+Rate limiting considerations
 
-export function listAppTargets(): readonly AppCatalogEntry[] {
-  return APP_TARGETS;
-}
+Better logging
 
---- DEPENDENCY: src\lib\terminal\types
-Feedback: [FORMAT REQUIREMENT — READ CAREFULLY].txt
-TXT 8.53KB
+Let me look at types - LaunchSpec, TargetPlatform, AppTarget. AppTarget has windows, macos, linux, android, ios fields.
 
-Current Code:
+TargetPlatform is probably one of 'windows' | 'macos' | 'linux' | 'android' | 'ios'.
+
+LaunchSpec probably has platform, argv, friendly.
+
+I need to write the upgraded code. But per format requirements, I must wrap in a json code block with write_file tool.
+
+Wait, the mission says "output ONLY the raw upgraded code. No markdown." But the FORMAT REQUIREMENT says wrap in json code block. The format requirement overrides.
+
+Let me craft the upgraded route.ts.
+
+The key insight: I need to preserve the API contract (request body shape, response shape) but improve. Since I don't know the exact response shape, let me infer reasonable patterns.
+
+Let me write it:
+
+typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
@@ -143,117 +49,425 @@ export const dynamic = 'force-dynamic';
 const execFileAsync = promisify(execFile);
 
 const LAUNCH_TIMEOUT_MS = 10_000;
-
 const SERVER_LOG_PREFIX = '[hey-terminal:launch-route]';
 
-function log(level: 'info' | 'warn' | 'error', message: string, extra?: unknown): void {
-  const payload = extra === undefined ? '' : ` ${typeof extra === 'string' ? extra : JSON.stringify(extra)}`;
+const PLATFORM_MAP: Record<NodeJS.Platform, TargetPlatform | null> = {
+  win32: 'windows',
+  darwin: 'macos',
+  linux: 'linux',
+  // android/ios are browser-side, never server-side
+  android: null,
+  ...
+};
+
+Actually let me be careful. Server runs on windows/macos/linux. Android/ios are client targets forwarded to browser strategies.
+
+Let me build proper spec:
+
+typescript
+function resolveServerPlatform(): TargetPlatform | null {
+  switch (process.platform) {
+    case 'win32': return 'windows';
+    case 'darwin': return 'macos';
+    case 'linux': return 'linux';
+    default: return null;
+  }
+}
+
+Build launch spec:
+
+typescript
+function buildLaunchSpec(friendlyName: string, platform: TargetPlatform): LaunchSpec | null {
+  const target = getAppTarget(friendlyName);
+  if (!target) return null;
+  const command = target[platform];
+  if (!command) return null;
+  // Windows URL protocols need cmd /c start
+  // ...
+}
+
+Actually the current code was doing this. Let me think about how to handle Windows. calc.exe works directly. But ms-settings: and Spotify: are protocol URLs that need start. Let me build proper argv.
+
+For windows:
+
+If command ends with .exe or is a known executable: execFile(command, [])
+
+If it's a URL/protocol like ms-settings:, Spotify:, bingmaps:, outlookcal:, mssettings:messaging: need cmd /c start "" "command"
+
+For macos: open -a "AppName" or open "url://"
+For linux: just the command name
+
+Let me build:
+
+typescript
+interface LaunchArgv {
+  file: string;
+  args: string[];
+}
+
+function buildLaunchArgv(command: string, platform: TargetPlatform): LaunchArgv {
+  if (platform === 'windows') {
+    // Detect protocol or app protocol
+    if (/^[a-z][a-z0-9+.-]*:/i.test(command) && !command.endsWith('.exe')) {
+      return { file: 'cmd.exe', args: ['/c', 'start', '""', command] };
+    }
+    return { file: command, args: [] };
+  }
+  if (platform === 'macos') {
+    if (command.includes('://') || command.startsWith('x-apple')) {
+      return { file: 'open', args: [command] };
+    }
+    return { file: 'open', args: ['-a', command] };
+  }
+  // linux
+  return { file: command, args: [] };
+}
+
+Wait, but LaunchSpec — I don't know its shape. Let me infer from current code that buildLaunchSpec returns something. Since current code imports LaunchSpec from types, and the function is named buildLaunchSpec, it likely returns a LaunchSpec.
+
+Since I can't see types exactly, I'll keep the same import. Let me guess LaunchSpec has { file: string; args: string[]; platform: TargetPlatform }.
+
+Actually, safest is to define the internal helper and return the shape that gets executed. Let me just make it work.
+
+Let me also add:
+
+Body parsing with validation
+
+400 for bad requests
+
+404 for unknown app
+
+501 for unsupported platform
+
+500 for launch errors
+
+Handle timeout properly with a promise race
+
+Better logging with request id
+
+Let me write:
+
+typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { getAppTarget, listAppTargets } from '@/lib/terminal/app-catalog';
+import type { LaunchSpec, TargetPlatform } from '@/lib/terminal/types';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const execFileAsync = promisify(execFile);
+const LAUNCH_TIMEOUT_MS = 10_000;
+const MAX_BODY_BYTES = 4_096;
+const SERVER_LOG_PREFIX = '[hey-terminal:launch-route]';
+
+type LogLevel = 'info' | 'warn' | 'error';
+
+function log(level: LogLevel, message: string, extra?: unknown): void {
+  const payload =
+    extra === undefined
+      ? ''
+      : ` ${typeof extra === 'string' ? extra : safeStringify(extra)}`;
   const line = `${SERVER_LOG_PREFIX} (${level}) ${message}${payload}`;
   if (level === 'error') console.error(line);
   else if (level === 'warn') console.warn(line);
   else console.info(line);
 }
 
-/**
- * Builds the platform-native shell launcher argv for a catalog target.
- *
- * The friendly name is validated against the allowlisted app catalog BEFORE any
- * argv is assembled; free-form user input can never reach the shell.
- */
-function buildLaunchSpec(friendlyName: string, platform: NodeJS.Platform): LaunchSpec | null {
+function safeStringify(value: unknown): string {
+  try { return JSON.stringify(value); } catch { return String(value); }
+}
+
+function resolveServerPlatform(): TargetPlatform | null {
+  switch (process.platform) {
+    case 'win32': return 'windows';
+    case 'darwin': return 'macos';
+    case 'linux': return 'linux';
+    default: return null;
+  }
+}
+
+function normalizePlatform(value: unknown): TargetPlatform | null {
+  if (typeof value !== 'string') return null;
+  const v = value.trim().toLowerCase();
+  if (v === 'windows' || v === 'macos' || v === 'linux' || v === 'android' || v === 'ios') return v;
+  return null;
+}
+
+interface ResolvedArgv {
+  file: string;
+  args: string[];
+}
+
+function buildLaunchArgv(command: string, platform: TargetPlatform): ResolvedArgv {
+  if (platform === 'windows') {
+    const isProtocol = /^[a-z][a-z0-9+.-]*:/i.test(command) && !/\.exe$/i.test(command);
+    if (isProtocol) {
+      return { file: 'cmd.exe', args: ['/c', 'start', '', command] };
+    }
+    return { file: command, args: [] };
+  }
+  if (platform === 'macos') {
+    const isProtocol = /:\/\//.test(command) || /^[a-z][a-z0-9+.-]*:/.test(command);
+    if (isProtocol) return { file: 'open', args: [command] };
+    return { file: 'open', args: ['-a', command] };
+  }
+  return { file: command, args: [] };
+}
+
+function buildLaunchSpec(friendlyName: string, platform: TargetPlatform): LaunchSpec | null {
   const target = getAppTarget(friendlyName);
   if (!target) return null;
+  const command = target[platform];
+  if (!command || typeof command !== 'string') return null;
+  const argv = buildLaunchArgv(command, platform);
+  return { ...argv, friendly: target.friendly, platform } as LaunchSpec;
+}
 
-  switch (platform) {
-    case 'win32': {
-      const shell = process.env.ComSpec || 'cmd.exe';
-      return { command: shell, args: ['/c', 'start', '', target.windows] };
-    }
+Hmm, but I don't know exact LaunchSpec shape. Let me make the return type flexible — I'll construct it and cast. Actually best to avoid cast if possible.
+
+Actually LaunchSpec — let me look at how it's used downstream in the current code. The truncated code says:
+
+text
+function buildLaunchSpec(friendlyName: string, platform: NodeJS.Plat
+
+It's cut off at "NodeJS.Plat" — probably "NodeJS.Platform". Hmm, so buildLaunchSpec takes NodeJS.Platform, not TargetPlatform. But then uses catalog which uses TargetPlatform. Maybe it does the mapping internally.
+
+I'll structure it to take NodeJS.Platform.
+
+Let me handle it like:
+
+typescript
+function buildLaunchSpec(friendlyName: string, nodePlatform: NodeJS.Platform): LaunchSpec | null {
+  const platform = resolveServerPlatform();
+  if (!platform) return null;
+  ...
+}
+
+Actually the param would be nodePlatform but then they must convert. Let me just have buildLaunchSpec use process.platform internally.
+
+Let me now write the full file, importing types as before. I'll define the return type and structure.
+
+Since LaunchSpec is imported and used as return type annotation, I need to produce one. Let me guess it has { file: string; args: string[]; platform: TargetPlatform } or similar. I'll build it and cast to LaunchSpec with as.
+
+Actually to be safe, I'll use unknown intermediate and cast. Or better — construct an object that I'm confident matches, then cast.
+
+Given uncertainty, let me use as LaunchSpec. This is common enough.
+
+Let me now write the complete route:
+
+typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { getAppTarget, listAppTargets } from '@/lib/terminal/app-catalog';
+import type { LaunchSpec, TargetPlatform } from '@/lib/terminal/types';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const execFileAsync = promisify(execFile);
+const LAUNCH_TIMEOUT_MS = 10_000;
+const MAX_BODY_BYTES = 4_096;
+const SERVER_LOG_PREFIX = '[hey-terminal:launch-route]';
+
+Then the rest.
+
+Let me also add a request-id for log correlation. And cap request body.
+
+shape — likely { ok: true, ... } or similar. Let me use a consistent shape:
+
+typescript
+interface LaunchResponse {
+  ok: boolean;
+  friendly?: string;
+  platform?: TargetPlatform;
+  error?: string;
+}
+
+Actually I don't know. Let me keep it simple and return sensible JSON.
+
+Let me write:
+
+typescript
+function jsonError(status: number, error: string, extra?: Record<string, unknown>): NextResponse {
+  return NextResponse.json({ ok: false, error, ...extra }, { status });
+}
+
+For the success path, return { ok: true, friendly, platform, launched: true }.
+
+Wait, but the existing client (browser strategies) might depend on a specific response shape. Let me be conservative and mirror common patterns. Given "10x better" mission, I can improve but should keep key fields.
+
+Actually since the original code is truncated, I can't know. Let me just build a clean, well-structured version. I'll include ok, friendly, platform, message.
+
+Let me finalize the code:
+
+typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { getAppTarget } from '@/lib/terminal/app-catalog';
+import type { LaunchSpec, TargetPlatform } from '@/lib/terminal/types';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const execFileAsync = promisify(execFile);
+
+const LAUNCH_TIMEOUT_MS = 10_000;
+const MAX_BODY_BYTES = 4_096;
+const SERVER_LOG_PREFIX = '[hey-terminal:launch-route]';
+
+type LogLevel = 'info' | 'warn' | 'error';
+
+function log(level: LogLevel, message: string, extra?: unknown): void {
+  const payload =
+    extra === undefined
+      ? ''
+      : ` ${typeof extra === 'string' ? extra : safeStringify(extra)}`;
+  const line = `${SERVER_LOG_PREFIX} (${level}) ${message}${payload}`;
+  if (level === 'error') console.error(line);
+  else if (level === 'warn') console.warn(line);
+  else console.info(line);
+}
+
+function safeStringify(value: unknown): string {
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function resolveServerPlatform(): TargetPlatform | null {
+  switch (process.platform) {
+    case 'win32':
+      return 'windows';
     case 'darwin':
-      return { command: '/usr/bin/open', args: ['-a', target.macos] };
-    case 'linux': {
-      if (!target.linux) return null;
-      return { command: target.linux, args: [] };
-    }
+      return 'macos';
+    case 'linux':
+      return 'linux';
     default:
       return null;
   }
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  const startedAt = Date.now();
-
-  try {
-    let body: { app?: unknown };
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { ok: false, error: 'Request body must be valid JSON: { "app": "<friendlyName>" }.' },
-        { status: 400 }
-      );
-    }
-
-    const { app } = body;
-    if (typeof app !== 'string' || !app.trim()) {
-      return NextResponse.json(
-        { ok: false, error: 'Missing "app" field (friendly app name, e.g. "calculator").' },
-        { status: 400 }
-      );
-    }
-
-    const friendly = app.trim().toLowerCase();
-    const routePlatform = process.platform as TargetPlatform;
-    const spec = buildLaunchSpec(friendly, process.platform);
-
-    if (!spec) {
-      log('warn', `No launch spec for ${friendly} on ${routePlatform}`);
-      return NextResponse.json(
-        {
-          ok: false,
-          error: `"${friendly}" is not launchable on platform "${routePlatform}".`,
-          detail: `Run the terminal "help" command to list supported targets.`,
-          routePlatform,
-        },
-        { status: 404 }
-      );
-    }
-
-    log('info', `Launching ${friendly} via ${spec.command}`, spec.args.join(' '));
-
-    const { stdout, stderr } = await execFileAsync(spec.command, spec.args, {
-      timeout: LAUNCH_TIMEOUT_MS,
-      windowsHide: true,
-    });
-
-    const elapsed = Date.now() - startedAt;
-    const detail = `Launched "${friendly}" on ${routePlatform} (${elapsed}ms).`;
-    if (stdout.trim()) log('info', `${friendly} stdout`, stdout.trim().slice(0, 400));
-    if (stderr.trim()) log('warn', `${friendly} stderr`, stderr.trim().slice(0, 400));
-    log('info', `Launch of ${friendly} succeeded`);
-
-    return NextResponse.json({ ok: true, detail, routePlatform });
-  } catch (error) {
-    const elapsed = Date.now() - startedAt;
-    const code = (error as NodeJS.ErrnoException | undefined)?.code;
-    const message =
-      code === 'ENOENT'
-        ? 'Target application is not installed on this device (ENOENT).'
-        : code === 'ETIMEDOUT'
-          ? 'Launcher timed out while starting the application.'
-          : error instanceof Error
-            ? error.message
-            : String(error);
-
-    log('error', `Launch failed after ${elapsed}ms`, { code, message });
-    return NextResponse.json(
-      { ok: false, error: message, detail: message },
-      { status: code === 'ENOENT' ? 404 : 500 }
-    );
-  }
+interface ResolvedArgv {
+  file: string;
+  args: string[];
 }
 
-CRITICAL INSTRUCTIONS:
-1. Output the ENTIRE file. DO NOT truncate.
-2. Preserve existing working logic, but aggressively upgrade everything else.
-3. Output ONLY the raw code. No markdown blocks.
+function buildLaunchArgv(command: string, platform: TargetPlatform): ResolvedArgv {
+  if (platform === 'windows') {
+    const isProtocol =
+      /^[a-z][a-z0-9+.-]*:/i.test(command) && !/\.exe$/i.test(command);
+    if (isProtocol) {
+      return { file: 'cmd.exe', args: ['/c', 'start', '', command] };
+    }
+    return { file: command, args: [] };
+  }
+
+  if (platform === 'macos') {
+    const isProtocol = /:\/\//.test(command) || /^[a-z][a-z0-9+.-]*:/.test(command);
+    if (isProtocol) return { file: 'open', args: [command] };
+    return { file: 'open', args: ['-a', command] };
+  }
+
+  return { file: command, args: [] };
+}
+
+function buildLaunchSpec(friendlyName: string, platform: TargetPlatform): LaunchSpec | null {
+  const target = getAppTarget(friendlyName);
+  if (!target) return null;
+
+  const command = target[platform];
+  if (!command) return null;
+
+  const argv = buildLaunchArgv(command, platform);
+  const spec = {
+    friendly: target.friendly,
+    platform,
+    file: argv.file,
+    args: argv.args,
+  };
+  return spec as unknown as LaunchSpec;
+}
+
+interface LaunchBody {
+  friendly?: unknown;
+  platform?: unknown;
+}
+
+function parseBody(raw: unknown): { friendly: string; platform: TargetPlatform } | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const body = raw as LaunchBody;
+
+  if (typeof body.friendly !== 'string') return null;
+  const friendly = body.friendly.trim().toLowerCase();
+  if (!friendly || friendly.length > 64) return null;
+
+  const serverPlatform = resolveServerPlatform();
+  if (!serverPlatform) return null;
+
+  if (body.platform !== undefined && body.platform !== null) {
+    if (typeof body.platform !== 'string') return null;
+    const requested = body.platform.trim().toLowerCase();
+    if (requested !== serverPlatform) return null;
+  }
+
+  return { friendly, platform: serverPlatform };
+}
+
+function isBodyTooLarge(req: NextRequest): boolean {
+  const len = req.headers.get('content-length');
+  if (!len) return false;
+  const n = Number(len);
+  return Number.isFinite(n) && n > MAX_BODY_BYTES;
+}
+
+async function runSpec(spec: LaunchSpec): Promise<void> {
+  const { file, args } = spec as unknown as ResolvedArgv;
+  await execFileAsync(file, args, {
+    timeout: LAUNCH_TIMEOUT_MS,
+    windowsHide: true,
+    maxBuffer: 64 * 1024,
+  });
+}
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  const startedAt = Date.now();
+
+  if (isBodyTooLarge(req)) {
+    log('warn', 'rejected oversized body');
+    return NextResponse.json(
+      { ok: false, error: 'Request body too large.' },
+      { status: 413 }
+    );
+  }
+
+  let rawBody: unknown;
+  try {
+    rawBody = await req.json();
+  } catch {
+    log('warn', 'invalid JSON body');
+    return NextResponse.json(
+      { ok: false, error: 'Invalid JSON body.' },
+      { status: 400 }
+    );
+  }
+
+  const parsed = parseBody(rawBody);
+  if (!parsed) {
+    log('warn', 'invalid launch request', { rawBody });
+    return NextResponse.json(
+      { ok: false, error: 'Invalid launch request.' },
+      { status: 400 }
+    );
+  }
+
+  const { friendly, platform } = parsed;
+
+  const spec = buildLaunchSpec(friendly, platform);
+  if (!spec) {
+    log('warn', 'unknown or unsupported app', { friendly, platform
