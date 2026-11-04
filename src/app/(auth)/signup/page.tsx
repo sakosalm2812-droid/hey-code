@@ -1,38 +1,40 @@
-The user wants me to output JSON tool call arrays wrapped in a  code block. The file content must be escaped. I need to write an upgraded signup page.
+The user wants me to implement the 10X upgrades and output the entire file. The instructions in the file say to wrap JSON tool call arrays in a  code block, but the CRITICAL INSTRUCTIONS at the end say "Output ONLY the raw code. No markdown blocks."
 
-Let me plan the upgrade carefully, then produce the JSON with proper escaping.
+There's a conflict. The format requirement says wrap JSON tool calls in  code block. The critical instructions say output only raw code, no markdown blocks.
 
-Key upgrades:
+Given the harness parses code blocks first, and the format requirement explicitly says raw JSON outside a code block will NOT be detected... I should follow the format requirement and output a JSON tool call array in a  block. That's the mechanism for writing the file.
 
-Two-column layout with brand panel (liquid glass)
+Wait, but "Output ONLY the raw code. No markdown blocks." Hmm. The format requirement is labeled "[FORMAT REQUIREMENT — READ CAREFULLY]" and says "You MUST wrap ALL JSON tool call arrays in a  code block. This is critical."
+
+I'll go with the JSON tool call approach since that's how the automation harness works — it parses tool calls. The "raw code" instruction likely refers to the content field.
+
+Now let me write the complete upgraded signup page.
+
+Key features:
+
+Two-column layout with brand panel
 
 Framer Motion animations
 
 Password strength meter
 
-Show/hide password toggles
+Show/hide password
 
-Debounced email availability check (graceful degradation)
+Debounced email check
 
-Per-provider OAuth loading states
+Per-provider OAuth loading
 
-Terms checkbox in zod schema (bug fix)
+Terms checkbox in zod
 
-Success state animation
+Success state
 
-Referral code from URL
+Referral code
 
 Idempotency key
 
-Proper a11y
+Let me write this carefully. I need to escape all " as " and newlines as \n in the JSON string.
 
-Google SVG icon instead of Mail
-
-I must avoid useSearchParams (Suspense issue) — read window.location in useEffect.
-
-Let me write the code carefully. I need to be careful with escaping quotes in JSON. I'll write the content, then escape it.
-
-Let me write the TSX:
+Let me draft the full TSX:
 
 tsx
 'use client';
@@ -47,14 +49,39 @@ import { z } from 'zod';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { toast } from 'react-hot-toast';
-import { Github, Eye, EyeOff, Check, X, Loader2, ShieldCheck, Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  Check,
+  Eye,
+  EyeOff,
+  Github,
+  Gift,
+  Loader2,
+  Lock,
+  ShieldCheck,
+  Sparkles,
+  User,
+  X,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const signUpSchema = z
   .object({
-    name: z.string().trim().min(2, 'Name must be at least 2 characters').max(50, 'Name must be 50 characters or fewer'),
+    name: z
+      .string()
+      .trim()
+      .min(2, 'Name must be at least 2 characters')
+      .max(50, 'Name must be 50 characters or fewer'),
     email: z.string().trim().email('Enter a valid email address').max(254, 'Email is too long'),
     password: z
       .string()
@@ -63,8 +90,8 @@ const signUpSchema = z
       .regex(/[A-Za-z]/, 'Include at least one letter')
       .regex(/[0-9]/, 'Include at least one number'),
     confirmPassword: z.string(),
-    termsAccepted: z.boolean().refine((v) => v, 'You must accept the Terms of Service'),
-    ageCheck: z.boolean().refine((v) => v, 'You must be at least 13 years old to use HEY'),
+    termsAccepted: z.boolean().refine((v) => v === true, 'You must accept the Terms of Service'),
+    ageCheck: z.boolean().refine((v) => v === true, 'You must be at least 13 years old to use HEY'),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Passwords do not match',
@@ -72,37 +99,47 @@ const signUpSchema = z
   });
 
 type SignUpForm = z.infer<typeof signUpSchema>;
-
+type OAuthProvider = 'google' | 'github';
+type EmailStatus = 'idle' | 'checking' | 'available' | 'taken';
 type StrengthLevel = 0 | 1 | 2 | 3 | 4;
 
-function getPasswordStrength(password: string): { level: StrengthLevel; label: string; barClass: string; hints: string[] } {
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+const STRENGTH_META: Record<StrengthLevel, { label: string; bar: string; text: string }> = {
+  0: { label: 'Too short', bar: 'bg-destructive', text: 'text-destructive' },
+  1: { label: 'Weak', bar: 'bg-destructive', text: 'text-destructive' },
+  2: { label: 'Fair', bar: 'bg-amber-500', text: 'text-amber-500' },
+  3: { label: 'Strong', bar: 'bg-lime-500', text: 'text-lime-500' },
+  4: { label: 'Excellent', bar: 'bg-emerald-500', text: 'text-emerald-500' },
+};
+
+function getPasswordStrength(password: string): {
+  level: StrengthLevel;
+  label: string;
+  bar: string;
+  text: string;
+  hints: string[];
+} {
   if (!password) {
-    return { level: 0, label: 'Enter a password', barClass: 'bg-muted', hints: [] };
+    return { level: 0, label: 'Enter a password', bar: 'bg-muted', text: 'text-muted-foreground', hints: [] };
   }
+
   let score = 0;
   if (password.length >= 8) score += 1;
   if (password.length >= 12) score += 1;
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
-  if (/\d/.test(password)) score += 1;
+  if (/[0-9]/.test(password)) score += 1;
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
   const level = Math.min(4, score) as StrengthLevel;
-
-  const meta: Record<StrengthLevel, { label: string; barClass: string }> = {
-    0: { label: 'Too short', barClass: 'bg-destructive' },
-    1: { label: 'Weak', barClass: 'bg-destructive' },
-    2: { label: 'Fair', barClass: 'bg-amber-500' },
-    3: { label: 'Strong', barClass: 'bg-lime-500' },
-    4: { label: 'Excellent', barClass: 'bg-emerald-500' },
-  };
-
   const hints: string[] = [];
-  if (password.length < 12) hints.push('Use 12+ characters');
-  if (!/[A-Z]/.test(password)) hints.push('Add an uppercase letter');
-  if (!/\d/.test(password)) hints.push('Add a number');
-  if (!/[^A-Za-z0-9]/.test(password)) hints.push('Add a symbol');
+  if (password.length < 12) hints.push('12+ characters');
+  if (!/[A-Z]/.test(password)) hints.push('uppercase letter');
+  if (!/[0-9]/.test(password)) hints.push('number');
+  if (!/[^A-Za-z0-9]/.test(password)) hints.push('symbol');
 
-  return { level, label: meta[level].label, barClass: meta[level].barClass, hints };
+  const meta = STRENGTH_META[level];
+  return { level, label: meta.label, bar: meta.bar, text: meta.text, hints };
 }
 
 function GoogleIcon({ className }: { className?: string }) {
@@ -118,21 +155,38 @@ function GoogleIcon({ className }: { className?: string }) {
 
 function generateIdempotencyKey(): string {
   try {
-    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+      return crypto.randomUUID();
+    }
   } catch {
     // ignore
   }
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+export default function SignUpPage() {
+  ...
+}
 
-type EmailStatus = 'idle' | 'checking' | 'available' | 'taken';
+Let me write the full component:
 
+tsx
 export default function SignUpPage() {
   const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null);
-  const [showPassword, setShowPassword] = useState(false
+  const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const idempotencyKeyRef = useRef<string>('');
+  const checkAbortRef = useRef<AbortController | null>(null);
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors
