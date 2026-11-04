@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\shortcuts\ShortcutSettings.jsx
+CURRENT CODE:
 /**
  * HEY Shortcut Settings — Remapping Table with Conflict Detection
  *
@@ -117,252 +215,6 @@ function ShortcutRow({ binding, registry, platform, onRemap, onReset, isRemappin
         ) : (
           <>
             <KeyCap keys={binding.keys} platform={platform} size="normal" />
-            {binding.editable && (
-              <button
-                type="button"
-                className="shortcut-change-btn"
-                onClick={() => onRemap(binding.id, chord, false)}
-                aria-label={`Change shortcut for ${binding.description}`}
-              >
-                Change
-              </button>
-            )}
-            {allConflicts.length > 0 && <ConflictBadge conflicts={allConflicts} platform={platform} />}
-          </>
-        )}
-      </td>
-    </tr>
-  );
-}
-
-export function ShortcutSettings({ className = '', platform: initialPlatform }) {
-  const [platform, setPlatform] = useState(initialPlatform || (navigator.platform.includes('Mac') ? 'mac' : 'win'));
-  const [registry] = useState(() => createShortcutRegistry());
-  const [remappingId, setRemappingId] = useState(null);
-  const [remapValue, setRemapValue] = useState('');
-  const [remapError, setRemapError] = useState(null);
-  const [showConflictsOnly, setShowConflictsOnly] = useState(false);
-
-  // Load custom bindings from settings
-  useEffect(() => {
-    const custom = getSetting('shortcuts.customBindings', {}) || {};
-    if (Object.keys(custom).length > 0) {
-      // Registry is recreated with custom bindings in a real implementation
-      // For now we just note the setting exists
-    }
-  }, []);
-
-  const startRemap = useCallback((id, currentChord) => {
-    setRemappingId(id);
-    setRemapValue(currentChord || '');
-    setRemapError(null);
-  }, []);
-
-  const handleRemap = useCallback((id, value, commit = false) => {
-    setRemapValue(value);
-
-    if (!commit) return;
-
-    const validation = validateChord(value);
-    if (!validation.valid) {
-      setRemapError(validation.error);
-      return;
-    }
-
-    const result = registry.setBinding(id, { [platform]: value }, platform);
-    if (!result.ok) {
-      setRemapError(result.error);
-      return;
-    }
-
-    // Save to settings
-    const customBindings = registry.bindings
-      .filter(b => b.keys[platform] !== b.defaultKeys[platform])
-      .map(b => ({ id: b.id, keys: b.keys }));
-    setSetting('shortcuts.customBindings', customBindings);
-
-    setRemappingId(null);
-    setRemapValue('');
-    setRemapError(null);
-  }, [registry, platform]);
-
-  const handleReset = useCallback((id) => {
-    registry.resetBinding(id);
-    const customBindings = registry.bindings
-      .filter(b => b.keys[platform] !== b.defaultKeys[platform])
-      .map(b => ({ id: b.id, keys: b.keys }));
-    setSetting('shortcuts.customBindings', customBindings);
-  }, [registry, platform]);
-
-  const handleKeyDown = useCallback((e) => {
-    if (!remappingId) return;
-
-    // Build chord from key event
-    const modifiers = [];
-    if (e.ctrlKey) modifiers.push('Control');
-    if (e.metaKey) modifiers.push('Meta');
-    if (e.altKey) modifiers.push('Alt');
-    if (e.shiftKey) modifiers.push('Shift');
-
-    let key = e.key;
-    if (key === ' ') key = 'Space';
-    if (key === 'Escape') key = 'Escape';
-    if (key === ',') key = 'Comma';
-    if (key === '.') key = 'Period';
-    if (key === '/') key = 'Slash';
-    if (key === '[') key = 'BracketLeft';
-    if (key === ']') key = 'BracketRight';
-    if (key === '\\') key = 'Backslash';
-    if (key === '`') key = 'Backquote';
-    if (key === '-') key = 'Minus';
-    if (key === '=') key = 'Equal';
-
-    // Skip if only modifiers
-    if (!modifiers.length && !['Escape', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'].includes(key)) {
-      return;
-    }
-
-    const chord = [...modifiers, key].join('+');
-    setRemapValue(chord);
-    e.preventDefault();
-  }, [remappingId]);
-
-  useEffect(() => {
-    if (remappingId) {
-      document.addEventListener('keydown', handleKeyDown, true);
-    }
-    return () => document.removeEventListener('keydown', handleKeyDown, true);
-  }, [remappingId, handleKeyDown]);
-
-  // Group bindings by category
-  const groupedBindings = useMemo(() => {
-    const groups = {};
-    for (const cat of CATEGORY_ORDER) {
-      const bindings = registry.getBindingsByCategory(cat);
-      if (bindings.length > 0) {
-        groups[cat] = bindings;
-      }
-    }
-    return groups;
-  }, [registry]);
-
-  const filteredGroups = showConflictsOnly
-    ? Object.fromEntries(
-        Object.entries(groupedBindings).map(([cat, bindings]) => [
-          cat,
-          bindings.filter(b => {
-            const chord = b.keys[platform] || b.keys.win;
-            const osConflicts = getOSConflicts(chord, platform);
-            const internalConflicts = registry.detectConflicts(chord, registry.bindings.filter(x => x.id !== b.id), platform);
-            return osConflicts.length > 0 || internalConflicts.hasConflict;
-          }),
-        ]).filter(([_, bindings]) => bindings.length > 0)
-      )
-    : groupedBindings;
-
-  const hasAnyConflicts = useMemo(() => {
-    for (const bindings of Object.values(groupedBindings)) {
-      for (const b of bindings) {
-        const chord = b.keys[platform] || b.keys.win;
-        const osConflicts = getOSConflicts(chord, platform);
-        const internalConflicts = registry.detectConflicts(chord, registry.bindings.filter(x => x.id !== b.id), platform);
-        if (osConflicts.length > 0 || internalConflicts.hasConflict) return true;
-      }
-    }
-    return false;
-  }, [groupedBindings, registry, platform]);
-
-  return (
-    <div className={`shortcut-settings ${className}`}>
-      <div className="shortcut-settings-header">
-        <h2>Keyboard Shortcuts</h2>
-        <p className="shortcut-settings-description">
-          Customize keyboard shortcuts. Global shortcuts require the HEY tray app to be running.
-          Conflicts with system shortcuts are shown in amber.
-        </p>
-        <div className="shortcut-settings-toolbar">
-          <div className="platform-selector" role="group" aria-label="Platform">
-            <label>
-              <input type="radio" name="platform" value="win" checked={platform === 'win'} onChange={() => setPlatform('win')} />
-              <span>Windows/Linux</span>
-            </label>
-            <label>
-              <input type="radio" name="platform" value="mac" checked={platform === 'mac'} onChange={() => setPlatform('mac')} />
-              <span>macOS</span>
-            </label>
-          </div>
-          {hasAnyConflicts && (
-            <label className="conflict-filter">
-              <input
-                type="checkbox"
-                checked={showConflictsOnly}
-                onChange={e => setShowConflictsOnly(e.target.checked)}
-              />
-              Show conflicts only
-            </label>
-          )}
-        </div>
-      </div>
-
-      <div className="shortcut-settings-table-wrapper">
-        <table className="shortcut-settings-table" role="table">
-          <thead>
-            <tr>
-              <th scope="col">Action</th>
-              <th scope="col">Shortcut</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(filteredGroups).map(([category, bindings]) => (
-              <thead key={category}>
-                <tr className="shortcut-category-header">
-                  <th scope="row" colSpan="2">{CATEGORY_LABELS[category] || category}</th>
-                </tr>
-              </thead>
-            ))}
-            {Object.entries(filteredGroups).flatMap(([_, bindings]) =>
-              bindings.map(binding => (
-                <ShortcutRow
-                  key={binding.id}
-                  binding={binding}
-                  registry={registry}
-                  platform={platform}
-                  onRemap={startRemap}
-                  onReset={handleReset}
-                  isRemapping={remappingId === binding.id}
-                  remapValue={remappingId === binding.id ? remapValue : ''}
-                  remapError={remappingId === binding.id ? remapError : null}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="shortcut-settings-legend">
-        <h3>Legend</h3>
-        <dl>
-          <dt><span className="legend-scope global">Global</span></dt>
-          <dd>Works system-wide (requires tray app)</dd>
-          <dt><span className="legend-scope window">Window</span></dt>
-          <dd>Works when HEY window is open</dd>
-          <dt><span className="legend-scope in-app">In-App</span></dt>
-          <dd>Only works when HEY is focused</dd>
-          <dt><span className="legend-conflict">⚠ Amber</span></dt>
-          <dd>Conflicts with system or another HEY shortcut</dd>
-        </dl>
-      </div>
-
-      <div className="shortcut-settings-actions">
-        <button type="button" className="btn btn-secondary" onClick={() => {
-          registry.bindings.forEach(b => registry.resetBinding(b.id));
-          setSetting('shortcuts.customBindings', []);
-        }}>
-          Reset All to Defaults
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default ShortcutSettings;
+            {binding.editable 
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
