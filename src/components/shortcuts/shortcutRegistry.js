@@ -1,3 +1,116 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill is for finding out what they actually want, and why, before
+anything gets built.
+
+People often haven't finished working out what they want. Good questions
+help them think it through. When you understand the why, you make the
+hundred decisions they never mention the way they would have made them.
+
+## First: What Do You Actually Know?
+
+Before you reply, ask yourself: what do I know about what they want, and
+why?
+
+- **Everything that matters is in the request** ("make the icon cornflower
+  blue"). This is a quick, clear task. Do it, and say what you did.
+- **Something non-trivial is missing.** Start the conversation.
+
+Before you start implementing, you must, in order:
+
+1. Lay out the approaches in a message of their own, and have your
+   human partner pick one (see Lay out the approaches).
+2. Write the design doc, short or full (see Size the Work).
+3. Get their approval of that doc.
+4. Invoke the superpowers:writing-plans skill.
+
+If nothing is open when you write your first message and there's one
+sensible way, steps 1 to 3 happen in that message (see Your First
+Message).
+
+Two things aren't implementing: a spike they said yes to (see Spike to
+feel things out), and doing what they asked once they've opted out of
+the questions.
+
+## Look Before You Ask
+
+In an existing project, or when they've given you context (a spec, a plan,
+a handoff, files they pointed at, earlier conversation), dig in before your
+first message. Read what they referred to and the code or material it
+connects to, and keep reading until you can explain how the relevant
+parts work today and what this change would touch. Never ask what the
+project or their context already answers, or reopen what they've
+already decided.
+
+## Your First Message
+
+Move the work forward, with one of these:
+
+- **They've already said what they want** (a spec, a plan, a detailed
+  request): aim for about 200 words for the whole message. Echo their
+  request back in your own words, so they can see whether you've got its
+  shape: what they want, who it's for, and why, as far as they've said.
+  Add what you found that bears on it: how the relevant parts work today
+  and what the change would touch. If you found something they may not
+  have considered that would change what they're asking for or how it
+  has to be built, like a constraint, a conflict, or a cheaper path, say
+  so plainly. How to build it comes later, once you understand what they
+  want (see Lay out the approaches). End with one line inviting
+  corrections. Then, if they haven't told you why they want it, even if
+  you can guess, ask about that: one open question in their own terms,
+  with nothing to pick from. If they have told you, and their request
+  and the project leave open something whose answer would change what
+  gets built, ask about the one that would change it most; when its
+  choices can be named, sketch each concretely, with what it trades off
+  and which you'd pick. If nothing like that is open, there's one
+  sensible way: end with the short design itself (the approach, a line on
+  why the others don't fit, and the design in a few lines) and ask them
+  to approve it. Their approval covers the approach and the design: write
+  the short design doc as approved and go on to the plan.
+  Specs are often incomplete, so confirm before you build on one.
+- **They haven't:** one open question, in their own terms, about the
+  biggest thing their request leaves unsettled. Say why you're asking:
+  what the answer would change about what you build. For "a website for
+  my bakery": "If it's mostly f
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill i
+
+FILE TO UPGRADE: src\components\shortcuts\shortcutRegistry.js
+CURRENT CODE:
 /**
  * HEY Shortcut Registry — Pure Shortcut Definitions & Conflict Detection
  *
@@ -131,271 +244,6 @@ function normalizeKey(key) {
     .replace(/^Space$/i, 'Space')
     .replace(/^,/, 'Comma')
     .replace(/^\./, 'Period')
-    .replace(/^\//, 'Slash')
-    .replace(/^\[/, 'BracketLeft')
-    .replace(/^\]/, 'BracketRight')
-    .replace(/^`/, 'Backquote')
-    .replace(/^\\$/, 'Backslash');
-}
-
-export function parseChord(chord) {
-  if (!chord || typeof chord !== 'string') return { modifiers: [], key: null };
-  const parts = chord.split('+').map(p => p.trim()).filter(Boolean);
-  const modifiers = [];
-  let key = null;
-
-  for (const part of parts) {
-    const norm = normalizeKey(part);
-    if (KEY_MODIFIERS.includes(norm)) {
-      modifiers.push(norm);
-    } else {
-      key = norm;
-    }
-  }
-
-  return { modifiers: modifiers.sort(), key };
-}
-
-export function formatChord(modifiers, key, platform = 'win') {
-  const modMap = {
-    win: { Control: 'Ctrl', Meta: 'Ctrl', Alt: 'Alt', Shift: 'Shift' },
-    mac: { Control: 'Ctrl', Meta: '⌘', Alt: '⌥', Shift: '⇧' },
-    linux: { Control: 'Ctrl', Meta: 'Meta', Alt: 'Alt', Shift: 'Shift' },
-  };
-  const m = modMap[platform] || modMap.win;
-  const mods = modifiers.map(mod => m[mod] || mod).join(platform === 'mac' ? '' : '+');
-  const keyDisplay = key === 'Space' ? 'Space' : key === 'Comma' ? ',' : key === 'Escape' ? 'Esc' : key;
-  if (platform === 'mac') return `${mods}${keyDisplay}`;
-  return mods ? `${mods}+${keyDisplay}` : keyDisplay;
-}
-
-/**
- * Validates a chord string.
- * @param {string} chord
- * @returns {{ valid: boolean, error?: string, parsed?: { modifiers: string[], key: string } }}
- */
-export function validateChord(chord) {
-  if (!chord || typeof chord !== 'string') {
-    return { valid: false, error: 'Chord is required' };
-  }
-
-  const parsed = parseChord(chord);
-
-  if (parsed.modifiers.length === 0 && parsed.key) {
-    // Single key - only allowed for specific keys
-    const allowedSingleKeys = ['Escape', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'];
-    if (!allowedSingleKeys.includes(parsed.key)) {
-      return { valid: false, error: 'Single-key bindings are not allowed (would swallow typing)', parsed };
-    }
-  }
-
-  if (!parsed.key) {
-    return { valid: false, error: 'Chord must have a main key', parsed };
-  }
-
-  if (parsed.modifiers.length > 3) {
-    return { valid: false, error: 'Too many modifiers (max 3)', parsed };
-  }
-
-  // Check for duplicate modifiers
-  const uniqueMods = new Set(parsed.modifiers);
-  if (uniqueMods.size !== parsed.modifiers.length) {
-    return { valid: false, error: 'Duplicate modifiers', parsed };
-  }
-
-  return { valid: true, parsed };
-}
-
-/**
- * Checks if two chords conflict.
- * @param {string} chordA
- * @param {string} chordB
- * @returns {boolean}
- */
-export function chordsConflict(chordA, chordB) {
-  const parsedA = parseChord(chordA);
-  const parsedB = parseChord(chordB);
-  return parsedA.modifiers.join(',') === parsedB.modifiers.join(',') && parsedA.key === parsedB.key;
-}
-
-/**
- * Detects conflicts between a proposed chord and existing shortcuts.
- * @param {string} proposedChord
- * @param {Object[]} existingShortcuts - Array of { id, keys: { win, mac, linux } }
- * @param {string} [platform='win']
- * @returns {{ hasConflict: boolean, conflicts: Array<{ id, action, keys }> }}
- */
-export function detectConflicts(proposedChord, existingShortcuts, platform = 'win') {
-  const conflicts = [];
-
-  for (const shortcut of existingShortcuts) {
-    const existingChord = shortcut.keys?.[platform] || shortcut.keys?.win;
-    if (existingChord && chordsConflict(proposedChord, existingChord)) {
-      conflicts.push({
-        id: shortcut.id,
-        action: shortcut.action,
-        keys: shortcut.keys,
-      });
-    }
-  }
-
-  return { hasConflict: conflicts.length > 0, conflicts };
-}
-
-/**
- * Gets OS-level known conflicts for a chord.
- * @param {string} chord
- * @param {string} platform
- * @returns {Array<{ app: string, chord: string }>}
- */
-export function getOSConflicts(chord, platform = 'win') {
-  // Known OS-level shortcuts that commonly conflict
-  const osShortcuts = {
-    win: [
-      { app: 'Windows', chord: 'Control+Space', desc: 'Input method switch (IME)' },
-      { app: 'Windows', chord: 'Control+Shift', desc: 'Keyboard layout switch' },
-      { app: 'Windows', chord: 'Meta+Space', desc: 'Windows Search' },
-      { app: 'Windows', chord: 'Meta+K', desc: 'Connect to wireless display' },
-      { app: 'Windows', chord: 'Control+Shift+P', desc: 'Print (some apps)' },
-      { app: 'Windows', chord: 'Control+Shift+T', desc: 'Reopen closed tab (browsers)' },
-      { app: 'Windows', chord: 'Control+Shift+D', desc: 'Bookmark all tabs (browsers)' },
-      { app: 'Windows', chord: 'Control+Comma', desc: 'Settings (some apps)' },
-    ],
-    mac: [
-      { app: 'macOS', chord: 'Meta+Space', desc: 'Spotlight Search' },
-      { app: 'macOS', chord: 'Control+Space', desc: 'Input source switch' },
-      { app: 'macOS', chord: 'Meta+K', desc: 'Connect to server (Finder)' },
-      { app: 'macOS', chord: 'Meta+Shift+P', desc: 'Print (some apps)' },
-      { app: 'macOS', chord: 'Meta+Shift+T', desc: 'Reopen closed tab (browsers)' },
-      { app: 'macOS', chord: 'Meta+Shift+D', desc: 'Duplicate (Finder)' },
-      { app: 'macOS', chord: 'Meta+Comma', desc: 'Preferences (standard)' },
-    ],
-    linux: [
-      { app: 'GNOME/KDE', chord: 'Control+Space', desc: 'Input method switch' },
-      { app: 'GNOME', chord: 'Meta+Space', desc: 'Activities overview' },
-      { app: 'GNOME', chord: 'Control+Alt+T', desc: 'Terminal' },
-    ],
-  };
-
-  const platformConflicts = osShortcuts[platform] || osShortcuts.win;
-  return platformConflicts.filter(c => chordsConflict(chord, c.chord));
-}
-
-/**
- * Creates a shortcut registry with current bindings.
- * @param {Object} options
- * @param {Object[]} [options.customBindings] - User custom bindings
- * @returns {Object} Registry with lookup methods
- */
-export function createShortcutRegistry(options = {}) {
-  const { customBindings = [] } = options;
-
-  // Merge defaults with custom
-  const bindings = DEFAULT_SHORTCUTS.map(def => {
-    const custom = customBindings.find(c => c.id === def.id);
-    return custom ? { ...def, keys: custom.keys } : { ...def, keys: def.defaultKeys };
-  });
-
-  return {
-    bindings: Object.freeze([...bindings]),
-
-    getBinding(id) {
-      return bindings.find(b => b.id === id) || null;
-    },
-
-    getBindingByAction(action) {
-      return bindings.find(b => b.action === action) || null;
-    },
-
-    getBindingsByScope(scope) {
-      return bindings.filter(b => b.scope === scope);
-    },
-
-    getBindingsByCategory(category) {
-      return bindings.filter(b => b.category === category);
-    },
-
-    getChord(id, platform = 'win') {
-      const binding = this.getBinding(id);
-      return binding?.keys?.[platform] || binding?.keys?.win || '';
-    },
-
-    getDisplayChord(id, platform = 'win') {
-      const chord = this.getChord(id, platform);
-      const { modifiers, key } = parseChord(chord);
-      return formatChord(modifiers, key, platform);
-    },
-
-    setBinding(id, keys, platform = 'win') {
-      const binding = bindings.find(b => b.id === id);
-      if (!binding) return { ok: false, error: 'Unknown shortcut id' };
-      if (!binding.editable) return { ok: false, error: 'Shortcut not editable' };
-
-      // Validate each platform's chord
-      for (const [p, chord] of Object.entries(keys || {})) {
-        const validation = validateChord(chord);
-        if (!validation.valid) {
-          return { ok: false, error: `Invalid chord for ${p}: ${validation.error}` };
-        }
-      }
-
-      binding.keys = { ...binding.keys, ...keys };
-      return { ok: true, binding };
-    },
-
-    resetBinding(id) {
-      const binding = bindings.find(b => b.id === id);
-      if (!binding) return { ok: false, error: 'Unknown shortcut id' };
-      binding.keys = { ...binding.defaultKeys };
-      return { ok: true, binding };
-    },
-
-    validateAll(platform = 'win') {
-      const errors = [];
-      const seen = new Map();
-
-      for (const binding of bindings) {
-        const chord = binding.keys?.[platform] || binding.keys?.win;
-        if (!chord) continue;
-
-        const validation = validateChord(chord);
-        if (!validation.valid) {
-          errors.push({ id: binding.id, error: validation.error });
-        }
-
-        const key = chord.toLowerCase();
-        if (seen.has(key)) {
-          errors.push({ id: binding.id, error: `Duplicate chord with ${seen.get(key)}` });
-        } else {
-          seen.set(key, binding.id);
-        }
-      }
-
-      return { ok: errors.length === 0, errors };
-    },
-
-    export() {
-      return bindings.map(b => ({
-        id: b.id,
-        action: b.action,
-        keys: b.keys,
-        scope: b.scope,
-      }));
-    },
-  };
-}
-
-export default {
-  SHORTCUT_SCOPES,
-  SHORTCUT_ACTIONS,
-  DEFAULT_SHORTCUTS,
-  KEY_MODIFIERS,
-  KEY_SPECIAL,
-  validateChord,
-  chordsConflict,
-  detectConflicts,
-  getOSConflicts,
-  createShortcutRegistry,
-  parseChord,
-  formatChord,
-};
+    .replace(/^\//, 'Slas
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
