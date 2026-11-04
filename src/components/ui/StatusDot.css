@@ -1,163 +1,289 @@
-/* =========================================
-   HEY STATUS DOT
-   ========================================= */
+The user wants an upgraded CSS file. But there's a format requirement: wrap JSON tool call arrays in  code block. The mission says "output ONLY the raw upgraded code. No markdown." But the format requirement says use write_file tool call in JSON code block.
 
+Hmm. The "PREVIOUSLY SUCCESSFUL PATTERN" suggests the harness expects a write_file tool call. But the mission says output raw code. Conflict. The format requirement is critical—it says the automation harness parses code blocks. Let me follow the format requirement and output a JSON tool call with write_file.
+
+Actually, the mission instruction is inside the file content, which is the prompt. The format requirement is at top-level. Format requirement takes priority ("READ CAREFULLY... critical").
+
+I'll produce a write_file tool call with the upgraded CSS content, path "src/components/ui/StatusDot.css".
+
+Now the actual work: upgrade the CSS.
+
+Bugs I can identify:
+
+Pulse animation bug: box-shadow: 0 0 0 0 currentColor — but currentColor on the indicator is the text color of the parent, which is --text-secondary, not the status color. The indicator uses background not color. So the pulse ring will be grey, not the status color. Fix: use a CSS variable --dot-color set per status, and use color on the indicator too, or use box-shadow: 0 0 0 0 var(--dot-color).
+
+Pulse box-shadow at 50% 0 0 0 8px transparent — animating to transparent is fine but the ring doesn't really expand nicely; better to use a pseudo-element ring with scale+opacity, which is more performant.
+
+box-shadow: 0 0 0 1px var(--bg-primary) on indicator creates a ring; combined with pulse box-shadow animation, they override each other — the pulse keyframes replace the 1px ring, causing a visual pop when the animation starts. Fix: move ring to a separate element/pseudo or include it in the keyframes.
+
+.hey-status-dot has no sizes for text: font-size fixed; sizes only affect indicator. Probably fine but could add size classes for dot gap.
+
+.hey-status-badge--default duplicates glass styles — could just be border-color.
+
+Badge sizes set padding twice — base has padding: 0 var(--space-2) then size classes override. Fine but base padding is redundant.
+
+Missing line-height on badges causing vertical misalignment; height fixed with inline-flex align-items center so OK.
+
+Missing --dot-color for statuses → "active/running/etc." Also missing neutral.
+
+No --radius / aspect-ratio fine.
+
+animation uses var(--ease) — if undefined, animation fails. Add fallback.
+
+Missing will-change — avoid; not needed.
+
+Reduced motion: pulse disabled, but should keep a static ring so status is still communicated — currently fine since background color stays.
+
+Liquid Glass improvements: add inner highlight, subtle gradient, backdrop blur, specular ring, box-shadow inset highlights, refined borders, transition on badge hover, font-variant-numeric, letter-spacing, text-transform maybe.
+
+Missing high-contrast mode @media (forced-colors: active).
+
+Missing prefers-contrast.
+
+Indicator should have position: relative for pseudo ring.
+
+Dot ring uses --bg-primary — on glass surfaces it should be currentColor-ish; keep but add fallback.
+
+gap for dot at xs should be smaller.
+
+Badge __icon sizing per size.
+
+Animation performance: animating box-shadow triggers paint; use pseudo element with transform/opacity.
+
+Let me write the upgraded CSS carefully, preserving all existing class names and adding.
+
+Design:
+
+css
+:root-less — use per-status custom property.
+
+Plan:
+
+css
 .hey-status-dot {
+  --hey-status-dot-color: var(--text-tertiary);
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   font-family: var(--font-body);
   font-size: var(--text-small);
+  line-height: 1.4;
   color: var(--text-secondary);
   white-space: nowrap;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
 }
 
 .hey-status-dot__indicator {
+  position: relative;
   display: inline-block;
   flex-shrink: 0;
+  width: 8px; height: 8px;  /* default */
   border-radius: 50%;
-  background: var(--text-tertiary);
-  box-shadow: 0 0 0 1px var(--bg-primary);
+  background-color: var(--hey-status-dot-color);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--bg-primary) 92%, transparent),
+    0 0 6px -1px color-mix(in srgb, var(--hey-status-dot-color) 45%, transparent);
+  transition: background-color 240ms var(--ease, cubic-bezier(0.22,1,0.36,1)),
+              box-shadow 240ms var(--ease, ...);
 }
 
-.hey-status-dot--online .hey-status-dot__indicator { background: var(--semantic-success-text); }
-.hey-status-dot--away .hey-status-dot__indicator { background: var(--semantic-warning-text); }
-.hey-status-dot--busy .hey-status-dot__indicator { background: var(--semantic-destructive-text); }
-.hey-status-dot--offline .hey-status-dot__indicator { background: var(--text-tertiary); }
-.hey-status-dot--active .hey-status-dot__indicator { background: var(--semantic-success-text); }
-.hey-status-dot--inactive .hey-status-dot__indicator { background: var(--text-tertiary); }
-.hey-status-dot--pending .hey-status-dot__indicator { background: var(--semantic-warning-text); }
-.hey-status-dot--running .hey-status-dot__indicator { background: var(--semantic-info-text); }
-.hey-status-dot--completed .hey-status-dot__indicator { background: var(--semantic-success-text); }
-.hey-status-dot--failed .hey-status-dot__indicator { background: var(--semantic-destructive-text); }
-.hey-status-dot--blocked .hey-status-dot__indicator { background: var(--semantic-warning-text); }
-.hey-status-dot--neutral .hey-status-dot__indicator { background: var(--text-tertiary); }
+Wait — color-mix support is good in modern browsers (2023+). Fine, with fallback? Provide fallback declarations before. Keep it simple: use color-mix but also declare a plain fallback first.
 
-/* SIZES */
-.hey-status-dot--xs .hey-status-dot__indicator { width: 6px; height: 6px; }
-.hey-status-dot--sm .hey-status-dot__indicator { width: 8px; height: 8px; }
-.hey-status-dot--md .hey-status-dot__indicator { width: 10px; height: 10px; }
-.hey-status-dot--lg .hey-status-dot__indicator { width: 12px; height: 12px; }
-.hey-status-dot--xl .hey-status-dot__indicator { width: 16px; height: 16px; }
+Actually for safety, I'll use color-mix since it's widely supported now (Chrome 111+, Safari 16.2+, Firefox 113+). I'll add plain fallbacks where important.
 
-/* PULSE ANIMATION */
-.hey-status-dot--pulse .hey-status-dot__indicator {
-  animation: hey-status-pulse 2s var(--ease) infinite;
+Sizes: define --dot-size per size class and use width: var(--dot-size). Set default on base as 8px? Base .hey-status-dot__indicator had no size, and sizes are applied via --md etc. Better set a default --hey-status-dot-size: 8px on the base so indicator never collapses to 0 (that's a bug: without a size modifier, the indicator has no width/height → invisible!). Yes! That's a real bug: base indicator has no width/height; only size modifiers set it. Fix with default.
+
+Pulse ring: use ::after pseudo:
+
+css
+.hey-status-dot--pulse .hey-status-dot__indicator::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--hey-status-dot-color);
+  opacity: 0;
+  animation: hey-status-pulse 2s var(--ease-out, cubic-bezier(0.22,1,0.36,1)) infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
 }
 
 @keyframes hey-status-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 0 0 0 currentColor;
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-    box-shadow: 0 0 0 8px transparent;
-  }
+  0% { transform: scale(1); opacity: 0.55; }
+  70% { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .hey-status-dot--pulse .hey-status-dot__indicator {
-    animation: none;
-  }
-}
+Hmm, but on xs dots (6px), scale 2.6 = 15.6px ring. Reasonable. But for larger, maybe use fixed ring expansion. Scale-based is fine and performant.
 
-/* =========================================
-   STATUS BADGE
-   ========================================= */
+Maybe add a second delayed ring for a "sonar" feel for running. Optional — keep single for restraint, but could add for --running specifically. I'll add a second ring for running/active via ::before? The indicator already uses box-shadow for ring. Let's use ::before for a static halo (glass specular) — hmm, that's over-engineering.
 
+Let me keep: indicator itself + ::after pulse ring.
+
+Also add --pulse respects reduced motion, plus prefers-reduced-motion fallback: static halo.
+
+Status colors mapping with --hey-status-dot-color. Also add a subtle glow color derived via color-mix.
+
+Badge: Liquid Glass upgrade — gradient overlay, inset highlight, saturate blur, hover/active states (only if interactive? badges may not be interactive; adding hover could be wrong — but add :hover only for --interactive modifier? Simpler: add transition and a --interactive hover state? I'll skip hover on non-interactive to respect "should this animate at all" — frequency gate. Actually a subtle hover on badges is harmless. I'll not add hover by default; instead add .hey-status-badge--interactive:hover).
+
+Hmm, mission says make 10x better. I'll add tasteful hover for --interactive.
+
+Badge glass:
+
+css
 .hey-status-badge {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  height: var(--badge-height, 24px);
   padding: 0 var(--space-2);
   border-radius: var(--radius-pill);
-  font-family: var(--font-body);
-  font-weight: 500;
-  white-space: nowrap;
-  border: var(--glass-border);
-  background: var(--glass-bg);
-  color: var(--text-secondary);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid ...;
+  ...
 }
 
-.hey-status-badge--default {
-  background: var(--glass-bg);
-  color: var(--text-secondary);
-  border-color: var(--border);
+But existing uses border: var(--glass-border) which is presumably a full border shorthand. Keep border: var(--glass-border) as base and override border-color in variants — existing variant classes set border-color which works with the shorthand. But base .hey-status-badge sets border: var(--glass-border) — if --glass-border is like 1px solid rgba(...), then variants overriding border-color works. Keep that.
+
+Add box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 1px 2px rgba(0,0,0,0.04) for glass depth.
+
+Add font-weight: 500; letter-spacing: 0.01em; line-height: 1;
+
+Sizes with --badge-height, font-size, padding. Use variables so responsive override is easy.
+
+Also fix: .hey-status-badge--xs height 16px with font-size 9px — 9px is too small; bump to 10px. Keep 16px height but font 10px, that's ok. Actually with 10px font and 16px height fine.
+
+Also add __icon sizing: svg { width: 1em; height: 1em; }.
+
+Add @media (forced-colors: active) — ensure indicator visible: background: CanvasText; border: 1px solid CanvasText; and badge border 1px solid CanvasText.
+
+Also add @media (prefers-contrast: more) maybe. Keep it modest.
+
+Also add .hey-status-dot__label support? Not present; skip.
+
+Also add transition on dot color changes (status change animates color) — nice touch, 200ms.
+
+Also contain: layout style maybe not needed.
+
+Also user-select: none? Badges often. Skip.
+
+Let me write final CSS.
+
+Careful with --ease fallback: use var(--ease, cubic-bezier(0.22, 1, 0.36, 1)).
+
+Write it out.
+
+Also aspect-ratio: 1 could replace width/height but keep both for safety — use width: var(--hey-status-dot-size); height: var(--hey-status-dot-size);.
+
+Sizes via --hey-status-dot-size:
+
+xs: 6px
+
+sm: 8px
+
+md: 10px
+
+lg: 12px
+
+xl: 16px
+
+Default on base: 8px.
+
+Also gap scaling: .hey-status-dot--xs { gap: var(--space-1); } optional. I'll add gaps for xs/sm via --hey-status-dot-gap.
+
+Now write the pulse keyframes with two phases. For running status maybe faster pulse: .hey-status-dot--running.hey-status-dot--pulse duration 1.4s? Nice touch but maybe over-specified. I'll keep 2s but add --hey-status-pulse-duration var default 2s, and set 1.6s for --running. Hmm, --pulse is a separate modifier; the combination running+pulse is plausible. I'll add a var on the pulse class: --hey-status-pulse-duration: 2s; and for --running set 1.6s? That only applies if both classes present. Fine, low risk. Actually keep it simple: one duration var.
+
+Reduce motion: disable the ::after animation and instead show a static 1px halo ring so status remains legible:
+
+css
+@media (prefers-reduced-motion: reduce) {
+  .hey-status-dot--pulse .hey-status-dot__indicator::after {
+    animation: none;
+    opacity: 0.35;
+    transform: scale(1.8);
+  }
+  .hey-status-dot__indicator { transition: none; }
+  .hey-status-badge { transition: none; }
 }
 
-.hey-status-badge--primary {
-  background: var(--accent-glow-soft);
-  color: var(--accent);
-  border-color: var(--accent);
-}
+Hmm, static ring at 0.35 opacity — fine.
 
-.hey-status-badge--success {
-  background: var(--semantic-success-bg);
-  color: var(--semantic-success-text);
-  border-color: var(--semantic-success-border);
-}
+Also ensure the dot's box-shadow ring uses --bg-primary fallback.
 
-.hey-status-badge--warning {
-  background: var(--semantic-warning-bg);
-  color: var(--semantic-warning-text);
-  border-color: var(--semantic-warning-border);
-}
+For color-mix glow, define per-status glow var? Simpler: use color-mix(in srgb, var(--hey-status-dot-color) 40%, transparent).
 
-.hey-status-badge--destructive {
-  background: var(--semantic-destructive-bg);
-  color: var(--semantic-destructive-text);
-  border-color: var(--semantic-destructive-border);
-}
+Fallback for old browsers: declare plain box-shadow: 0 0 0 1px var(--bg-primary); first, then override with color-mix version.
 
-.hey-status-badge--info {
-  background: var(--semantic-info-bg);
-  color: var(--semantic-info-text);
-  border-color: var(--semantic-info-border);
-}
+Now the JSON escaping: the CSS contains double quotes? Only in content: "". Escape as \"\". And newlines as \n. That's a long single-line JSON string. That's fine but must be careful.
 
-/* SIZES */
-.hey-status-badge--xs {
-  height: 16px;
-  font-size: 9px;
-  padding: 0 var(--space-1);
-}
+Actually writing the whole CSS as a single JSON string with \n is error-prone but doable. Let me construct it.
 
-.hey-status-badge--sm {
-  height: 20px;
-  font-size: 10px;
-  padding: 0 var(--space-2);
-}
+Also need to escape nothing else — CSS has no other quotes. Use content: \"\".
 
-.hey-status-badge--md {
-  height: 24px;
-  font-size: 11px;
-  padding: 0 var(--space-2);
-}
+Let me write the CSS content:
 
-.hey-status-badge--lg {
-  height: 28px;
-  font-size: 12px;
-  padding: 0 var(--space-3);
-}
-
-.hey-status-badge__icon {
-  display: inline-flex;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
+css
 /* =========================================
-   RESPONSIVE
+   HEY STATUS DOT
    ========================================= */
 
-@media (max-width: 480px) {
-  .hey-status-badge--md {
-    height: 22px;
-    font-size: 10px;
-  }
+.hey-status-dot {
+  --hey-status-dot-color: var(--text-tertiary);
+  --hey-status-dot-size: 8px;
+  --hey-status-dot-gap: var(--space-2);
+  --hey-status-pulse-duration: 2s;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hey-status-dot-gap);
+  font-family: var(--font-body);
+  font-size: var(--text-small);
+  line-height: 1.4;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-font-smoothing: antialiased;
 }
+
+.hey-status-dot__indicator {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--hey-status-dot-size);
+  height: var(--hey-status-dot-size);
+  border-radius: 50%;
+  background-color: var(--hey-status-dot-color);
+  box-shadow: 0 0 0 1px var(--bg-primary);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--bg-primary) 90%, transparent),
+    0 0 6px -1px color-mix(in srgb, var(--hey-status-dot-color) 45%, transparent);
+  transition:
+    background-color 240ms var(--ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 240ms var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+Hmm two box-shadow declarations — the second overrides first. That's the intended fallback. But if color-mix unsupported, the second declaration is invalid at parse time → falls back to the first. Good.
+
+Wait: color-mix in box-shadow — browsers that don't support color-mix drop the whole declaration. Good.
+
+Status mapping:
+
+css
+.hey-status-dot--online .hey-status-dot__indicator,
+.hey-status-dot--active .hey-status-dot__indicator,
+.hey-status-dot--completed .hey-status-dot__indicator { --hey-status-dot-color: var(--semantic-success-text); }
+
+Hmm — setting the custom property on the indicator works for its own usage but not for the parent. But we set --hey-status-dot-color on .hey-status-dot--online (parent) originally... Setting on the indicator element itself is fine since we use it in the indicator's own declarations. But if a badge also uses it? No. Simpler to set on the parent for consistency? But the classes .hey-status-dot--online and 
+.
+hey-status-dot__indicator
+ — if we set the var on 
+.hey-status-dot--online
+, it inherits to indicator. Good. Keep original selector style: 
+.hey-status-dot--online .hey-status-dot__
+indicator { --hey-status-dot-color: ... }
+ — this sets it on the indicator itself. Works.
+
+But grouping many selectors is more compact and readable. Let's group.
+
+Bad
