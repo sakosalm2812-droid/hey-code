@@ -1,3 +1,116 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill is for finding out what they actually want, and why, before
+anything gets built.
+
+People often haven't finished working out what they want. Good questions
+help them think it through. When you understand the why, you make the
+hundred decisions they never mention the way they would have made them.
+
+## First: What Do You Actually Know?
+
+Before you reply, ask yourself: what do I know about what they want, and
+why?
+
+- **Everything that matters is in the request** ("make the icon cornflower
+  blue"). This is a quick, clear task. Do it, and say what you did.
+- **Something non-trivial is missing.** Start the conversation.
+
+Before you start implementing, you must, in order:
+
+1. Lay out the approaches in a message of their own, and have your
+   human partner pick one (see Lay out the approaches).
+2. Write the design doc, short or full (see Size the Work).
+3. Get their approval of that doc.
+4. Invoke the superpowers:writing-plans skill.
+
+If nothing is open when you write your first message and there's one
+sensible way, steps 1 to 3 happen in that message (see Your First
+Message).
+
+Two things aren't implementing: a spike they said yes to (see Spike to
+feel things out), and doing what they asked once they've opted out of
+the questions.
+
+## Look Before You Ask
+
+In an existing project, or when they've given you context (a spec, a plan,
+a handoff, files they pointed at, earlier conversation), dig in before your
+first message. Read what they referred to and the code or material it
+connects to, and keep reading until you can explain how the relevant
+parts work today and what this change would touch. Never ask what the
+project or their context already answers, or reopen what they've
+already decided.
+
+## Your First Message
+
+Move the work forward, with one of these:
+
+- **They've already said what they want** (a spec, a plan, a detailed
+  request): aim for about 200 words for the whole message. Echo their
+  request back in your own words, so they can see whether you've got its
+  shape: what they want, who it's for, and why, as far as they've said.
+  Add what you found that bears on it: how the relevant parts work today
+  and what the change would touch. If you found something they may not
+  have considered that would change what they're asking for or how it
+  has to be built, like a constraint, a conflict, or a cheaper path, say
+  so plainly. How to build it comes later, once you understand what they
+  want (see Lay out the approaches). End with one line inviting
+  corrections. Then, if they haven't told you why they want it, even if
+  you can guess, ask about that: one open question in their own terms,
+  with nothing to pick from. If they have told you, and their request
+  and the project leave open something whose answer would change what
+  gets built, ask about the one that would change it most; when its
+  choices can be named, sketch each concretely, with what it trades off
+  and which you'd pick. If nothing like that is open, there's one
+  sensible way: end with the short design itself (the approach, a line on
+  why the others don't fit, and the design in a few lines) and ask them
+  to approve it. Their approval covers the approach and the design: write
+  the short design doc as approved and go on to the plan.
+  Specs are often incomplete, so confirm before you build on one.
+- **They haven't:** one open question, in their own terms, about the
+  biggest thing their request leaves unsettled. Say why you're asking:
+  what the answer would change about what you build. For "a website for
+  my bakery": "If it's mostly f
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Methodology Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: brainstorming
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, modifying behavior, or planning anything new, in software or out of it (a talk, a business, a renovation)."
+---
+
+# Brainstorming
+
+You are very good at building. You build what you believe your human
+partner wants, and that belief is usually thinner than it feels. This
+skill i
+
+FILE TO UPGRADE: src\components\capture\captureRouter.js
+CURRENT CODE:
 /**
  * HEY Capture Router — Pure Suggested-Action Derivation
  *
@@ -134,267 +247,6 @@ export const URL_PATTERNS = Object.freeze([
   { pattern: /^https?:\/\/linkedin\.com\//, category: 'reference', action: 'save-to-memory' },
   { pattern: /^https?:\/\/medium\.com\//, category: 'reference', action: 'save-to-memory' },
   { pattern: /^https?:\/\/dev\.to\//, category: 'reference', action: 'save-to-memory' },
-  { pattern: /^https?:\/\/arxiv\.org\//, category: 'reference', action: 'save-to-forge' },
-  { pattern: /^https?:\/\/doi\.org\//, category: 'reference', action: 'save-to-forge' },
-  { pattern: /^https?:\/\/.*\.edu\/.*\.pdf$/, category: 'document', action: 'save-to-forge' },
-  { pattern: /^https?:\/\/.*\.gov\/.*\.pdf$/, category: 'document', action: 'save-to-forge' },
-]);
-
-function getExtension(filename) {
-  if (!filename || typeof filename !== 'string') return '';
-  const parts = filename.split('.');
-  if (parts.length <= 1) return '';
-  return parts.pop().toLowerCase();
-}
-
-function getMimeCategory(mimeType) {
-  if (!mimeType || typeof mimeType !== 'string') return 'unknown';
-  return MIME_TO_CATEGORY[mimeType] || 'unknown';
-}
-
-function getExtensionCategory(filename) {
-  const ext = getExtension(filename);
-  if (!ext) return 'unknown';
-  return EXTENSION_TO_CATEGORY[ext] || 'unknown';
-}
-
-function getUrlCategory(url) {
-  if (!url || typeof url !== 'string') return 'unknown';
-  try {
-    new URL(url);
-  } catch {
-    return 'unknown';
-  }
-
-  for (const { pattern, category } of URL_PATTERNS) {
-    if (pattern.test(url)) {
-      return category;
-    }
-  }
-
-  // Default: reference for URLs
-  return 'reference';
-}
-
-function getTextCategory(text) {
-  if (!text || typeof text !== 'string') return 'unknown';
-
-  const lower = text.toLowerCase().trim();
-
-  // Code-like patterns
-  if (/^(function|const|let|var|class|import|export|def|fn|func|public|private)\b/.test(lower)) return 'code';
-  if (/^(#include|using namespace|import |from |package |require\()/.test(lower)) return 'code';
-  if (/^```/.test(lower)) return 'code';
-  if (/^```\w*\n/.test(lower)) return 'code';
-  if (lower.includes('{') && lower.includes('}') && /[=;]/.test(lower)) return 'code';
-
-  // Markdown/note patterns
-  if (/^#\s/.test(lower)) return 'note';
-  if (/^-\s/.test(lower)) return 'note';
-  if (/^\d+\.\s/.test(lower)) return 'note';
-
-  // Default: note for text
-  return 'note';
-}
-
-function getVoiceCategory() {
-  return 'voice-memo';
-}
-
-/**
- * Derives the category for a capture item.
- *
- * @param {Object} item - Capture item (from captureItem.js)
- * @returns {string} - One of CAPTURE_CATEGORIES
- */
-export function deriveCategory(item) {
-  if (!item || typeof item !== 'object') return 'unknown';
-
-  switch (item.type) {
-    case 'text':
-      return getTextCategory(item.content || '');
-    case 'url':
-      return getUrlCategory(item.url || '');
-    case 'image':
-    case 'pdf':
-    case 'file':
-      if (item.file) {
-        const mimeCat = getMimeCategory(item.file.mimeType);
-        if (mimeCat !== 'unknown') return mimeCat;
-        return getExtensionCategory(item.file.name);
-      }
-      return 'unknown';
-    case 'voice':
-      return getVoiceCategory();
-    default:
-      return 'unknown';
-  }
-}
-
-/**
- * Derives the suggested action for a capture item based on its category.
- *
- * @param {Object} item - Capture item
- * @returns {string} - One of the suggested actions
- */
-export function deriveSuggestedAction(item) {
-  const category = deriveCategory(item);
-
-  // Priority order for suggestions
-  const categoryActionMap = {
-    'note': 'use-in-chat',
-    'reference': 'save-to-memory',
-    'media': 'save-to-forge',
-    'document': 'save-to-forge',
-    'code': 'save-to-forge',
-    'voice-memo': 'use-in-chat',
-    'unknown': 'save-to-memory',
-  };
-
-  const primary = categoryActionMap[category] || 'save-to-memory';
-
-  // Check URL-specific overrides
-  if (item.type === 'url' && item.url) {
-    for (const { pattern, action } of URL_PATTERNS) {
-      if (pattern.test(item.url)) {
-        return action;
-      }
-    }
-  }
-
-  // Ensure the action is in the item's suggested actions
-  if (item.suggestedActions && item.suggestedActions.includes(primary)) {
-    return primary;
-  }
-
-  // Fallback to first available action
-  if (item.suggestedActions && item.suggestedActions.length > 0) {
-    return item.suggestedActions[0];
-  }
-
-  return 'save-to-memory';
-}
-
-/**
- * Gets all possible actions for a category, ordered by relevance.
- *
- * @param {string} category - Category from CAPTURE_CATEGORIES
- * @returns {string[]} - Ordered list of actions
- */
-export function getActionsForCategory(category) {
-  const actionMap = {
-    'note': ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-    'reference': ['save-to-memory', 'use-in-chat', 'save-to-forge', 'print', 'discard'],
-    'media': ['save-to-forge', 'save-to-memory', 'use-in-chat', 'print', 'discard'],
-    'document': ['save-to-forge', 'save-to-memory', 'print', 'use-in-chat', 'discard'],
-    'code': ['save-to-forge', 'use-in-chat', 'save-to-memory', 'discard'],
-    'voice-memo': ['use-in-chat', 'save-to-memory', 'save-to-forge', 'discard'],
-    'unknown': ['save-to-memory', 'save-to-forge', 'use-in-chat', 'discard'],
-  };
-
-  return [...(actionMap[category] || actionMap.unknown)];
-}
-
-/**
- * Derives the routing decision for a capture item.
- *
- * @param {Object} item - Capture item
- * @returns {Object} - Routing decision with category, suggestedAction, allActions
- */
-export function routeCaptureItem(item) {
-  if (!item || typeof item !== 'object') {
-    return {
-      category: 'unknown',
-      suggestedAction: 'save-to-memory',
-      allActions: ['save-to-memory', 'discard'],
-      confidence: 0,
-      reason: 'Invalid item',
-    };
-  }
-
-  const category = deriveCategory(item);
-  const suggestedAction = deriveSuggestedAction(item);
-  const allActions = getActionsForCategory(category);
-
-  // Confidence based on how specific the match was
-  let confidence = 0.5;
-  if (item.type === 'url' && item.url) {
-    for (const { pattern } of URL_PATTERNS) {
-      if (pattern.test(item.url)) {
-        confidence = 0.9;
-        break;
-      }
-    }
-  } else if (item.type === 'text' && item.content) {
-    const lower = item.content.toLowerCase().trim();
-    if (/^(function|const|let|var|class|import|export|def|fn|func)\b/.test(lower)) confidence = 0.8;
-    else if (/^```/.test(lower)) confidence = 0.9;
-    else if (/^#\s/.test(lower)) confidence = 0.7;
-    else confidence = 0.6;
-  } else if (item.file && item.file.mimeType) {
-    if (MIME_TO_CATEGORY[item.file.mimeType] !== 'unknown') confidence = 0.8;
-    else if (EXTENSION_TO_CATEGORY[getExtension(item.file.name)] !== 'unknown') confidence = 0.7;
-    else confidence = 0.5;
-  }
-
-  return {
-    category,
-    suggestedAction,
-    allActions,
-    confidence,
-    reason: `Derived from ${item.type} type, category: ${category}`,
-  };
-}
-
-/**
- * Validates that a suggested action is valid for an item type.
- *
- * @param {string} type - Capture type
- * @param {string} action - Action to validate
- * @returns {boolean}
- */
-export function isValidActionForType(type, action) {
-  const validActions = {
-    text: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-    url: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-    image: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-    pdf: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'print', 'discard'],
-    file: ['save-to-memory', 'save-to-forge', 'print', 'discard'],
-    voice: ['use-in-chat', 'save-to-memory', 'save-to-forge', 'discard'],
-  };
-
-  return (validActions[type] || []).includes(action);
-}
-
-/**
- * Gets the default category for a capture type (fallback when content analysis fails).
- *
- * @param {string} type - Capture type
- * @returns {string}
- */
-export function getDefaultCategoryForType(type) {
-  const defaults = {
-    text: 'note',
-    url: 'reference',
-    image: 'media',
-    pdf: 'document',
-    file: 'document',
-    voice: 'voice-memo',
-  };
-
-  return defaults[type] || 'unknown';
-}
-
-export default {
-  CAPTURE_CATEGORIES,
-  ACTION_CATEGORIES,
-  MIME_TO_CATEGORY,
-  EXTENSION_TO_CATEGORY,
-  URL_PATTERNS,
-  deriveCategory,
-  deriveSuggestedAction,
-  getActionsForCategory,
-  routeCaptureItem,
-  isValidActionForType,
-  getDefaultCategoryForType,
-};
+  { pattern: /^https?:\/\/arxiv\.org\//, category: 'reference', action: 'save-to-f
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
