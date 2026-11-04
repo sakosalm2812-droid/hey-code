@@ -1,3 +1,49 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Agency Specialist.
+YOUR SKILL LIBRARY:
+
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Agency Specialist.
+YOUR SKILL LIBRARY:
+
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Agency Specialist.
+YOUR SKILL LIBRARY:
+
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Agency Specialist.
+YOUR SKILL LIBRARY:
+
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Agency Specialist.
+YOUR SKILL LIBRARY:
+
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Agency Specialist.
+YOUR SKILL LIBRARY:
+
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Agency Specialist.
+YOUR SKILL LIBRARY:
+
+PRE
+
+FILE TO UPGRADE: src\components\ui\index.js
+CURRENT CODE:
 // HEY V1 Design System - Component Exports
 
 // Core Components
@@ -109,40 +155,6 @@ export { PermissionsPage } from '../PermissionsPage';
 export { CapabilitiesPage } from '../CapabilitiesPage';
 export { DeviceCenterPage } from '../DeviceCenterPage';
 export { DebugPage } from '../DebugPage';
-export { NotFound } from '../pages/NotFound';
-export { ErrorPage } from '../pages/ErrorPages';
-export { LegalPage } from '../pages/Legal';
-export { SupportPage } from '../pages/Support';
-
-// Context & Hooks
-export { ThemeProvider, useHEYTheme } from '../context/ThemeContext';
-export { LocaleProvider, useLocale } from '../i18n/LocaleContext';
-export { AuthProvider, useAuth } from '../AuthContext';
-
-// Core Engines
-export { heyBrain } from '../core/heyBrain';
-export { executionEngine } from '../core/executionEngine';
-export { memoryEngine } from '../core/memoryEngine';
-export { taskEngine } from '../core/taskEngine';
-export { agentRouter } from '../core/agentRouter';
-export { forgeEngine } from '../core/forgeEngine';
-
-// Registries
-export { capabilityRegistry } from '../core/capabilityRegistry';
-export { toolRegistry } from '../core/toolRegistry';
-export { modeRegistry } from '../core/modeRegistry';
-export { providerRegistry } from '../core/providerRegistry';
-
-// Libraries
-export { heyRecords } from '../lib/heyRecords';
-export { heyMemory } from '../lib/heyMemory';
-export { heyAI } from '../lib/heyAI';
-export { heyScore } from '../lib/heyScore';
-export { permissionPolicy } from '../lib/permissionPolicy';
-export { settingsManager } from '../lib/settingsManager';
-
-// Utilities
-export { heyLogger } from '../core/heyLogger';
-export { heyFeedback, buzz, confirmSound } from '../lib/heyFeedback';
-export { springs, heyMotion } from '../lib/heyMotion';
-export { designTokens, tokens } from '../lib/designTokens';
+export { NotFound } f
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
