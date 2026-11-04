@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\app\(dashboard)\dashboard\files\page.tsx
+CURRENT CODE:
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
@@ -157,221 +255,6 @@ export default function FilesPage() {
       const res = await fetch(`/api/files?id=${file.id}`, { method: 'DELETE' });
       if (res.ok) load();
     } catch {
-      setUploadError('Failed to delete file');
-    }
-  };
-
-  const removeProject = async (project: Project) => {
-    try {
-      const res = await fetch(`/api/projects?id=${project.id}`, { method: 'DELETE' });
-      if (res.ok) {
-        if (projectFilter === project.id) setProjectFilter('all');
-        load();
-      }
-    } catch {
-      setUploadError('Failed to delete project');
-    }
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-  };
-
-  const confidenceLabel = (c: number) => (c >= 0.7 ? 'High' : c >= 0.4 ? 'Medium' : 'Low');
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FolderOpen className="h-5 w-5" />
-            Files
-          </CardTitle>
-          <CardDescription>
-            Upload files for understanding, search within them, and organize them under projects.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div
-            className={cn(
-              'relative border-2 border-dashed rounded-xl p-6 text-center transition-colors',
-              dragActive ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
-            )}
-            onDragEnter={(e) => { e.preventDefault(); setDragActive(true); }}
-            onDragLeave={() => setDragActive(false)}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDrop}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept={ALLOWED_TYPES.join(',')}
-              onChange={handleInputChange}
-              className="hidden"
-            />
-            <UploadCloud className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-            <p className="font-medium mb-1">Drag & drop files, or click to browse</p>
-            <p className="text-sm text-muted-foreground mb-4">Text, JSON, CSV, PDF, images (max 10MB each, 5 per batch)</p>
-            <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="gap-2">
-              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-              Browse Files
-            </Button>
-          </div>
-
-          {uploadError && (
-            <p className="text-sm text-destructive flex items-center gap-1.5" role="alert">
-              <AlertTriangle className="h-4 w-4" />
-              {uploadError}
-            </p>
-          )}
-
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search files…"
-                className="pl-9"
-                aria-label="Search files"
-              />
-            </div>
-            <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="sm:w-[200px]">
-                <SelectValue placeholder="All projects" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All projects</SelectItem>
-                {projects.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" onClick={() => setShowProjectForm((v) => !v)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Project
-            </Button>
-          </div>
-
-          {showProjectForm && (
-            <div className="flex gap-2">
-              <Input
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                placeholder="Project name"
-                aria-label="New project name"
-              />
-              <Button onClick={createProject} disabled={creatingProject || !projectName.trim()}>
-                {creatingProject ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                Create
-              </Button>
-            </div>
-          )}
-
-          {projects.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {projects.map((p) => (
-                <span key={p.id} className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
-                  {p.name} ({p._count?.files ?? 0})
-                  <button
-                    type="button"
-                    onClick={() => removeProject(p)}
-                    className="text-muted-foreground hover:text-destructive"
-                    aria-label={`Delete project ${p.name}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            {search.trim() ? `Results for “${search.trim()}”` : 'Your files'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-10 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin mr-2" />
-              Loading files…
-            </div>
-          ) : error ? (
-            <p className="text-sm text-destructive">{error}</p>
-          ) : files.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              {search.trim() ? 'No files match your search.' : 'No files yet. Upload one above.'}
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {files.map((file) => (
-                <div key={file.id} className="rounded-lg border p-3 flex items-start gap-3">
-                  <div className="p-2 rounded bg-muted shrink-0">
-                    <FileText className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <a
-                        href={file.storageUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-medium hover:underline truncate"
-                      >
-                        {file.name}
-                      </a>
-                      {file.project && (
-                        <span className="inline-flex items-center gap-1 text-xs rounded-full border px-2 py-0.5">
-                          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: file.project.color }} />
-                          {file.project.name}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {formatSize(file.size)} · {file.mimeType} · {confidenceLabel(file.confidence)} confidence
-                    </p>
-                    {file.summary && <p className="text-sm mt-1">{file.summary}</p>}
-                    {file.keywords.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {file.keywords.map((k) => (
-                          <span key={k} className="text-xs bg-muted rounded-full px-2 py-0.5">
-                            {k}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <span
-                      className={cn(
-                        'inline-flex items-center gap-1 text-xs rounded-full px-2 py-0.5',
-                        file.status === 'LEARNED'
-                          ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                          : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
-                      )}
-                    >
-                      {file.status === 'LEARNED' ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-                      {file.status === 'LEARNED' ? 'Learned' : 'Preview only'}
-                    </span>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeFile(file)} aria-label="Delete file">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+      setUpload
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
