@@ -1,180 +1,31 @@
-'use client';
+The user wants me to output the entire upgraded sign-in page file wrapped in a JSON code block. Let me create a 10x improved version.
 
-import { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'react-hot-toast';
-import { Github, Mail, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+Key upgrades:
 
-const signInSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
+Framer Motion animations
 
-type SignInForm = z.infer<typeof signInSchema>;
+Liquid glass aesthetic
 
-export default function SignInPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <SignInForm />
-    </Suspense>
-  );
-}
+Proper Google icon
 
-function SignInForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
-  const error = searchParams.get('error');
-  const [isLoading, setIsLoading] = useState(false);
+Password visibility toggle
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignInForm>({
-    resolver: zodResolver(signInSchema),
-    defaultValues: { email: '', password: '' },
-  });
+Wired up remember me
 
-  const handleCredentialsSignIn = async (data: SignInForm) => {
-    setIsLoading(true);
-    try {
-      const result = await signIn('credentials', {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-        callbackUrl,
-      });
+Remove duplicate loading spinner
 
-      if (result?.error) {
-        if (result.error === 'EMAIL_NOT_VERIFIED') {
-          toast.error('Please verify your email first. We\'ve sent a new verification link.');
-        } else {
-          toast.error('Invalid email or password');
-        }
-      } else {
-        toast.success('Welcome back!');
-        router.push(callbackUrl);
-        router.refresh();
-      }
-    } catch {
-      toast.error('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+Better error handling with error map
 
-  const handleOAuthSignIn = (provider: 'google' | 'github') => {
-    signIn(provider, { callbackUrl });
-  };
+Animated background orbs
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4 py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6" aria-label="HEY Home">
-            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              HEY
-            </span>
-          </Link>
-          <CardTitle className="text-2xl">Welcome back</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          {error && (
-            <div className="p-3 rounded-md bg-destructive/10 text-destructive text-sm" role="alert">
-              {error === 'CredentialsSignin' ? 'Invalid credentials. Please try again.' : 
-               error === 'EMAIL_NOT_VERIFIED' ? 'Please verify your email address first.' :
-               'An error occurred. Please try again.'}
-            </div>
-          )}
+Accessibility improvements
 
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              onClick={() => handleOAuthSignIn('github')}
-              disabled={isLoading}
-              className="gap-2"
-            >
-              <Github className="h-4 w-4" />
-              GitHub
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleOAuthSignIn('google')}
-              disabled={isLoading}
-              className="gap-2"
-            >
-              <Mail className="h-4 w-4" />
-              Google
-            </Button>
-          </div>
+Better micro-interactions
 
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-            </div>
-          </div>
+I need to escape all double quotes in the JSON content field. Let me write the code carefully.
 
-          <form onSubmit={handleSubmit(handleCredentialsSignIn)} className="space-y-4">
-            <Input
-              {...register('email')}
-              type="email"
-              label="Email"
-              placeholder="you@example.com"
-              error={errors.email?.message}
-              autoComplete="email"
-              disabled={isLoading}
-            />
-            <Input
-              {...register('password')}
-              type="password"
-              label="Password"
-              placeholder="••••••••"
-              error={errors.password?.message}
-              autoComplete="current-password"
-              disabled={isLoading}
-            />
-            
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" className="rounded border-input" />
-                Remember me
-              </label>
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-                Forgot password?
-              </Link>
-            </div>
+I need to be careful about types with framer-motion ease array - use as const or type it properly.
 
-            <Button type="submit" className="w-full" size="lg" loading={isLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Sign in
-            </Button>
-          </form>
-        </CardContent>
-        
-        <CardFooter className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground text-center">
-            Don't have an account?{' '}
-            <Link href="/signup" className="text-primary hover:underline font-medium">
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
+Let me write the full file.
+
+[{"tool": "write_file", "path": "C:\\Users\\DELL\\Documents\\hey\\src\\app\\(auth)\\signin\\page.tsx", "content": "'use client';\n\nimport { useState, Suspense, useCallback } from 'react';\nimport { signIn } from 'next-auth/react';\nimport { useRouter, useSearchParams } from 'next/navigation';\nimport Link from 'next/link';\nimport { useForm } from 'react-hook-form';\nimport { zodResolver } from '@hookform/resolvers/zod';\nimport { z } from 'zod';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { Button } from '@/components/ui/button';\nimport { Input } from '@/components/ui/input';\nimport { toast } from 'react-hot-toast';\nimport {\n  Github,\n  Eye,\n  EyeOff,\n  Sparkles,\n  ShieldCheck,\n  ArrowRight,\n  AlertCircle,\n} from 'lucide-react';\nimport { cn } from '@/lib/utils';\n\nconst signInSchema = z.object({\n  email: z.string().email('Invalid email address'),\n  password: z.string().min(8, 'Password must be at least 8 characters'),\n});\n\ntype SignInFormValues = z.infer<typeof signInSchema>;\n\nconst ERROR_MESSAGES: Record<string, string> = {\n  CredentialsSignin: 'Invalid email or password. Please try again.',\n  EMAIL_NOT_VERIFIED: 'Please verify your email address first. We sent a new link.',\n  OAuthAccountNotLinked: 'This email is already linked to another sign-in method.',\n  AccessDenied: 'Access denied. You do not have permission to sign in.',\n  OAuthSignin: 'Could not start OAuth sign in. Please try again.',\n  OAuthCallback: 'OAuth sign-in failed. Please try again.',\n  Configuration: 'Server configuration error. Please contact support.',\n};\n\nconst fadeUp = {\n  hidden: { opacity: 0, y: 16 },\n  visible: (i: number = 0) => ({\n    opacity: 1,\n    y: 0,\n    transition: { delay: i * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },\n  }),\n};\n\nfunction GoogleIcon({ className }: { className?: string }) {\n  return (\n    <svg className={className} viewBox=\"0 0 24 24\" aria-hidden=\"true\" focusable=\"false\">\n      <path fill=\"#4285F4\" d=\"M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z\" />\n      <path fill=\"#34A853\" d=\"M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z\" />\n      <path fill=\"#FBBC05\" d=\"M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z\" />\n      <path fill=\"#EA4335\" d=\"M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z\" />\n    </svg>\n  );\n}\n\nfunction LiquidBackground() {\n  return (\n    <div className=\"pointer-events-none absolute inset-0 overflow-hidden\" aria-hidden=\"true\">\n      <div className=\"absolute -top-40 -left-40 h-[28rem] w-[28rem] rounded-full bg-primary/25 blur-[120px] animate-pulse\" />\n      <div className=\"absolute -bottom-40 -right-40 h-[28rem] w-[28rem] rounded-full bg-fuchsia-500/20 blur-[120px] animate-pulse\" style={{ animationDelay: '1.5s' }} />\n      <div className=\"absolute top-1/3 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-sky-400/15 blur-[100px] animate-pulse\" style={{ animationDelay: '3s' }} />\n      <div className=\"absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.06)_1px,transparent_0)] [background-size:24px_24px] opacity-60\" />\n    </div>\n  );\n}\n\nfunction SignInSkeleton() {\n  return (\n    <div className=\"relative min-h-screen flex items-center justify-center bg-background px-4\">\n      <LiquidBackground />\n      <div className=\"w-full max-w-md space-y-4 p-8\">\n        <div className=\"mx-auto h-12 w-24 animate-pulse rounded-lg bg-muted/60\" />\n        <div className=\"h-72 animate-pulse rounded-2xl bg-muted/40\" />\n      </div>\n    </div>\n  );\n}\n\nexport default function SignInPage() {\n  return (\n    <Suspense fallback={<SignInSkeleton />}>\n      <SignInForm />\n    </Suspense>\n  );\n}\n\nfunction SignInForm() {\n  const router = useRouter();\n  const searchParams = useSearchParams();\n  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';\n  const errorParam = searchParams.get('error');\n\n  const [isCredentialsLoading, setIsCredentialsLoading] = useState(false);\n  const [isOAuthLoading, setIsOAuthLoading] = useState<'google' | 'github' | null>(null);\n  const [showPassword, setShowPassword] = useState(false);\n  const [rememberMe, setRememberMe] = useState(true);\n\n  const {\n    register,\n    handleSubmit,\n    formState: { errors, isSubmitting },\n  } = useForm<SignInFormValues>({\n    resolver: zodResolver(signInSchema),\n    defaultValues: { email: '', password: '' },\n    mode: 'onBlur',\n  });\n\n  const handleCredentialsSignIn = useCallback(\n    async (data: SignInFormValues) => {\n      setIsCredentialsLoading(true);\n      try {\n        const result = await signIn('credentials', {\n          email: data.email,\n          password: data.password,\n          remember: rememberMe,\n          redirect: false,\n          callbackUrl,\n        });\n\n        if (result?.error) {\n          const message =\n            ERROR_MESSAGES[result.error] ||\n            (result.error === 'EMAIL_NOT_VERIFIED'\n              ? ERROR_MESSAGES.EMAIL_NOT_VERIFIED\n              : 'Unable to sign in. Please check your credentials.');\n          toast.error(message);\n          return;\n        }\n\n        toast.success('Welcome back!');\n        router.push(callbackUrl);\n        router.refresh();\n      } catch {\n        toast.error('Something went wrong. Please try again.');\n      } finally {\n        setIsCredentialsLoading(false);\n      }\n    },\n    [callbackUrl, rememberMe, router]\n  );\n\n  const handleOAuthSignIn = useCallback(\n    (provider: 'google' | 'github') => {\n      setIsOAuthLoading(provider);\n      signIn(provider, { callbackUrl }).catch(() => {\n        setIsOAuthLoading(null);\n        toast.error('Could not start sign in. Please try again.');\n      });\n    },\n    [callbackUrl]\n  );\n\n  const isLoading = isCredentialsLoading || !!isOAuthLoading || isSubmitting;\n  const globalError = errorParam ? ERROR_MESSAGES[errorParam] || 'An error occurred. Please try again.' : null;\n\n  return (\n    <div className=\"relative min-h-screen flex items-center justify-center overflow-hidden bg-background px-4 py-12\">\n      <LiquidBackground />\n\n      <motion.div\n        initial=\"hidden\"\n        animate=\"visible\"\n        variants={fadeUp}\n        className=\"relative z-10 w-full max-w-md\"\n      >\n        <div className=\"relative rounded-3xl border border-white/10 bg-white/5 p-[1px] shadow-2xl backdrop-blur-xl dark:bg-white/[0.03]\">\n          <div className=\"rounded-[calc(1.5rem-1px)] bg-background/70 p-8 backdrop-blur-xl sm:p-10\">\n            <motion.div variants={fadeUp} custom={0} className=\"mb-8 flex flex-col items-center text-center\">\n              <Link href=\"/\" aria-label=\"HEY Home\" className=\"group inline-flex items-center gap-2\">\n                <span className=\"relative text-4xl font-bold tracking-tight\">\n                  <span className=\"bg-gradient-to-r from-primary via-fuchsia-500 to-sky-500 bg-clip-text text-transparent\">\n                    HEY\n                  </span>\n                  <Sparkles className=\"absolute -right-5 -top-1 h-4 w-4 text-primary/70 transition-transform group-hover:rotate-12\" />\n                </span>\n              </Link>\n              <h1 className=\"mt-4 text-2xl font-semibold tracking-tight\">Welcome back</h1>\n              <p className=\"mt-1.5 text-sm text-muted-foreground\">\n                Sign in to your account to continue\n              </p>\n            </motion.div>\n\n            <AnimatePresence>\n              {globalError && (\n                <motion.div\n                  initial={{ opacity: 0, height: 0 }}\n                  animate={{ opacity: 1, height: 'auto' }}\n                  exit={{ opacity: 0, height: 0 }}\n                  className=\"mb-5 overflow-hidden\"\n                >\n                  <div\n                    role=\"alert\"\n                    className=\"flex items-start gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive\"\n                  >\n                    <AlertCircle className=\"mt-0.5 h-4 w-4 shrink-0\" />\n                    <span>{globalError}</span>\n                  </div>\n                </motion.div>\n              )}\n            </AnimatePresence>\n\n            <motion.div variants={fadeUp} custom={1} className=\"grid grid-cols-2 gap-3\">\n              <Button\n                type=\"button\"\n                variant=\"outline\"\n                onClick={() => handleOAuthSignIn('github')}\n                disabled={isLoading}\n                loading={isOAuthLoading === 'github'}\n                className=\"h-11 gap-2 border-white/10 bg-white/5 backdrop-blur transition-all hover:bg-white/10 active:scale-[0.98]\"\n              >\n                <Github className=\"h-4 w-4\" />\n                GitHub\n              </Button>\n              <Button\n                type=\"button\"\n                variant=\"outline\"\n                onClick={() => handleOAuthSignIn('google')}\n                disabled={isLoading}\n                loading={isOAuthLoading === 'google'}\n                className=\"h-11 gap-2 border-white/10 bg-white/5 backdrop-blur transition-all hover:bg-white/10 active:scale-[0.98]\"\n              >\n                <GoogleIcon className=\"h-4 w-4\" />\n                Google\n              </Button>\n            </motion.div>\n\n            <motion.div variants={fadeUp} custom={2} className=\"relative my-6\">\n              <div className=\"absolute inset-0 flex items-center\">\n                <span className=\"w-full border-t border-border/60\" />\n              </div>\n              <div className=\"relative flex justify-center text-[11px] uppercase tracking-wider\">\n                <span className=\"bg-background/70 px-3 text-muted-foreground backdrop-blur-sm\">\n                  Or continue with email\n                </span>\n              </div>\n            </motion.div>\n\n            <form onSubmit={handleSubmit(handleCredentialsSignIn)} className=\"space-y-4\" noValidate>\n              <motion.div variants={fadeUp} custom={3}>\n                <Input\n                  {...register('email')}\n                  type=\"email\"\n                  label=\"Email\"\n                  placeholder=\"you@example.com\"\n                  error={errors.email?.message}\n                  autoComplete=\"email\"\n                  inputMode=\"email\"\n                  disabled={isLoading}\n                />\n              </motion.div>\n\n              <motion.div variants={fadeUp} custom={4} className=\"relative\">\n                <Input\n                  {...register('password')}\n                  type={showPassword ? 'text' : 'password'}\n                  label=\"Password\"\n                  placeholder=\"********\"\n                  error={errors.password?.message}\n                  autoComplete=\"current-password\"\n                  disabled={isLoading}\n                  className=\"pr-11\"\n                />\n                <button\n                  type=\"button\"\n                  onClick={() => setShowPassword((v) => !v)}\n                  className=\"absolute right-1 top-1 flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring\"\n                  aria-label={showPassword ? 'Hide password' : 'Show password'}\n                  aria-pressed={showPassword}\n                  tabIndex={-1}\n                  disabled={isLoading}\n                >\n                  {showPassword ? <EyeOff className=\"h-4 w-4\" /> : <Eye className=\"h-4 w-4\" />}\n                </button>\n              </motion.div>\n\n              <motion.div variants={fadeUp} custom={5} className=\"flex items-center justify-between\">\n                <label className=\"flex cursor-pointer select-none items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground\">\n                  <span className=\"relative inline-flex h-4 w-4 items-center justify-center\">\n                    <input\n                      type=\"checkbox\"\n                      checked={rememberMe}\n                      onChange={(e) => setRememberMe(e.target.checked)}\n                      disabled={isLoading}\n                      className=\"peer h-4 w-4 cursor-pointer appearance-none rounded border border-input bg-background transition-all checked:border-primary checked:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\"\n                    />\n                    <svg\n                      className=\"pointer-events-none absolute h-3 w-3 scale-0 text-primary-foreground transition-transform peer-checked:scale-100\"\n                      viewBox=\"0 0 24 24\"\n                      fill=\"none\"\n                      stroke=\"currentColor\"\n                      strokeWidth=\"3\"\n                      strokeLinecap=\"round\"\n                      strokeLinejoin=\"round\"\n                      aria-hidden=\"true\"\n                    >\n                      <polyline points=\"20 6 9 17 4 12\" />\n                    </svg>\n                  </span>\n                  Remember me\n                </label>\n                <Link\n                  href=\"/forgot-password\"\n                  className=\"text-sm font-medium text-primary underline-offset-4 transition-colors hover:underline\"\n                >\n                  Forgot password?\n                </Link>\n              </motion.div>\n\n              <motion.div variants={fadeUp} custom={6}>\n                <Button\n                  type=\"submit\"\n                  size=\"lg\"\n                  loading={isCredentialsLoading || isSubmitting}\n                  disabled={isLoading}\n                  className=\"group w-full gap-2 bg-gradient-to-r from-primary via-primary to-primary/80 shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.99]\"\n                >\n                  Sign in\n                  <ArrowRight className=\"h-4 w-4 transition-transform group-hover:translate-x-0.5\" />\n                </Button>\n              </motion.div>\n            </form>\n\n            <motion.div\n              variants={fadeUp}\n              custom={7}\n              className=\"mt-6 flex items-center justify-center gap-1.5 text-xs text-muted-foreground\"\n            >\n              <ShieldCheck className=\"h-3.5 w-3.5 text-emerald-500\" />\n              Secured with end-to-end encryption\n            </motion.div>\n\n            <motion.p variants={fadeUp} custom={8} className=\"mt-6 text-center text-sm text-muted-foreground\">\n              Don&apos;t have an account?{' '}\n              <Link\n                href=\"/signup\"\n                className=\"font-medium text-primary underline-offset-4 transition-colors hover:underline\"\n              >\n                Sign up\n              </Link>\n            </motion.p>\n          </div>\n        </div>\n      </motion.div>\n    </div>\n  );\n}\n"}]
