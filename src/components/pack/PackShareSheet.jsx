@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\pack\PackShareSheet.jsx
+CURRENT CODE:
 /**
  * HEY — Pack Share Sheet (F-31)
  *
@@ -149,172 +247,6 @@ export default function PackShareSheet({
       const updatedManifest = packManifest.updateManifestState(manifest, 'exported');
       // Would need to pass this back to parent
     } catch (e) {
-      setGenerationError(e.message);
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [manifest]);
-
-  const handleShare = useCallback(async () => {
-    if (!generatedBlob) {
-      await handleGenerate();
-    }
-
-    if (generatedBlob && onShare) {
-      const file = new File([generatedBlob], `${pack?.title || 'pack'}.heypack`, {
-        type: 'application/zip', // Would be application/zip for real ZIP
-      });
-
-      if (navigator.share && shareCapabilities?.state !== 'unavailable') {
-        try {
-          await navigator.share({
-            title: pack?.title || 'HEY Pack',
-            text: `HEY Pack: ${summary?.totalPages} page${summary?.totalPages !== 1 ? 's' : ''}`,
-            files: [file],
-          });
-        } catch (e) {
-          if (e.name !== 'AbortError') {
-            console.warn('Share failed, falling back to download', e);
-            handleDownload();
-          }
-        }
-      } else {
-        handleDownload();
-      }
-    }
-  }, [generatedBlob, pack, summary, shareCapabilities, onShare, handleGenerate]);
-
-  const handleDownload = useCallback(() => {
-    if (generatedBlob && onDownload) {
-      const url = URL.createObjectURL(generatedBlob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${pack?.title || 'pack'}.heypack`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-  }, [generatedBlob, pack, onDownload]);
-
-  if (!isOpen) return null;
-
-  if (!pack || !pagePlan) {
-    return (
-      <div className="hey-pack-share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-title">
-        <div className="share-sheet-content">
-          <header>
-            <h2 id="share-title">Share Pack</h2>
-            <button className="hey-print-btn-icon" onClick={onCancel} aria-label="Close">✕</button>
-          </header>
-          <div className="share-empty">No pack to share</div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="hey-pack-share-sheet" role="dialog" aria-modal="true" aria-labelledby="share-title">
-      <div className="share-sheet-content">
-        <header>
-          <h2 id="share-title">Share Pack</h2>
-          <button className="hey-print-btn-icon" onClick={onCancel} aria-label="Close">✕</button>
-        </header>
-
-        <div className="share-preview">
-          <div className="pack-summary">
-            <h3>{pack.title || 'Untitled Pack'}</h3>
-            <p className="pack-subtitle">{pack.subject} • {pack.teacher} • {pack.date}</p>
-
-            <div className="summary-stats">
-              <div className="stat">
-                <span className="stat-value">{summary?.totalPages || 0}</span>
-                <span className="stat-label">Pages</span>
-              </div>
-              <div className="stat">
-                <span className="stat-value">{Object.values(summary?.sectionCounts || {}).reduce((a, b) => a + b, 0)}</span>
-                <span className="stat-label">Sections</span>
-              </div>
-              <div className="stat">
-                <span className="stat-value">{FormatBytes(summary?.estimatedSize || 0)}</span>
-                <span className="stat-label">Est. Size</span>
-              </div>
-            </div>
-
-            <div className="summary-badges">
-              {summary?.hasAnswerKey && (
-                <span className="badge answer-key">🔑 Includes Answer Key</span>
-              )}
-              <span className="badge no-student-data">🚫 No Student Data</span>
-              <span className="badge offline">📴 Works Offline</span>
-              <span className="badge fonts">🔤 Fonts Embedded</span>
-            </div>
-          </div>
-
-          <div className="pack-sections">
-            <h4>Contents</h4>
-            {pack.sections.filter(s => s.visible).map((section, index) => {
-              const pageRange = pagePlan.sectionPageMap?.[index];
-              return <SectionRow key={section.id} section={section} pageRange={pageRange} />;
-            })}
-          </div>
-
-          {manifest?.assets?.length > 0 && (
-            <div className="pack-assets">
-              <h4>Assets</h4>
-              {manifest.assets.map(asset => (
-                <AssetRow key={asset.id} asset={asset} />
-              ))}
-            </div>
-          )}
-
-          {manifest?.fonts?.length > 0 && (
-            <div className="pack-fonts">
-              <h4>Fonts</h4>
-              {manifest.fonts.map(font => (
-                <FontRow key={font.id} font={font} />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <footer className="share-sheet-footer">
-          <div className="share-footer-info">
-            <span className="footer-size">{FormatBytes(summary?.estimatedSize || 0)} • fonts embedded • works offline</span>
-            {summary?.hasAnswerKey && (
-              <span className="footer-warning">⚠️ Contains answer key — share carefully</span>
-            )}
-          </div>
-
-          <div className="share-actions">
-            <button
-              className="hey-print-btn secondary"
-              onClick={handleDownload}
-              disabled={isGenerating}
-            >
-              {isGenerating ? '⏳ Generating…' : '💾 Download .heypack'}
-            </button>
-
-            <button
-              className={`hey-print-btn primary ${shareCapabilities?.state === 'unavailable' ? 'disabled' : ''}`}
-              onClick={handleShare}
-              disabled={isGenerating || shareCapabilities?.state === 'unavailable'}
-            >
-              📤 {isGenerating ? 'Preparing…' : 'Share Pack'}
-            </button>
-
-            {shareCapabilities?.state === 'unavailable' && (
-              <span className="share-unavailable">Sharing unavailable on this platform — use Download</span>
-            )}
-          </div>
-
-          {generationError && (
-            <div className="generation-error" role="alert">
-              Failed to generate pack: {generationError}
-            </div>
-          )}
-        </footer>
-      </div>
-    </div>
-  );
-}
+      setGenerati
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
