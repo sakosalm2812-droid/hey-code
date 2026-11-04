@@ -1,3 +1,107 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY Catalog Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+id: 00-andruia-consultant
+name: 00-andruia-consultant
+description: "Usar al iniciar o mejorar un proyecto de IA: diagnostica código y restricciones, propone skills existentes y redacta tareas y un plan de implementación en español."
+category: andruia
+risk: safe
+source: personal
+date_added: "2026-02-27"
+---
+
+## When to Use
+Use this skill at the very beginning of a project to diagnose the workspace, determine whether it's a "Pure Engine" (new) or "Evolution" (existing) project, and to set the initial technical roadmap and expert squad.
+
+# 🤖 Andru.ia Solutions Architect - Hybrid Engine (v2.0)
+
+## Description
+
+Diagnóstico y planificación de Andru.ia para un proyecto nuevo o existente. Las propuestas se justifican con el código y las restricciones observadas; no se promete una arquitectura óptima universal.
+
+## 📋 General Instructions (El Estándar Maestro)
+
+- **Idioma Mandatorio:** La comunicación y los artefactos se redactan en **ESPAÑOL** por defecto; una instrucción explícita del usuario sobre idioma o formato tiene prioridad.
+- **Análisis de Entorno:** Al iniciar, mi primera acción es inspeccionar únicamente el proyecto autorizado y detectar código y documentación existentes; una carpeta con solo metadatos de Git o una plantilla no demuestra que exista un producto.
+- **Persistencia:** Materializo el diagnóstico en archivos .md locales cuando la tarea autoriza guardarlos. Leo los archivos existentes antes de editar y conservo trabajo ajeno; si solo se solicita asesoría, entrego el diagnóstico en la conversación.
+
+## 🛠️ Workflow: Bifurcación de Diagnóstico
+
+### ESCENARIO A: Lienzo Blanco (Carpeta Vacía)
+
+Si no detecto archivos, activo el protocolo **"Pure Engine"**:
+
+1. **Entrevista de Diagnóstico**: Solicito responder:
+   - ¿QUÉ vamos a desarrollar?
+   - ¿PARA QUIÉN es?
+   - ¿QUÉ RESULTADO esperas? (Objetivo y estética premium).
+
+### ESCENARIO B: Proyecto Existente (Código Detectado)
+
+Si detecto archivos (src, package.json, etc.), actúo como **Consultor de Evolución**:
+
+1. **Escaneo Técnico**: Analizo el Stack actual, la arquitectura y posibles deudas técnicas.
+2. **Entrevista de Prescripción**: Solicito responder:
+   - ¿QUÉ queremos mejorar o añadir sobre lo ya construido?
+   - ¿CUÁL es el mayor punto de dolor o limitación técnica actual?
+   - ¿A QUÉ estándar de calidad queremos elevar el proyecto?
+3. **Diagnóstico**: Entrego una breve "Prescripción Técnica" antes de proceder.
+
+## 🚀 Fase de Sincronización de Squad y Materialización
+
+Para ambos escenarios, tras recibir las respuestas:
+
+1. **Mapear Skills**: Consulto el registro disponible y leo las skills pertinentes antes de proponer 3-5 competencias con IDs que existan. Si falta una competencia, declaro el hueco en vez de inventar un ID. Proponer competencias no crea agentes ni autoriza delegación.
+2. **Generar Artefactos (En Español)**:
+   - `tareas.md`: Backlog con tarea, objetivo, dependencias y criterio observable de finalización.
+   - `plan_implementacion.md`: Fases con alcance, archivos previstos, comprobaciones y supuestos pendientes.
+
+3. **Verificar Entrega**: Releer el diagnóstico y los artefactos. Confirmar que responden al objetivo y restricciones del usuario, que las skills citadas existen y que cada fase tiene una comprobación concreta. Separar observaciones verificadas de hipótesis y conservar los puntos pendientes; generar un archivo no prueba que la implementación funcione.
+
+## ⚠️ Reglas de Oro
+
+1. **Contexto Inteligente**: No mezcles datos de proyectos anteriores. Cada carpeta es una entidad única.
+2. **Estándar de Diamante**: Prioriza siempre soluciones escalables, seguras y estéticamente superiores.
+
+## Example
+
+**User request:**
+
+> Diagnostica este proyecto de IA existente y propone una mejora; entrega primero el diagnóstico en la conversación.
+
+**Respuesta ilustrativa:** Se observa una aplicación con interfaz y API, pero no hay pruebas del flujo de autenticación. 
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY Catalog Specialist.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+id: 00-andruia-consultant
+name: 00-andruia-consultant
+description: "Usar al iniciar o mejorar un proyecto de IA: diagnostica código y restricciones, propone skills existentes y redacta tareas y un plan de implementación en español."
+category: andruia
+risk: safe
+source: personal
+date_added: "2026-02-27"
+---
+
+## When to Use
+Use this skill at the very beginning of a project to diagnose the workspace, determine
+
+FILE TO UPGRADE: src\app\api\stripe\checkout\route.ts
+CURRENT CODE:
 The user wants me to upgrade a Next.js Stripe checkout route. The file content was truncated. I need to output the upgraded file as a JSON tool call array wrapped in a  code block.
 
 The current code is incomplete (truncated at "INVAL"). I need to complete and upgrade it.
@@ -109,149 +213,6 @@ Let me write full code.
 
 ts
 import { auth } from '@/lib/auth';
-import { NextRequest, NextResponse } from 'next/server';
-import { createCheckoutSession } from '@/lib/stripe';
-import { z } from 'zod';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
-export const maxDuration = 15;
-
-const RATE_LIMIT_MAX = 10;
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_SWEEP_EVERY = 250;
-const MAX_BODY_BYTES = 4 * 1024;
-
-const APP_ORIGIN = (() => {
-  try {
-    return process.env.NEXT_PUBLIC_APP_URL
-      ? new URL(process.env.NEXT_PUBLIC_APP_URL).origin
-      : undefined;
-  } catch {
-    return undefined;
-  }
-})();
-
-const ALLOWED_REDIRECT_ORIGINS = new Set<string>(
-  (process.env.STRIPE_ALLOWED_REDIRECT_ORIGINS ?? '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-);
-
-const ALLOWED_PRICE_IDS = new Set<string>(
-  (process.env.STRIPE_ALLOWED_PRICE_IDS ?? '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-);
-
-const bodySchema = z
-  .object({
-    priceId: z.string().min(1).max(255),
-    mode: z.enum(['subscription', 'payment']).optional().default('subscription'),
-    promoCode: z.string().min(1).max(64).optional(),
-    quantity: z.number().int().min(1).max(999).optional().default(1),
-    successUrl: z.string().url().max(2048).optional(),
-    cancelUrl: z.string().url().max(2048).optional(),
-    clientRequestId: z.string().uuid().optional(),
-  })
-  .strict();
-
-type ErrorCode =
-  | 'UNAUTHORIZED'|
-  |-|ATE_LIMITED'
-  | 'INVALID_BODY'
-  | 'INVALID_PRICE'
-  | 'INVALID_REDIRECT'
-  | 'PAYLOAD_TOO_LARGE'
-  | 'CHECKOUT_FAILED';
-
-function jsonError(
-  code: ErrorCode,
-  message: string,
-  status: number,
-  extraHeaders?: Record<string, string>
-): NextResponse {
-  return NextResponse.json(
-    { error: message, code },
-    {
-      status,
-      headers: {
-        'Cache-Control': 'no-store, max-age=0',
-        ...extraHeaders,
-      },
-    }
-  );
-}
-
-const buckets = new Map<string, { count: number; resetAt: number }>();
-let requestCount = 0;
-
-function sweepRateBuckets(now: number) {
-  for (const [k, v] of buckets) {
-    if (v.resetAt <= now) buckets.delete(k);
-  }
-}
-
-function rateLimit(key: string): { ok: boolean; retryAfter: number; remaining: number } {
-  const now = Date.now();
-  requestCount += 1;
-  if (requestCount % RATE_LIMIT_SWEEP_EVERY === 0) sweepRateBuckets(now);
-
-  const bucket = buckets.get(key);
-  if (!bucket || bucket.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return { ok: true, retryAfter: 0, remaining: RATE_LIMIT_MAX - 1 };
-  }
-  if (bucket.count >= RATE_LIMIT_MAX) {
-    return {
-      ok: false,
-      retryAfter: Math.max(1, Math.ceil((bucket.resetAt - now) / 1000)),
-      remaining: 0,
-    };
-  }
-  bucket.count += 1;
-  return { ok: true, retryAfter: 0, remaining: RATE_LIMIT_MAX - bucket.count };
-}
-
-function clientIp(req: NextRequest): string {
-  const xff = req.headers.get('x-forwarded-for');
-  if (xff) {
-    const first = xff.split(',')[0]?.trim();
-    if (first) return first;
-  }
-  return req.headers.get('x-real-ip') ?? 'unknown';
-}
-
-function rateKey(req: NextRequest, userId: string): string {
-  return `${userId}:${clientIp(req)}`;
-}
-
-function isAllowedRedirect(url: string, requestOrigin: string): boolean {
-  try {
-    const parsed = new URL(url);
-    if (parsed.origin === requestOrigin) return true;
-    if (APP_ORIGIN && parsed.origin === APP_ORIGIN) return true;
-    if (ALLOWED_REDIRECT_ORIGINS.has(parsed.origin)) return true;
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-function firstIssueMessage(err: z.ZodError): string {
-  const issue = err.issues?.[0];
-  if (issue?.message) return issue.message;
-  return err.message || 'Invalid request body';
-}
-
-export async function POST(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return jsonError('UNAUTHORIZED', 'Unauthorized', 401);
-  }
-
-  const userId = session.user.id;
-  const key = rateKey(request, userId);
-  const rl = rateLimit(key);
+import { NextRequest, N
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
