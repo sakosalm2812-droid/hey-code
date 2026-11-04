@@ -1,3 +1,101 @@
+[FORMAT REQUIREMENT — READ CAREFULLY]
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
+---
+
+# Design Motion Principles
+
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+
+---
+
+## STEP 0: Detect Mode (DO THIS FIRST)
+
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
+
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+
+**Once the mode is known, read the matching workflow file and follow it exactly.**
+
+---
+
+## The Three Designers
+
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
+
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+
+---
+
+## Context-to-Perspective Mapping
+
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
+
+---
+
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|-
+PREVIOUSLY SUCCESSFUL PATTERN:
+
+You are the HEY UX Motion Auditor.
+YOUR SKILL LIBRARY:
+
+--- SKILL.md ---
+---
+name: design-motion-principles
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+
+FILE TO UPGRADE: src\components\print\PrintStudio.jsx
+CURRENT CODE:
 /**
  * HEY — Print Studio (F-30)
  *
@@ -119,455 +217,6 @@ function RightRail({ pack, pagePlan, printCapabilities, pdfCapabilities, onOptio
     onPrint();
   }, [pack, onPrint]);
 
-  const handlePrintKeySeparate = useCallback(() => {
-    onPrintKeySeparate();
-  }, [onPrintKeySeparate]);
-
-  const handleExportPdf = useCallback(() => {
-    onExportPdf();
-  }, [onExportPdf]);
-
-  const pdfAction = exportHonesty.getPdfExportAction(pdfCapabilities);
-  const printAction = exportHonesty.getPrintAction(printCapabilities);
-
-  return (
-    <aside className="hey-print-right-rail" role="complementary" aria-label="Print options">
-      <div className="rail-section">
-        <h3>Paper</h3>
-        <div className="option-group">
-          <label>
-            <span>Orientation</span>
-            <select
-              value={pack.orientation}
-              onChange={(e) => onOptionChange('orientation', e.target.value)}
-              className="hey-print-select"
-            >
-              {ORIENTATIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div className="option-group">
-          <label>
-            <span>Body Size</span>
-            <select
-              value={pack.bodySize}
-              onChange={(e) => onOptionChange('bodySize', e.target.value)}
-              className="hey-print-select"
-            >
-              {BODY_SIZES.map(b => (
-                <option key={b.value} value={b.value}>{b.label}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </div>
-
-      <div className="rail-section">
-        <h3>Answer Key</h3>
-        <div className="option-group">
-          <label className="hey-print-checkbox-label">
-            <input
-              type="checkbox"
-              checked={pack.includeKeyWithWorksheet}
-              onChange={(e) => onOptionChange('includeKeyWithWorksheet', e.target.checked)}
-            />
-            <span>Include key with worksheet (same print job)</span>
-          </label>
-          <p className="option-hint">
-            When off (default), the answer key prints as a separate job with a CONFIDENTIAL header.
-          </p>
-        </div>
-      </div>
-
-      {paperSizeWarning && (
-        <div className="rail-section warning">
-          <h3>⚠️ Paper Size Warning</h3>
-          <p>{paperSizeWarning}</p>
-          <div className="warning-actions">
-            <button className="hey-print-btn primary" onClick={() => setPaperSizeWarning(null)}>
-              Scale to fit
-            </button>
-            <button className="hey-print-btn secondary" onClick={() => setPaperSizeWarning(null)}>
-              Continue anyway
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div className="rail-section">
-        <h3>Preview</h3>
-        <p className="preview-info">
-          {pagePlan?.stats?.totalPages || 0} page(s) •{' '}
-          {pagePlan?.stats?.totalBlocks || 0} content block(s)
-        </p>
-      </div>
-
-      <div className="rail-section actions">
-        <button
-          className={`hey-print-btn primary ${printAction.disabled ? 'disabled' : ''}`}
-          onClick={handlePrint}
-          disabled={printAction.disabled}
-          title={printAction.reason || ''}
-        >
-          🖨️ {printAction.label}
-        </button>
-
-        {answerKeyPolicy.hasAnswerKey(pack) && (
-          <button
-            className={`hey-print-btn secondary ${printAction.disabled ? 'disabled' : ''}`}
-            onClick={handlePrintKeySeparate}
-            disabled={printAction.disabled}
-            title={printAction.reason || ''}
-          >
-            🔑 Print key separately
-          </button>
-        )}
-
-        <button
-          className={`hey-print-btn secondary ${pdfAction.disabled ? 'disabled' : ''}`}
-          onClick={handleExportPdf}
-          disabled={pdfAction.disabled}
-          title={pdfAction.reason || ''}
-        >
-          📄 {pdfAction.label}
-        </button>
-
-        {pdfAction.honestyNote && (
-          <p className="honesty-note">{pdfAction.honestyNote}</p>
-        )}
-      </div>
-
-      <div className="rail-section">
-        <h3>Capability</h3>
-        <div className="capability-status">
-          <div className="cap-row">
-            <span>Print</span>
-            <span className={`cap-badge ${printCapabilities.state}`}>{printCapabilities.state}</span>
-          </div>
-          <div className="cap-row">
-            <span>PDF Export</span>
-            <span className={`cap-badge ${pdfCapabilities.state}`}>{pdfCapabilities.state}</span>
-          </div>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-export default function PrintStudio({ initialPack = null, onClose }) {
-  const [pack, setPack] = useState(() => initialPack || createPackFromPreset('lesson+worksheet'));
-  const [pagePlan, setPagePlan] = useState(null);
-  const [editingSectionIndex, setEditingSectionIndex] = useState(null);
-  const [previewMode, setPreviewMode] = useState('thumbnails'); // 'thumbnails' | 'single'
-  const [selectedPageIndex, setSelectedPageIndex] = useState(0);
-  const [printCapabilities, setPrintCapabilities] = useState({ state: 'unavailable', reason: '' });
-  const [pdfCapabilities, setPdfCapabilities] = useState({ state: 'unavailable', reason: '' });
-
-  // Load platform capabilities
-  useEffect(() => {
-    const loadCapabilities = async () => {
-      try {
-        const printCap = platformCapabilities.getCapabilityAvailability('print', platformCapabilities.getCurrentPlatform());
-        const pdfCap = platformCapabilities.getCapabilityAvailability('print-to-pdf', platformCapabilities.getCurrentPlatform());
-        setPrintCapabilities(printCap);
-        setPdfCapabilities(pdfCap);
-      } catch (e) {
-        console.warn('Could not load print capabilities', e);
-      }
-    };
-    loadCapabilities();
-  }, []);
-
-  // Generate page plan from pack sections
-  useEffect(() => {
-    const generatePagePlan = () => {
-      // In real implementation, this would render sections to offscreen container
-      // and measure them. For now, create synthetic blocks based on section types.
-      const blocks = [];
-
-      pack.sections.forEach((section, sectionIndex) => {
-        if (!section.visible) return;
-
-        // Add page break before answer key
-        if (section.pageBreakBefore && blocks.length > 0) {
-          blocks.push({ type: 'page-break', height: 0 });
-        }
-
-        // Generate synthetic blocks for each section type
-        switch (section.type) {
-          case 'cover':
-            blocks.push(
-              { type: 'heading', height: 80, splittable: false, sectionIndex, sectionType: section.type, text: pack.title },
-              { type: 'paragraph', height: 60, splittable: false, sectionIndex, sectionType: section.type, text: pack.subject },
-              { type: 'paragraph', height: 40, splittable: false, sectionIndex, sectionType: section.type, text: `By ${pack.teacher} • ${pack.date}` }
-            );
-            break;
-          case 'lesson':
-            blocks.push(
-              { type: 'heading', height: 40, splittable: false, sectionIndex, sectionType: section.type, text: section.title || 'Lesson' },
-              { type: 'paragraph', height: 200, splittable: true, sectionIndex, sectionType: section.type, text: section.content || 'Lesson content...' },
-              { type: 'paragraph', height: 150, splittable: true, sectionIndex, sectionType: section.type, text: 'More explanation...' }
-            );
-            break;
-          case 'worksheet':
-            blocks.push(
-              { type: 'heading', height: 40, splittable: false, sectionIndex, sectionType: section.type, text: section.title || 'Worksheet' },
-              { type: 'question', height: 80, splittable: true, sectionIndex, sectionType: section.type, text: 'Question 1...' },
-              { type: 'answer-box', height: 60, splittable: false, sectionIndex, sectionType: section.type },
-              { type: 'question', height: 80, splittable: true, sectionIndex, sectionType: section.type, text: 'Question 2...' },
-              { type: 'answer-box', height: 60, splittable: false, sectionIndex, sectionType: section.type }
-            );
-            break;
-          case 'quiz':
-            blocks.push(
-              { type: 'heading', height: 40, splittable: false, sectionIndex, sectionType: section.type, text: section.title || 'Quiz' },
-              { type: 'question', height: 60, splittable: false, sectionIndex, sectionType: section.type, text: 'Q1: Multiple choice...' },
-              { type: 'answer-box', height: 40, splittable: false, sectionIndex, sectionType: section.type },
-              { type: 'question', height: 60, splittable: false, sectionIndex, sectionType: section.type, text: 'Q2: Short answer...' },
-              { type: 'answer-box', height: 80, splittable: false, sectionIndex, sectionType: section.type }
-            );
-            break;
-          case 'answer-key':
-            blocks.push(
-              { type: 'answer-key-item', height: 40, splittable: false, sectionIndex, sectionType: section.type, text: '1. Answer...' },
-              { type: 'answer-key-item', height: 40, splittable: false, sectionIndex, sectionType: section.type, text: '2. Answer...' }
-            );
-            break;
-          case 'notes':
-            blocks.push(
-              { type: 'heading', height: 40, splittable: false, sectionIndex, sectionType: section.type, text: 'Teacher Notes' },
-              { type: 'paragraph', height: 120, splittable: true, sectionIndex, sectionType: section.type, text: section.content || 'Notes...' }
-            );
-            break;
-        }
-      });
-
-      const plan = paginate(blocks, { orientation: pack.orientation });
-      setPagePlan(plan);
-    };
-
-    generatePagePlan();
-  }, [pack]);
-
-  const handleOptionChange = useCallback((key, value) => {
-    setPack(prev => {
-      const updated = { ...prev, [key]: value, updatedAt: new Date().toISOString() };
-      return updated;
-    });
-  }, []);
-
-  const handleEditSection = useCallback((section, index) => {
-    setEditingSectionIndex(index);
-    // In a real implementation, this would open a modal to edit section content
-    alert(`Edit ${section.type} section: "${section.title || '(untitled)'}"`);
-    setEditingSectionIndex(null);
-  }, []);
-
-  const handleToggleVisibility = useCallback((section, index) => {
-    setPack(prev => ({
-      ...prev,
-      sections: prev.sections.map((s, i) =>
-        i === index ? { ...s, visible: !s.visible } : s
-      ),
-      updatedAt: new Date().toISOString(),
-    }));
-  }, []);
-
-  const handleRemoveSection = useCallback((index) => {
-    setPack(prev => ({
-      ...prev,
-      sections: prev.sections.filter((_, i) => i !== index).map((s, i) => ({ ...s, order: i })),
-      updatedAt: new Date().toISOString(),
-    }));
-  }, []);
-
-  const handleAddSection = useCallback((type) => {
-    setPack(prev => ({
-      ...prev,
-      sections: [...prev.sections, createSection(type, { order: prev.sections.length })],
-      updatedAt: new Date().toISOString(),
-    }));
-  }, []);
-
-  const handleReorderSections = useCallback((fromIndex, toIndex) => {
-    setPack(prev => {
-      const sections = [...prev.sections];
-      const [removed] = sections.splice(fromIndex, 1);
-      sections.splice(toIndex, 0, removed);
-      return {
-        ...prev,
-        sections: sections.map((s, i) => ({ ...s, order: i })),
-        updatedAt: new Date().toISOString(),
-      };
-    });
-  }, []);
-
-  const handleApplyPreset = useCallback((presetId) => {
-    const newPack = createPackFromPreset(presetId, {
-      title: pack.title,
-      subject: pack.subject,
-      teacher: pack.teacher,
-      date: pack.date,
-      orientation: pack.orientation,
-      bodySize: pack.bodySize,
-      includeKeyWithWorksheet: pack.includeKeyWithWorksheet,
-    });
-    setPack(newPack);
-  }, [pack]);
-
-  const handlePrint = useCallback(() => {
-    // Trigger print via PackPreview
-    window.dispatchEvent(new CustomEvent('hey-print-pack', { detail: { pack, pagePlan, includeKey: pack.includeKeyWithWorksheet } }));
-  }, [pack, pagePlan]);
-
-  const handlePrintKeySeparate = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('hey-print-pack', { detail: { pack, pagePlan, includeKey: false, separateKey: true } }));
-  }, [pack, pagePlan]);
-
-  const handleExportPdf = useCallback(() => {
-    window.dispatchEvent(new CustomEvent('hey-export-pdf', { detail: { pack, pagePlan } }));
-  }, [pack, pagePlan]);
-
-  const handleClose = useCallback(() => {
-    if (onClose) onClose();
-  }, [onClose]);
-
-  // Validate pack
-  const validation = useMemo(() => validatePack(pack), [pack]);
-
-  return (
-    <div className="hey-print-studio" role="main" aria-label="Print Studio">
-      {/* Top Bar */}
-      <header className="hey-print-studio-header">
-        <div className="header-left">
-          <button className="hey-print-btn ghost" onClick={handleClose} aria-label="Close Print Studio">
-            ← Back
-          </button>
-          <h1>Print Studio</h1>
-        </div>
-        <div className="header-center">
-          <div className="preset-selector">
-            <label htmlFor="preset-select">Preset:</label>
-            <select
-              id="preset-select"
-              value={PRESETS.find(p => {
-                const presetPack = createPackFromPreset(p.id);
-                return presetPack.sections.length === pack.sections.length &&
-                  presetPack.sections.every((s, i) => s.type === pack.sections[i].type);
-              })?.id || 'custom'}
-              onChange={(e) => e.target.value !== 'custom' && handleApplyPreset(e.target.value)}
-              className="hey-print-select"
-            >
-              {PRESETS.map(p => (
-                <option key={p.id} value={p.id}>{p.label}</option>
-              ))}
-              <option value="custom">Custom…</option>
-            </select>
-          </div>
-          <div className="pack-title-editor">
-            <input
-              type="text"
-              value={pack.title}
-              onChange={(e) => setPack(prev => ({ ...prev, title: e.target.value, updatedAt: new Date().toISOString() }))}
-              placeholder="Pack title"
-              className="hey-print-input"
-              aria-label="Pack title"
-            />
-            <input
-              type="text"
-              value={pack.subject}
-              onChange={(e) => setPack(prev => ({ ...prev, subject: e.target.value, updatedAt: new Date().toISOString() }))}
-              placeholder="Subject / Class"
-              className="hey-print-input hey-print-input-sm"
-              aria-label="Subject or class"
-            />
-          </div>
-        </div>
-        <div className="header-right">
-          <div className="validation-status" aria-live="polite">
-            {validation.ok ? (
-              <span className="valid">✓ Valid</span>
-            ) : (
-              <span className="invalid">✗ {validation.errors[0]}</span>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="hey-print-studio-body">
-        {/* Left Rail - Sections */}
-        <aside className="hey-print-left-rail" role="complementary" aria-label="Pack sections">
-          <div className="rail-header">
-            <h2>Sections</h2>
-            <div className="add-section-menu">
-              {SECTION_TYPES.filter(s => {
-                if (s.type === 'answer-key') return !pack.sections.some(sec => sec.type === 'answer-key');
-                return true;
-              }).map(s => (
-                <button
-                  key={s.type}
-                  className="hey-print-btn-add-section"
-                  onClick={() => handleAddSection(s.type)}
-                  title={`Add ${s.label}`}
-                >
-                  {s.icon} {s.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="sections-list" role="list" aria-label="Pack sections">
-            {pack.sections.map((section, index) => (
-              <SectionItem
-                key={section.id}
-                section={section}
-                index={index}
-                onEdit={handleEditSection}
-                onRemove={handleRemoveSection}
-                onMoveUp={() => index > 0 && handleReorderSections(index, index - 1)}
-                onMoveDown={() => index < pack.sections.length - 1 && handleReorderSections(index, index + 1)}
-                onToggleVisibility={handleToggleVisibility}
-                isAnswerKey={section.type === 'answer-key'}
-              />
-            ))}
-          </div>
-
-          {pack.sections.length === 0 && (
-            <div className="empty-sections">
-              <p>No sections yet. Add sections from the menu above.</p>
-            </div>
-          )}
-        </aside>
-
-        {/* Centre - Preview */}
-        <main className="hey-print-centre" role="main">
-          <PackPreview
-            pack={pack}
-            pagePlan={pagePlan}
-            mode={previewMode}
-            selectedPageIndex={selectedPageIndex}
-            onModeChange={setPreviewMode}
-            onPageSelect={setSelectedPageIndex}
-            includeKey={pack.includeKeyWithWorksheet}
-          />
-        </main>
-
-        {/* Right Rail - Options */}
-        <RightRail
-          pack={pack}
-          pagePlan={pagePlan}
-          printCapabilities={printCapabilities}
-          pdfCapabilities={pdfCapabilities}
-          onOptionChange={handleOptionChange}
-          onPrint={handlePrint}
-          onPrintKeySeparate={handlePrintKeySeparate}
-          onExportPdf={handleExportPdf}
-        />
-      </div>
-    </div>
-  );
-}
+  con
+MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
+Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
