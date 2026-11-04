@@ -1,420 +1,468 @@
+The user wants an upgraded version of ThemeGallery.module.css. The file is truncated, but I should produce a complete, polished CSS file with Liquid Glass aesthetics, fixed bugs (the . instead of ; typos in .info strong, .info span, .accent, .check), and enhanced motion.
+
+Key bugs:
+
+text-overflow: ellipsis. should be ;
+
+font-size: 12px. → ;
+
+width: 12px; height: 12px. → ;
+
+.check { width: 25px. height: 25px. ... display: g truncated
+
+Missing responsive breakpoints for the 4-col grid
+
+Missing focus-visible states, reduced motion support
+
+Missing .active check styling, .accent gradient
+
+Also need to wrap JSON in code block? The format requirement says to wrap ALL JSON tool call arrays in a  code block. But the mission says "output ONLY the raw upgraded code. No markdown. No truncation." Hmm. Conflict. The format requirement is about JSON tool calls. If I'm just outputting raw code (not tool calls), I should output raw CSS. But the harness... Actually the instruction says wrap JSON tool call arrays in a code block. If I output raw code without tool calls, no JSON array. But the safest given the "previously successful pattern" — it seems the expected output is a write_file tool call. Hmm, but mission says output ONLY raw upgraded code.
+
+Given the format requirement is loud and first, and the pattern suggests a harness parses code blocks... but mission explicitly says output raw code. I think the intent: output the upgraded CSS as a tool call to write_file wrapped in a json code block. That satisfies both "no markdown/truncation" spirit (content isn't truncated) and the harness parsing.
+
+Hmm, risky. The "FORMAT REQUIREMENT — READ CAREFULLY" is emphasized as critical for the automation harness. I'll go with the JSON tool call format with write_file. That's the previously successful pattern presumably.
+
+Let me write the upgraded CSS.
+
+Design goals:
+
+Liquid Glass: layered translucency, backdrop-filter blur+saturate, inner highlight borders via inset box-shadow, gradient specular sheen, subtle noise-free.
+
+Motion: purposeful, fast, respects reduced motion, focus-visible, press states (scale 0.98), staggered reveals optional.
+
+Emil lens: restraint — keep transitions short (0.18–0.25s), avoid animating layout props.
+
+Fix the truncated .check.
+
+Let me build:
+
+css
 .gallery {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-  
-  .heading {
-    margin-bottom: 42px;
-  }
-  
-  .eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-  
-    margin-bottom: 14px;
-  
-    color: var(--accent);
-  
-    font-family: var(--font-heading);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-  }
-  
-  .heading h2 {
-    margin: 0;
-  
-    color: var(--text-primary);
-  
-    font-family: var(--font-heading);
-    font-size: clamp(32px, 4vw, 58px);
-    line-height: 1;
-    letter-spacing: -0.06em;
-  }
-  
-  .heading p {
-    max-width: 620px;
-    margin: 18px 0 0;
-  
-    color: var(--text-secondary);
-  
-    font-family: var(--font-body);
-    font-size: 18px;
-    line-height: 1.5;
-  }
-  
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 18px;
-  }
-  
-  .theme {
-    position: relative;
-  
-    min-width: 0;
-    padding: 0;
-  
-    overflow: hidden;
-  
-    border: 1px solid var(--border);
-    border-radius: 24px;
-  
-    background: var(--glass-bg);
-  
-    color: var(--text-primary);
-  
-    text-align: left;
-  
-    cursor: pointer;
-  
-    transition:
-      border-color 0.25s var(--ease),
-      box-shadow 0.25s var(--ease),
-      background 0.25s var(--ease);
-  }
-  
-  .theme:hover {
-    border-color: var(--theme-accent, var(--accent));
-  
-    box-shadow:
-      0 18px 50px rgba(0, 0, 0, 0.2),
-      0 0 35px
-        color-mix(
-          in srgb,
-          var(--theme-accent, var(--accent)) 22%,
-          transparent
-        );
-  }
-  
-  .theme.active {
-    border-color: var(--theme-accent, var(--accent));
-  
-    box-shadow:
-      0 0 0 1px var(--theme-accent, var(--accent)),
-      0 20px 60px rgba(0, 0, 0, 0.25),
-      0 0 45px
-        color-mix(
-          in srgb,
-          var(--theme-accent, var(--accent)) 25%,
-          transparent
-        );
-  }
-  
-  .preview {
-    position: relative;
-  
-    height: 190px;
-  
-    overflow: hidden;
-  
-    background:
-      radial-gradient(
-        circle at 70% 20%,
-        var(--theme-accent),
-        transparent 34%
-      ),
-      radial-gradient(
-        circle at 20% 90%,
-        var(--theme-accent-2),
-        transparent 38%
-      ),
-      var(--theme-bg);
-  
-    isolation: isolate;
-  }
-  
-  .orb {
-    position: absolute;
-  
-    width: 150px;
-    height: 150px;
-  
-    top: -60px;
-    right: -35px;
-  
-    border-radius: 50%;
-  
-    background: var(--theme-accent);
-  
-    opacity: 0.18;
-  
-    filter: blur(18px);
-  }
-  
-  .previewWindow {
-    position: absolute;
-  
-    left: 12%;
-    right: 12%;
-    bottom: -8px;
-  
-    height: 145px;
-  
-    overflow: hidden;
-  
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--theme-accent) 35%,
-        white 10%
-      );
-  
-    border-radius: 16px 16px 0 0;
-  
-    background:
-      color-mix(
-        in srgb,
-        var(--theme-surface) 88%,
-        transparent
-      );
-  
-    box-shadow:
-      0 15px 40px rgba(0, 0, 0, 0.25);
-  
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-  }
-  
-  .previewTop {
-    height: 25px;
-  
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  
-    padding: 0 9px;
-  
-    border-bottom: 1px solid
-      color-mix(
-        in srgb,
-        var(--theme-accent) 15%,
-        transparent
-      );
-  }
-  
-  .previewTop span {
-    width: 5px;
-    height: 5px;
-  
-    border-radius: 50%;
-  
-    background: var(--theme-accent);
-  
-    opacity: 0.7;
-  }
-  
-  .previewContent {
-    padding: 15px;
-  }
-  
-  .previewLineLarge,
-  .previewLine,
-  .previewLineShort {
-    height: 6px;
-  
-    margin-bottom: 8px;
-  
-    border-radius: 99px;
-  
-    background: var(--theme-accent);
-  
-    opacity: 0.65;
-  }
-  
-  .previewLineLarge {
-    width: 55%;
-    height: 9px;
-  }
-  
-  .previewLine {
-    width: 78%;
-    opacity: 0.28;
-  }
-  
-  .previewLineShort {
-    width: 42%;
-    opacity: 0.18;
-  }
-  
-  .previewCards {
-    display: flex;
-    gap: 7px;
-  
-    margin-top: 14px;
-  }
-  
-  .previewCards span {
-    flex: 1;
-  
-    height: 34px;
-  
-    border-radius: 7px;
-  
-    background:
-      linear-gradient(
-        135deg,
-        var(--theme-accent),
-        var(--theme-accent-2)
-      );
-  
-    opacity: 0.22;
-  }
-  
-  .info {
-    min-height: 78px;
-  
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  
-    padding: 16px 17px;
-  }
-  
-  .info > div:first-child {
-    min-width: 0;
-  
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  
-    flex: 1;
-  }
-  
-  .info strong {
-    overflow: hidden;
-  
-    color: var(--text-primary);
-  
-    font-family: var(--font-heading);
-    font-size: 14px;
-    font-weight: 700;
-  
-    white-space: nowrap;
-    text-overflow: ellipsis.
-  }
-  
-  .info span {
-    color: var(--text-secondary);
-  
-    font-family: var(--font-body);
-    font-size: 12px.
-  }
-  
-  .accent {
-    width: 12px;
-    height: 12px.
-  
-    flex-shrink: 0.
-  
-    border-radius: 50%.
-  }
-  
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  container-type: inline-size;
+}
+
+Add .heading etc. keep.
+
+.grid: grid-template-columns: repeat(4, minmax(0,1fr)); gap: 18px; with media queries: 1100px → 3 cols? Actually 4 cols at 1400 max. Let's do:
+
+default 4
+
+@media (max-width: 1100px) → 3
+
+@media (max-width: 820px) → 2
+
+@media (max-width: 520px) → 1
+
+.theme:
+
+transform: translateZ(0), will-change not needed.
+
+transition with cubic-bezier.
+
+isolation: isolate
+
+backdrop-filter for liquid glass on info area? The card has glass-bg.
+
+add ::before specular highlight that fades in on hover — a radial gradient following... no JS, so use a static top sheen.
+
+press: :active { transform: scale(0.985); } with transition 120ms.
+
+Careful: overflow: hidden + border-radius fine.
+
+.theme::after — a ring highlight: box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.04).
+
+Liquid glass on the info bar: background: color-mix(in srgb, var(--glass-bg) ...) with backdrop blur.
+
+For .preview add a slight scale on hover: .theme:hover .previewWindow { transform: translateY(-4px); } — transform only, cheap. And .theme:hover .orb { transform: scale(1.15); opacity: 0.26; } transition 0.45s ease-out.
+
+Also add .previewWindow transition with a nice cubic-bezier.
+
+.info strong fix: text-overflow: ellipsis; white-space: nowrap; overflow: hidden; plus min-width: 0 on the flex child (already).
+
+.accent: make it a gradient ring with the theme accent:
+
+css
+.accent {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--theme-accent, var(--accent));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--theme-accent, var(--accent)) 40%, transparent),
+              0 0 12px color-mix(...);
+}
+
+.check: circular, hidden by default, shown on active with scale animation.
+
+css
+.check {
+  width: 25px;
+  height: 25px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--theme-accent, var(--accent));
+  color: var(--theme-bg, #000); /* contrast */
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.2s var(--ease), transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.theme.active .check { opacity: 1; transform: scale(1); }
+
+Also .check svg { width: 13px; height: 13px; }.
+
+Focus-visible:
+
+css
+.theme:focus-visible {
+  outline: 2px solid var(--theme-accent, var(--accent));
+  outline-offset: 3px;
+}
+
+Reduced motion block.
+
+Also .heading p unchanged. Add .eyebrow maybe a dot pulse? Keep restraint.
+
+Add @media (hover: hover) guard for hover effects so touch doesn't stick.
+
+Let me also add a .theme::before sheen:
+
+css
+.theme::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(160deg, rgba(255,255,255,0.14), transparent 42%);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease);
+}
+.theme:hover::before { opacity: 1; }
+
+But .info content is under z-index 2... pointer-events none, ok visually it just adds sheen above. Fine. Actually the preview has isolate; z-index 2 with position relative on info... The info isn't positioned so a positioned ::before with z-index 2 would paint above. That's fine for a sheen (it's translucent).
+
+Hmm, but sheen over text might reduce contrast slightly. Use low opacity 0.10. Fine.
+
+Also --ease variable presumably defined globally. Keep using it, with fallbacks: var(--ease, cubic-bezier(0.22, 1, 0.36, 1)).
+
+For the active state, add a subtle static specular: keep.
+
+Also handle .theme.active:hover — no conflict.
+
+Also add contain: paint maybe not needed.
+
+Let's write out full file.
+
+Also .grid could use align-items: stretch.
+
+One more: the .preview isolation: isolate fine.
+
+Also .previewTop span — keep.
+
+Let me also add a will-change avoidance.
+
+Now the output: JSON code block with write_file and path src/components/Customization/ThemeGallery.module.css. Absolute path? "path": "/abs/path" — I don't know absolute root. I'll use the relative-ish path as given. Hmm, the example says abs. I'll use src/components/Customization/ThemeGallery.module.css. That's safest given I don't know the workspace root. Actually the harness might need abs. I'll keep it as given in the prompt.
+
+Write content with escaped quotes — CSS has no double quotes except maybe none. I'll avoid double quotes in CSS to reduce escaping needs. Actually content: "" would need quotes. I can use content: '' single quotes. Good.
+
+Let me write it.
+
+Total: careful with color-mix etc.
+
+Draft:
+
+css
+.gallery {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.heading {
+  margin-bottom: 42px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 14px;
+
+  color: var(--accent);
+
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.heading h2 { ... }
+
+.heading p { ... }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.theme {
+  position: relative;
+  display: block;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 1px 2px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 0.2s var(--ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    border-color 0.22s var(--ease, ...),
+    box-shadow 0.22s var(--ease, ...),
+    background 0.22s var(--ease, ...);
+}
+
+Wait, .theme is a button — display: block may need width: 100%? It's a grid item so stretch applies. But button default display: inline-block; grid items are blockified anyway. Fine, use display: block.
+
+Also font inheritance for button: add font: inherit; to .theme.
+
+Hover only within @media (hover: hover) and (pointer: fine).
+
+Active press: .theme:active { transform: scale(0.985); transition-duration: 0.09s; } — but active on hover requires the transform. Fine.
+
+Careful: .theme:hover transform translateY(-2px)? Combined with box-shadow. Yes subtle lift.
+
+Let's finalize.
+
+For the .previewWindow hover lift, transform: translateY(-5px) — but it's positioned bottom: -8px, fine.
+
+Write it all out.
+
+Also .preview add border-bottom: 1px solid color-mix(...) for separation? Optional, skip.
+
+I'll now compose the final CSS text carefully, ensuring no double quotes.
+
+.info min-height 78px, and add background: color-mix(in srgb, var(--glass-bg) 60%, transparent)? It already sits on card glass. Add backdrop-filter there? For liquid glass, add to .previewWindow already has. Let's add to .info a subtle top highlight border:
+
+css
+.info {
+  ...
+  border-top: 1px solid color-mix(in srgb, var(--text-primary) 7%, transparent);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+}
+
+Hmm backdrop-filter on a non-transparent-ish bg does nothing much but ok, it's cheap-ish. Maybe skip to avoid perf on many cards. I'll skip backdrop-filter on .info; keep it on previewWindow only.
+
+Actually many cards × backdrop-filter = perf. Keep only previewWindow (already there).
+
+Now .check color: use color: var(--theme-bg, #08080a).
+
+Also add .theme.active .accent { box-shadow: ... }? nah.
+
+Write final.
+
+Reduced motion:
+
+css
+@media (prefers-reduced-motion: reduce) {
+  .theme,
+  .theme::before,
+  .orb,
+  .previewWindow,
   .check {
-    width: 25px.
-    height: 25px.
-  
-    flex-shrink: 0.
-  
-    display: grid.
-    place-items: center.
-  
-    border-radius: 50%.
-  
-    background: var(--accent).
-    color: var(--on-accent).
-  
+    transition-duration: 0.01ms !important;
+  }
+  .theme:hover { transform: none; }
+  .theme:hover .previewWindow { transform: none; }
+  .theme:hover .orb { transform: none; }
+  .theme:active { transform: none; }
+}
+
+Good. Compose.
+
+Escaping: no double quotes in CSS content, so JSON string is straightforward, but newlines must be \n. I need to produce a JSON string with literal \n escapes. That's a long single line. I'll do it.
+
+Actually — that's going to be enormous and error-prone. Alternative: just output the raw CSS, per mission. Hmm.
+
+The format requirement is explicit and says the harness parses code blocks first. I'll comply with JSON tool call. I'll be careful.
+
+I'll write the content with \n line breaks.
+
+Let me write the CSS content in full first (mentally final), then serialize.
+
+FINAL CSS:
+
+css
+/* ============================================================
+   ThemeGallery — Liquid Glass
+   Motion: purposeful, fast, transform/opacity only.
+   ============================================================ */
+
+.gallery {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.heading {
+  margin-bottom: 42px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.heading h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-size: clamp(32px, 4vw, 58px);
+  line-height: 1;
+  letter-spacing: -0.06em;
+  text-wrap: balance;
+}
+
+.heading p {
+  max-width: 620px;
+  margin: 18px 0 0;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+/* ---------- Card ---------- */
+
+.theme {
+  position: relative;
+  display: block;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 1px 2px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 0.2s var(--ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    border-color 0.22s var(--ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 0.22s var(--ease, cubic-bezier(0.22, 1, 0.36, 1)),
+    background 0.22s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* specular sheen */
+.theme::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.02) 38%,
+    transparent 62%
+  );
+  opacity: 0;
+  transition: opacity 0.24s var(--ease, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.theme:focus-visible {
+  outline: 2px solid var(--theme-accent, var(--accent));
+  outline-offset: 3px;
+}
+
+.theme:active {
+  transform: scale(0.985);
+  transition-duration: 0.09s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .theme:hover {
+    transform: translateY(-3px);
+    border-color: var(--theme-accent, var(--accent));
     box-shadow:
-      0 0 18px var(--accent-glow).
-  }
-  
-  @media (max-width: 1100px) {
-    .grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-  
-  @media (max-width: 760px) {
-    .grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  
-    .preview {
-      height: 155px;
-    }
-  
-    .previewWindow {
-      height: 120px;
-    }
-  }
-  
-  @media (max-width: 500px) {
-    .grid {
-      grid-template-columns: 1fr;
-    }
-  
-    .preview {
-      height: 190px;
-    }
-  
-    .previewWindow {
-      height: 145px;
-    }
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+      0 18px 50px rgba(0, 0, 0, 0.2),
+      0 0 35px color-mix(in srgb, var(--theme-accent, var(--accent)) 22%, transparent);
   }
 
-  .section {
-    margin-bottom: 48px;
+  .theme:hover::before {
+    opacity: 1;
   }
 
-  .section:last-child {
-    margin-bottom: 0;
+  .theme:hover .previewWindow {
+    transform: translateY(-5px);
   }
 
-  .sectionTitle {
-    margin: 0 0 8px;
-    color: var(--text-primary);
-    font-family: var(--font-heading);
-    font-size: 18px;
-    font-weight: 600;
+  .theme:hover .orb {
+    transform: scale(1.18);
+    opacity: 0.26;
   }
+}
 
-  .sectionDesc {
-    margin: 0 0 20px;
-    color: var(--text-secondary);
-    font-family: var(--font-body);
-    font-size: 14px;
-  }
+.theme.active {
+  border-color: var(--theme-accent, var(--accent));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 0 0 1px var(--theme-accent, var(--accent)),
+    0 20px 60px rgba(0, 0, 0, 0.25),
+    0 0 45px color-mix(in srgb, var(--theme-accent, var(--accent)) 25%, transparent);
+}
 
-  .theme.core {
-    border-width: 2px;
-  }
-
-  .theme.core:hover {
-    box-shadow:
-      0 0 0 2px var(--theme-accent, var(--accent)),
-      0 20px 60px rgba(0, 0, 0, 0.25),
-      0 0 45px
-        color-mix(
-          in srgb,
-          var(--theme-accent, var(--accent)) 25%,
-          transparent
-        );
-  }
-
-  .aaBadge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 28px;
-    height: 18px;
-    padding: 0 6px;
-    border-radius: 999px;
-    background: var(--success);
-    color: var(--on-success, #05080a);
-    font-family: var(--font-heading);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-  }
+Careful: 
+.theme:active
+ (pressed) vs 
+.theme
+.active
+ (selected class) — both exist. Fine, different specificity/selectors. But 
+.theme
+:hover
+ transform translateY and 
+.theme:active
+ transform scale — :active comes after in source?
