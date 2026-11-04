@@ -1,40 +1,54 @@
-The user wants me to implement the 10X upgrades and output the entire file. The instructions in the file say to wrap JSON tool call arrays in a  code block, but the CRITICAL INSTRUCTIONS at the end say "Output ONLY the raw code. No markdown blocks."
+The user wants me to output the entire upgraded signup page file. The format requirement says wrap JSON tool call in  block, but critical instructions say output ONLY raw code, no markdown blocks. There's a conflict but I'll follow the format requirement about wrapping JSON tool calls in a code block since that's the harness mechanism, and put the file content in the JSON content field.
 
-There's a conflict. The format requirement says wrap JSON tool calls in  code block. The critical instructions say output only raw code, no markdown blocks.
+Actually, re-reading: the file content is the format requirement file, and it says "Output ONLY the raw code. No markdown blocks." I think the safest approach given the automation harness parses code blocks is to output a JSON tool call array wrapped in json.
 
-Given the harness parses code blocks first, and the format requirement explicitly says raw JSON outside a code block will NOT be detected... I should follow the format requirement and output a JSON tool call array in a  block. That's the mechanism for writing the file.
+Let me write the complete file carefully.
 
-Wait, but "Output ONLY the raw code. No markdown blocks." Hmm. The format requirement is labeled "[FORMAT REQUIREMENT — READ CAREFULLY]" and says "You MUST wrap ALL JSON tool call arrays in a  code block. This is critical."
+I need to escape quotes and backslashes properly.
 
-I'll go with the JSON tool call approach since that's how the automation harness works — it parses tool calls. The "raw code" instruction likely refers to the content field.
+Let me write the full TSX content first, then embed it.
 
-Now let me write the complete upgraded signup page.
+I'll design the upgrade:
 
-Key features:
+Two-column split layout
 
-Two-column layout with brand panel
+Brand panel with animated gradient, social proof
+
+Glassmorphism form card
 
 Framer Motion animations
 
 Password strength meter
 
-Show/hide password
+Show/hide password toggles
 
-Debounced email check
+Debounced email availability check
 
 Per-provider OAuth loading
 
-Terms checkbox in zod
+Terms + age checkboxes in zod schema
 
-Success state
+Success state with animation
 
-Referral code
+Referral code optional field
 
 Idempotency key
 
-Let me write this carefully. I need to escape all " as " and newlines as \n in the JSON string.
+Accessible labels, aria-live
 
-Let me draft the full TSX:
+Reduced motion support
+
+Inline SVG Google icon
+
+No unknown deps: use Button, Input from deps. Card not in deps shown → I'll use divs with glass styling to avoid unknown imports. Actually the instruction says preserve existing working logic — but I don't see original code. I'll build a full page.
+
+I'll avoid react-hot-toast (not listed as dep), avoid lucide? lucide is very standard in shadcn. But not listed... The dependencies section only shows button.tsx and input.tsx. To be safe with "must work", I'll use lucide-react since it's ubiquitous in these projects. Hmm, risk. Let me use inline SVGs for icons to be fully safe? That's a lot of code but robust. Actually I'll use lucide-react — it's standard. The original page likely imported it.
+
+Let me write it now.
+
+I'll write a clean, complete file.
+
+Key implementation details:
 
 tsx
 'use client';
@@ -47,33 +61,102 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  AlertCircle, ArrowRight, Check, CheckCircle2, Eye, EyeOff,
+  Gift, Github, Loader2, Lock, Mail, ShieldCheck, Sparkles, User, X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { toast } from 'react-hot-toast';
+import { cn } from '@/lib/utils';
+
+Schema:
+
+tsx
+const signUpSchema = z.object({
+  name: z.string().trim().min(2, 'Name must be at least 2 characters').max(50, 'Name is too long'),
+  email: z.string().trim().email('Enter a valid email address').max(254, 'Email is too long'),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(72, 'Password is too long')
+    .regex(/[A-Za-z]/, 'Include at least one letter')
+    .regex(/[0-9]/, 'Include at least one number'),
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+  termsAccepted: z.boolean().refine((v) => v === true, { message: 'You must accept the Terms of Service' }),
+  ageCheck: z.boolean().refine((v) => v === true, { message: 'You must be at least 13 years old' }),
+}).refine((d) => d.password === d.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
+
+Note: z.boolean().refine with message — in zod v3, .refine(check, message | params). Passing { message: ... } works.
+
+Strength function.
+
+Component with all state.
+
+Let me write the JSX.
+
+Note on Input component: it accepts label?, error?, helperText?, and standard input props. I'll use label and error. Actually since Input renders its own label and error per the truncated deps, I'll use those. But I can't see implementation... truncated at helperText?: strin. It likely renders label and error. I'll pass label and error and trust it. Hmm, but if Input doesn't render label... risk of missing labels. To be safe and accessible, I'll render labels myself and pass only className, id, etc. Actually rendering my own label is safest and gives full control. But then label prop unused, fine.
+
+Wait — if Input already renders a label when given label, and I also render one, I'd get duplicates. Since I won't pass label, no duplicate. Good. I'll render my own <label>.
+
+Actually — but what if Input renders a wrapper with error below when error prop passed? I won't pass error either; I'll render my own error text. Fully safe. Good.
+
+So I use Input purely as a styled input.
+
+Let me write it.
+
+For animations with framer-motion, define variants.
+
+Reduced motion: use prefersReducedMotion to skip y offsets.
+
+Let me write the complete code now.
+
+I'll be mindful of motion typing with variants — use Variants type maybe. Keep simple.
+
+Now the email check: /api/auth/check-email?email=. Handle gracefully.
+
+Submit: POST /api/auth/signup with idempotency key.
+
+Let me write.
+
+Also handle isSubmitting from RHF.
+
+Success screen: AnimatePresence swap.
+
+Let me write the full file text.
+
+tsx
+'use client';
+
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import {
   AlertCircle,
   ArrowRight,
   Check,
+  CheckCircle2,
   Eye,
   EyeOff,
-  Github,
   Gift,
+  Github,
   Loader2,
   Lock,
+  Mail,
   ShieldCheck,
   Sparkles,
   User,
   X,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const signUpSchema = z
   .object({
@@ -82,16 +165,24 @@ const signUpSchema = z
       .trim()
       .min(2, 'Name must be at least 2 characters')
       .max(50, 'Name must be 50 characters or fewer'),
-    email: z.string().trim().email('Enter a valid email address').max(254, 'Email is too long'),
+    email: z
+      .string()
+      .trim()
+      .email('Enter a valid email address')
+      .max(254, 'Email is too long'),
     password: z
       .string()
       .min(8, 'Password must be at least 8 characters')
       .max(72, 'Password must be 72 characters or fewer')
       .regex(/[A-Za-z]/, 'Include at least one letter')
       .regex(/[0-9]/, 'Include at least one number'),
-    confirmPassword: z.string(),
-    termsAccepted: z.boolean().refine((v) => v === true, 'You must accept the Terms of Service'),
-    ageCheck: z.boolean().refine((v) => v === true, 'You must be at least 13 years old to use HEY'),
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    termsAccepted: z
+      .boolean()
+      .refine((v) => v === true, 'You must accept the Terms of Service'),
+    ageCheck: z
+      .boolean()
+      .refine((v) => v === true, 'You must be at least 13 years old to use HEY'),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: 'Passwords do not match',
@@ -102,8 +193,6 @@ type SignUpForm = z.infer<typeof signUpSchema>;
 type OAuthProvider = 'google' | 'github';
 type EmailStatus = 'idle' | 'checking' | 'available' | 'taken';
 type StrengthLevel = 0 | 1 | 2 | 3 | 4;
-
-const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 const STRENGTH_META: Record<StrengthLevel, { label: string; bar: string; text: string }> = {
   0: { label: 'Too short', bar: 'bg-destructive', text: 'text-destructive' },
@@ -121,7 +210,13 @@ function getPasswordStrength(password: string): {
   hints: string[];
 } {
   if (!password) {
-    return { level: 0, label: 'Enter a password', bar: 'bg-muted', text: 'text-muted-foreground', hints: [] };
+    return {
+      level: 0,
+      label: 'Enter a password',
+      bar: 'bg-muted',
+      text: 'text-muted-foreground',
+      hints: [],
+    };
   }
 
   let score = 0;
@@ -132,13 +227,14 @@ function getPasswordStrength(password: string): {
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
   const level = Math.min(4, score) as StrengthLevel;
+  const meta = STRENGTH_META[level];
+
   const hints: string[] = [];
   if (password.length < 12) hints.push('12+ characters');
-  if (!/[A-Z]/.test(password)) hints.push('uppercase letter');
-  if (!/[0-9]/.test(password)) hints.push('number');
-  if (!/[^A-Za-z0-9]/.test(password)) hints.push('symbol');
+  if (!/[A-Z]/.test(password)) hints.push('an uppercase letter');
+  if (!/[0-9]/.test(password)) hints.push('a number');
+  if (!/[^A-Za-z0-9]/.test(password)) hints.push('a symbol');
 
-  const meta = STRENGTH_META[level];
   return { level, label: meta.label, bar: meta.bar, text: meta.text, hints };
 }
 
@@ -146,47 +242,4 @@ function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.57c2.08-1.92 3.27-4.74 3.27-8.09z" />
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
-      <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84z" />
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
-    </svg>
-  );
-}
-
-function generateIdempotencyKey(): string {
-  try {
-    if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-      return crypto.randomUUID();
-    }
-  } catch {
-    // ignore
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-export default function SignUpPage() {
-  ...
-}
-
-Let me write the full component:
-
-tsx
-export default function SignUpPage() {
-  const router = useRouter();
-  const prefersReducedMotion = useReducedMotion();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
-  const [referralCode, setReferralCode] = useState<string | null>(null);
-  const idempotencyKeyRef = useRef<string>('');
-  const checkAbortRef = useRef<AbortController | null>(null);
-  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11
