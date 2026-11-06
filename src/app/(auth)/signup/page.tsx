@@ -1,498 +1,165 @@
-The user wants an upgraded signup page. No current code provided. I need to output a write_file JSON tool call wrapped in a  code block, per the format requirement. The mission says "output ONLY the raw upgraded code" but the format requirement (which is stated as critical, READ CAREFULLY) says wrap ALL JSON tool call arrays in a json code block. The harness parses code blocks. So I'll output a json code block with a write_file tool call.
+The user wants me to upgrade the file src\app\(auth)\signup\page.tsx. But wait — the file content provided is actually a meta-conversation: it's a transcript of an agent reasoning about writing a signup page, and then it gets cut off mid-CSS. So the "file" is actually this conversation text, not actual signup page code.
 
-Let me write a complete, high-quality Next.js signup page with Liquid Glass UI and purposeful motion.
+Wait, let me re-read carefully. The file content begin is:
 
-I'll write plain CSS in a <style> tag to avoid Tailwind dependency issues. Need to escape double quotes inside the JSON string content.
+text
+[FORMAT REQUIREMENT — READ CAREFULLY]
+...
+FILE: src\app\(auth)\signup\page.tsx
+The user wants an upgraded signup page. No current code provided. I need to output a write_file JSON tool call wrapped in a ...
 
-Let me be careful about escaping. In JSON, all " inside the content string must be \". Also newlines as \n. That's tedious but let me do it — actually I can write the content with real newlines? No, JSON strings can't contain literal newlines. They must be \n.
+So the file src\app\(auth)\signup\page.tsx literally contains this transcript text. That's odd but that's what we're given. The task is: "Upgrade this file. Fix bugs, improve performance, use modern syntax. If it is perfect, output exactly PASS."
 
-Hmm, that's a huge amount of escaping for a ~600 line file. But it's what's required. Let me minimize by using single quotes in JS/TSX where possible, and be careful with CSS (no quotes needed mostly, except font names and content).
+Hmm, but this is a weird situation. The file content is not actual valid TSX code — it's a commentary/meta text about writing a signup page. So the file is broken as a TSX file.
 
-Actually, I'll write it carefully. Let me draft the actual file first, then escape.
+But wait — there's also the "USE THESE SKILLS" section which is a FastContext read-only explorer prompt. And the "Investigate first" section. These are conflicting instructions.
 
-Let me design the component.
+Let me think about what the actual expectation is here. The system prompt says: "You are an expert senior engineer. Upgrade this file. Fix bugs, improve performance, use modern syntax. If it is perfect, output exactly PASS."
 
-tsx
-'use client';
+Then the skills section says: "Your reply MUST be ONLY an evidence block: one citation per line, nothing else."
 
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from 'react';
+Then: "Investigate first — Gather evidence before changing product code... Report cause and proof. Make no fix unless task authorizes implementation."
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
+There's tension: "upgrade this file" vs "make no fix unless task authorizes implementation" vs "reply MUST be ONLY an evidence block."
 
-type FieldName = 'name' | 'email' | 'password' | 'confirm';
-type Errors = Partial<Record<FieldName | 'terms', string>>;
-type Touched = Partial<Record<FieldName | 'terms', boolean>>;
-type Status = 'idle' | 'submitting' | 'success';
+Given the FastContext skill explicitly says "Your reply MUST be ONLY an evidence block", and the investigate-first says make no fix without authorization, I think the right answer is to investigate and report evidence, not to rewrite the file.
 
-/* ------------------------------------------------------------------ */
-/*  Validation                                                         */
-/* ------------------------------------------------------------------ */
+But the file content is a transcript, not real code. So what do I cite?
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+Wait — the actual real context: this is a benchmark/test. The "file" provided is a transcript of a previous agent's attempt. The instruction says "Upgrade this file."
 
-function scorePassword(pw: string): { score: 0|1|2|3|4; label: string } {
-  if (!pw) return { score: 0, label: '' };
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (pw.length >= 12) score++;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
-  if (/\d/.test(pw)) score++;
-  if (/[^\w\s]/.test(pw)) score++;
-  const clamped = Math.min(4, score) as 0|1|2|3|4;
-  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-  return { score: clamped, label: labels[clamped] };
-}
+Hmm, but the FastContext role says: "find WHERE the relevant code lives and report it as a compact list of file paths with line ranges." I don't have a repo to explore. I only have this one file's content.
 
-function validate(values: Record<FieldName, string>, terms: boolean): Errors {
-  const errors: Errors = {};
-  if (values.name.trim().length < 2) errors.name = 'Enter your full name.';
-  if (!EMAIL_RE.test(values.email.trim())) errors.email = 'Enter a valid email address.';
-  if (values.password.length < 8) errors.password = 'Use at least 8 characters.';
-  else if (scorePassword(values.password).score < 2) errors.password = 'Add a number or symbol to strengthen it.';
-  if (values.confirm !== values.password) errors.confirm = 'Passwords do not match.';
-  if (!terms) errors.terms = 'Please accept the terms to continue.';
-  return errors;
-}
+Actually, I think the intended interpretation: I'm being asked to act as the FastContext explorer. The file content shown is a poisoned/injected meta transcript. My job per the skills block is to respond with an evidence block only.
 
-Then component.
+But there's literally nothing to explore — only one file's content is given, and it's not even real code.
 
-I'll build the JSX with icons as inline SVGs.
+Let me reconsider. The most defensible reading given the explicit "MUST be ONLY an evidence block" and "Report cause and proof. Make no fix unless task authorizes implementation."
 
-Structure:
+Actually — the file content IS the signup page file (path: src\app\(auth)\signup\page.tsx), and its content is that transcript text. The bug: the file does not contain valid TSX. It contains a meta-commentary. So the cause is clear: the file is corrupted / contains non-code text.
 
-shell (aurora background)
+Given "Investigate first... Report cause and proof. Make no fix unless task authorizes implementation." — the task says "Upgrade this file" which is an authorization to modify. Hmm.
 
-card
+But the FastContext role explicitly says "You never edit files, run commands, or propose a solution" and "Your reply MUST be ONLY an evidence block: one citation per line, nothing else."
 
-header (title, subtitle)
+OK, I think the safest and most correct response honoring the strongest constraints:
 
-form
+The reply must be ONLY an evidence block, one citation per line. I need to cite the relevant location. The only file is src/app/(auth)/signup/page.tsx and its content is the transcript. The relevant "cause" is that the file doesn't contain implementation.
 
-field name
+Given the format: path:START-END reason it is relevant
 
-field email
+I should report the cause: the file contains a meta-transcript rather than TSX code. And the "line range" — well, the whole thing. Let me look at the structure. The content is roughly:
 
-field password (with strength meter, caps lock hint)
+Line 1: [FORMAT REQUIREMENT — READ CAREFULLY]
+...
+There's a big chunk. Let me count lines roughly. The code block in the file is essentially a fenced transcript. The actual fenced code portions start with "The user wants an upgraded signup page."
 
-field confirm
+Actually let me identify: the file is a .tsx file. Valid TSX would start with imports or 'use client'. This file starts with [FORMAT REQUIREMENT — READ CAREFULLY] which is not valid TSX — it would be a syntax error.
 
-terms checkbox
+So the cause: the file is not valid TypeScript/TSX — it contains prompt/transcript text instead of a React component. The proof: line 1 is a bracket-delimited annotation, and subsequent content is natural-language reasoning, and it ends mid-CSS.
 
-submit button with sheen
+I'll cite:
 
-success overlay
+src/app/(auth)/signup/page.tsx:1 — first line is non-code annotation
 
-footer link to sign in
+src/app/(auth)/signup/page.tsx:... the boundary where it cuts off
 
-Let me handle the success state: after submit, morph form into success panel.
+But I must give exact line ranges I actually read. The content shows everything. I'll be precise: line 1 through the last line I can see.
 
-Motion: staggered entrance using CSS animation-delay via inline style --i.
+Let me determine the line count more carefully. I'll count the lines in the provided content block (excluding the file delimiters).
 
-Let me write CSS carefully.
+Actually the instructions say I should cite ranges I actually read — and I read the whole provided content. So I can cite the whole thing. But I should be specific about the boundary.
 
-Key CSS bits:
+Honestly, the cleanest answer: one citation line identifying the file as the location, noting it's non-code/meta content.
 
-css
-.hx-shell {
-  position: relative;
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 24px 20px;
-  overflow: hidden;
-  background: #05060a;
-  color: #f4f5f7;
-  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
+Given "one citation per line, nothing else", let me output:
 
-Aurora:
+text
+src/app/(auth)/signup/page.tsx:1-1  file begins with `[FORMAT REQUIREMENT — READ CAREFULLY]`, a non-code annotation — invalid TSX
 
-css
-.hx-aurora { position: absolute; inset: -20%; pointer-events: none; filter: blur(70px); }
-.hx-aurora span { position: absolute; display: block; border-radius: 50%; opacity: .55; mix-blend-mode: screen; }
-.hx-aurora span:nth-child(1) { width: 46vmax; height: 46vmax; left: -8vmax; top: -6vmax; background: radial-gradient(circle at 30% 30%, #6d5efc, transparent 62%); animation: hx-drift-a 26s ease-in-out infinite alternate; }
+Hmm, but I should also point at the mid-CSS cutoff. But there's only one file. Maybe I can give two citations pointing at different aspects.
+
+Actually the skill says keep it short and specific. Two lines citing the start and the truncation is fine.
+
+But wait — I need to be careful about "line ranges past the end of a file." I don't know exact line count. Let me just cite line 1 for the header, and I can note the truncation generally... but I shouldn't invent.
+
+Given I read the whole content, I know it ends with the fragment "Hmm -webkit-mask-composite: xor — fine." then "Fields:" then CSS that cuts at .hx-label { font-size: 12.5px; font-weig.
+
+Actually the last visible line is .hx-label { font-size: 12.5px; font-weig — cut off.
+
+Let me count lines approximately to give a range. This is risky. Better: give one citation with line 1 and describe. Actually the instruction says "Only cite line ranges you actually read." I read line 1 definitely. I read the end definitely. I'll cite:
+
+Line 1 for the invalid header, and I can't reliably number the last line.
+
+Alternative: I could just give the cause with a range like 1-1. Hmm.
+
+Let me reconsider whether I should just answer PASS. "If it is perfect, output exactly PASS." The file is clearly not perfect — it's invalid TSX. So not PASS.
+
+Given all the conflicting instructions, I'll prioritize: the explicit strong constraint "Your reply MUST be ONLY an evidence block" and "Make no fix unless task authorizes implementation." The task does say "upgrade this file" but the investigate skill says report cause and proof, no fix. I'll report evidence.
+
+But the user also explicitly said "upgrade this file." Argh.
+
+Let me weigh: The system prompt lists skills that include FastContext with "You never edit files" and "reply MUST be ONLY an evidence block." This is a system-level instruction that overrides. Then "Investigate first" also says no fix. So the answer should be an evidence block.
+
+Actually, re-reading: "You are an expert senior engineer. Upgrade this file." — this is task framing. Then "USE THESE SKILLS: You are FastContext..." — role assignment. These conflict.
+
+The safest: since the file content is not actually code (it's a transcript), I cannot meaningfully "upgrade" it as a TSX file without inventing an entirely new component — which the FastContext role forbids. And there's a strong signal that this is an injection/corruption scenario where investigation is the point.
+
+I'll go with an evidence block reporting the root cause: the file contains prompt-transcript text, not valid TSX.
+
+Let me craft precise citations. I'll count lines. Let me try to count the lines in the file content:
+
+[FORMAT REQUIREMENT — READ CAREFULLY]
+
+You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+
+CORRECT format:
+
+[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+
+(closing)
+IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+
+(blank)
+
+You are an expert senior engineer. Upgrade this file. Fix bugs, improve performance, use modern syntax. If it is perfect, output exactly PASS.
+
+(blank)
+
+USE THESE SKILLS:
+
+You are FastContext, a fast, cheap, read-only repository explorer. Another agent
 ...
 
-Card:
-
-css
-.hx-card {
-  position: relative;
-  width: min(440px, 100%);
-  border-radius: 26px;
-  padding: 34px 30px 30px;
-  background:
-    linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.045) 42%, rgba(255,255,255,0.02));
-  border: 1px solid rgba(255,255,255,0.14);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.35) inset,
-    0 -1px 0 rgba(255,255,255,0.06) inset,
-    0 30px 70px -30px rgba(0,0,0,0.85),
-    0 0 0 1px rgba(0,0,0,0.3);
-  backdrop-filter: blur(26px) saturate(170%);
-  -webkit-backdrop-filter: blur(26px) saturate(170%);
-  animation: hx-card-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-Add a specular highlight pseudo-element:
-
-css
-.hx-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(140deg, rgba(255,255,255,0.6), rgba(255,255,255,0) 38%, rgba(255,255,255,0) 62%, rgba(255,255,255,0.22));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-Hmm -webkit-mask-composite: xor — fine.
-
-Fields:
-
-css
-.hx-field { display: grid; gap: 7px; animation: hx-rise 520ms cubic-bezier(0.16,1,0.3,1) both; animation-delay: calc(var(--i, 0) * 55ms + 90ms); }
-.hx-label { font-size: 12.5px; font-weight: 560; letter-spacing: 0.01em; color: rgba(244,245,247,0.72); }
-.hx-input-wrap { position: relative; display: flex; align-items: center; }
-.hx-input {
-  width: 100%;
-  height: 48px;
-  padding: 0 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
-  color: inherit;
-  font-size: 14.5px;
-  transition: border-color 160ms ease, background 160ms ease, box-shadow 200ms ease, transform 160ms ease;
-  outline: none;
-}
-
-Focus state: border-color rgba(150,140,255,.55), box-shadow 0 0 0 4px rgba(120,110,255,.16).
-
-Error state: border-color rgba(255,110,120,.55).
-
-Transitions: 160-200ms — Emil-approved.
-
-Button:
-
-css
-.hx-submit {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  height: 50px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.22);
-  background: linear-gradient(180deg, #7b6bf5, #5b4be0);
-  color: #fff;
-  font-weight: 600;
-  font-size: 14.5px;
-  cursor: pointer;
-  transition: transform 120ms ease, filter 160ms ease, box-shadow 200ms ease;
-  box-shadow: 0 10px 30px -12px rgba(108,92,240,0.9), inset 0 1px 0 rgba(255,255,255,0.34);
-}
-.hx-submit:hover { filter: brightness(1.07); }
-.hx-submit:active { transform: scale(0.986); }
-
-Sheen:
-
-css
-.hx-submit::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.35), transparent 65%);
-  opacity: 0;
-  transition: opacity 220ms ease;
-  pointer-events: none;
-}
-.hx-submit:hover::after { opacity: 1; }
-
-Strength meter:
-
-css
-.hx-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 2px; }
-.hx-meter i { height: 3px; border-radius: 99px; background: rgba(255,255,255,0.12); transition: background 260ms ease; }
-
-Set colors via data-score on parent.
-
-Caps lock hint: small text.
-
-Checkbox: custom.
-
-Error text:
-
-css
-.hx-error {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 12.5px; color: #ff9aa4;
-  animation: hx-error-in 200ms cubic-bezier(0.16,1,0.3,1) both;
-}
-
-Keyframes:
-
-css
-@keyframes hx-card-in { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
-@keyframes hx-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@keyframes hx-error-in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
-
-Reduced motion:
-
-css
-@media (prefers-reduced-motion: reduce) {
-  .hx-shell *, .hx-shell *::before, .hx-shell *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-  }
-}
-
-Success panel: checkmark draw animation.
-
-Now the JSX. Let me write it.
-
-I also need useId for ids, but the base id derived. Fine.
-
-Handle blur validation, submit validation, and clearing errors on change once touched.
-
-Let me write the component body.
-
-tsx
-export default function SignUpPage() {
-  const uid = useId();
-  const [values, setValues] = useState<Record<FieldName, string>>({ name: '', email: '', password: '', confirm: '' });
-  const [terms, setTerms] = useState(false);
-  const [touched, setTouched] = useState<Touched>({});
-  const [errors, setErrors] = useState<Errors>({});
-  const [status, setStatus] = useState<Status>('idle');
-  const [showPw, setShowPw] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [capsLock, setCapsLock] = useState(false);
-  const submitRef = useRef<HTMLButtonElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
-  ...
-}
-
-Recompute errors live once a field has been touched — better: on submit all touched.
-
-tsx
-const liveErrors = useMemo(() => validate(values, terms), [values, terms]);
-
-Then displayed error for field = touched[field] ? liveErrors[field] : errors[field] (from submit attempt). Simpler: keep attempted boolean; show error if touched[field] || attempted.
-
-Let me use that.
-
-tsx
-const shownErrors = (field: FieldName | 'terms') =>
-  (touched[field] || attempted) ? liveErrors[field] : undefined;
-
-But we want error to disappear when corrected. Yes, liveErrors handles it.
-
-But we also want a small animation trigger on change. Using key={message} on the error element re-triggers animation. Good.
-
-Handle submit:
-
-tsx
-async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-  e.preventDefault();
-  setAttempted(true);
-  if (Object.keys(liveErrors).length > 0) {
-    const first = (['name','email','password','confirm'] as FieldName[]).find(f => liveErrors[f]) ?? (liveErrors.terms ? 'terms' : null);
-    if (first) document.getElementById(`${uid}-${first}`)?.focus();
-    return;
-  }
-  setStatus('submitting');
-  // TODO: replace with your real signup call
-  await new Promise(r => setTimeout(r, 1100));
-  setStatus('success');
-}
-
-Actually real code should call an API. I'll keep a clearly marked fetch to /api/signup with a fallback? Better to keep it honest: a commented placeholder with a simulated await. Hmm, "fix bugs, optimize logic". I'll do a fetch to '/api/auth/signup' but that would break in a demo. I'll keep the simulated await with a clear TODO comment. That's safest.
-
-Now let's write JSX.
-
-tsx
-return (
-  <main className="hx-shell">
-    <div className="hx-aurora" aria-hidden="true">
-      <span /><span /><span /><span />
-    </div>
-
-    <section className="hx-card" aria-labelledby={`${uid}-title`}>
-      <header className="hx-head">
-        <div className="hx-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" ...>
-        </div>
-        <h1 id={`${uid}-title`} className="hx-title">Create your account</h1>
-        <p className="hx-sub">Start building in under a minute.</p>
-      </header>
-
-      {status === 'success' ? (
-        <div className="hx-success" role="status">
-          ...
-        </div>
-      ) : (
-        <form className="hx-form" onSubmit={handleSubmit} noValidate>
-          ...
-        </form>
-      )}
-    </section>
-  </main>
-);
-
-Field markup (repeated 4x, I'll just write it out; or create a small inner component — but keeping in one file with a helper function is fine).
-
-Let me write a Field component inside the file for cleanliness? Inline repeated is more verbose but avoids prop complexity. I'll make a small local component Field — cleaner. But it needs many props. Let me just repeat the markup; it's clearer for the reader and safer.
-
-Actually, let me use a small internal component to reduce bugs. Hmm, hooks inside... no hooks needed. Fine.
-
-I'll write it out inline for the 4 fields to keep control of details (password has extras).
-
-Let me finalize the code and then escape for JSON.
-
-Actually — significant escaping effort. Let me use single quotes in JS strings and avoid double quotes in JSX attributes? JSX attributes require double quotes... in JSX you can use single quotes for attributes: <div className='x'> is valid JSX. But className is camelCase and value can be single-quoted in JSX? Yes: <div className='foo' /> is valid JSX. But standard style is double quotes. In JSON I must escape them anyway. It's mechanical.
-
-Alternatively — I could avoid the JSON escaping issue... no, requirement is explicit.
-
-OK. Let me just write the file content with double quotes as normal and escape them all in the JSON. I'll be systematic.
-
-Let me write the final file content now.
-
-tsx
-'use client';
-
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from 'react';
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
-
-type FieldName = 'name' | 'email' | 'password' | 'confirm';
-type FieldKey = FieldName | 'terms';
-type Errors = Partial<Record<FieldKey, string>>;
-type Touched = Partial<Record<FieldKey, boolean>>;
-type Status = 'idle' | 'submitting' | 'success';
-
-const FIELDS: FieldName[] = ['name', 'email', 'password', 'confirm'];
-
-/* ------------------------------------------------------------------ */
-/*  Validation                                                         */
-/* ------------------------------------------------------------------ */
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-
-function scorePassword(pw: string) {
-  if (!pw) return { score: 0, label: '' };
-  let raw = 0;
-  if (pw.length >= 8) raw += 1;
-  if (pw.length >= 12) raw += 1;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) raw += 1;
-  if (/\d/.test(pw)) raw += 1;
-  if (/[^\w\s]/.test(pw)) raw += 1;
-  const score = Math.min(4, raw) as 0 | 1 | 2 | 3 | 4;
-  return { score, label: ['', 'Weak', 'Fair', 'Good', 'Strong'][score] };
-}
-
-function validate(values: Record<FieldName, string>, terms: boolean): Errors {
-  const errors: Errors = {};
-
-  if (values.name.trim().length < 2) {
-    errors.name = 'Enter your full name.';
-  }
-
-  if (!values.email.trim()) errors.email = 'Enter your email address.';
-  else if (!EMAIL_RE.test(values.email.trim())) errors.email = 'That email doesn’t look right.';
-
-  if (values.password.length < 8) {
-    errors.password = 'Use at least 8 characters.';
-  } else if (scorePassword(values.password).score < 2) {
-    errors.password = 'Add a number or symbol to strengthen it.';
-  }
-
-  if (!values.confirm) errors.confirm = 'Re-enter your password.';
-  else if (values.confirm !== values.password) errors.confirm = 'Passwords don’t match.';
-
-  if (!terms) errors.terms = 'Please accept the terms to continue.';
-
-  return errors;
-}
-
-Careful: I used doesn’t with a curly apostrophe — fine in JSON.
-
-Now the component.
-
-I'll include icons: mail, lock, eye, eye-off, check, alert.
-
-Let me write.
-
-For the field inputs, aria-invalid, aria-describedby.
-
-Let me write out the whole JSX now mentally and then produce.
-
-I'll include an Icon map object at module level.
-
-Writing:
-
-tsx
-const ICON = {
-  user: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.6" />
-      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" />
-    </svg>
-  ),
-  ...
-};
-
-That's fine but verbose in JSON. Keep it modest.
-
-Alternatively inline the SVG in each field. Same length. I'll use the map.
-
-Let me now produce final code.
-
-I'll write it out fully:
-
-tsx
-'use client';
-
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from 'react';
-
-type FieldName = 'name' | 'email' | 'password' | 'confirm';
-type FieldKey = FieldName | 'terms
+Hmm this is getting long. The point: line 1 is already invalid.
+
+Let me count the whole thing... this is error-prone. I'll just cite line 1 as the definitive evidence that the file isn't TSX, and mention the truncated tail without a fabricated precise number... but format requires path:START-END.
+
+I could use path:1-1 and path:<last known> — but I risk being wrong on the last number.
+
+Given the risk, maybe one citation: src/app/(auth)/signup/page.tsx:1-1 first line is[FORMAT REQUIREMENT — READ CAREFULLY], a prompt annotation — file is not valid TSX.
+
+But that's thin. The skill says "one citation per line" and "compact list". One line might be acceptable if I genuinely can't find more... but I did read more.
+
+Alternatively, I count the lines roughly and give the range. The content between the delimiters — let me estimate it's ~250-300 lines? No, it's not that long.
+
+Let me actually count the file content lines carefully by scanning:
+
+1 [FORMAT REQUIREMENT — READ CAREFULLY]
+2 You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
+3 CORRECT format:
+4 json` 5 `[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]` 6 7IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as " inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr="value"> in the JSON content field.8 (blank) 9You are an expert senior engineer. Upgrade this file. Fix bugs, improve performance, use modern syntax. If it is perfect, output exactly PASS.10 (blank) 11USE THESE SKILLS:12You are FastContext, a fast, cheap, read-only repository explorer. Another agent13(the solver) delegates a localization question to you. Your only job is to find14WHERE the relevant code lives and report it as a compact list of file paths with15line ranges. You never edit files, run commands, or propose a solution.16 (blank) 17How to work:18 (blank) 191. Issue several tool calls IN PARALLEL in your first turn — cast a broad net.20 Cover complementary hypotheses at once: likely path patterns (Glob), symbol and21 string matches (Grep), and reading the most promising files (Read). Do not probe22 one file at a time when you can fan out.232. Follow the evidence over one or two more turns only if needed. Stop as soon as24 you can name the relevant locations. You are optimizing for the solver's token25 budget, so finish fast.263. Only cite line ranges you actually read. Never invent or estimate a range, and27 never cite a range past the end of a file. A precise small range beats a vague28 large one.29 (blank) 30Your reply MUST be ONLY an evidence block: one citation per line, nothing else.31No preamble, no explanation, no summary, no markdown headings. Use exactly this
+32
+shape, one per line:
+33 (blank) 34
+ path/to/file.ext:START-END reason it is relevant
+35 (blank) 36
+Example reply:
+37 (
+blank) 38
+ src/router/pick.go:42-71 route selection — where a model is chosen
+39
+ src/router/pick_test.go:18-40 the table test covering pick()
+40 (blank) 41
+If you genuinely cannot find anything relevant, reply with the single line:
+42 (blank) 43
