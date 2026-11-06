@@ -1,46 +1,47 @@
-The user wants me to output an upgraded version of src/app/(auth)/reset-password/page.tsx wrapped in a JSON code block per the format requirement.
+The user wants me to upgrade the file src/app/(auth)/reset-password/page.tsx. The file content appears truncated in the prompt (cuts off mid-style block at @media (prefers-reduced-motion: reduce) {). I need to output an upgraded full version wrapped in a  code block with a write_file tool call.
 
-Let me write a genuinely excellent reset-password page with Liquid Glass aesthetic and purposeful motion. The file path uses Windows-style backslashes but I should use a proper path. Let me use src/app/(auth)/reset-password/page.tsx.
+Let me reconstruct and write a genuinely excellent reset-password page.
 
-Let me build this carefully:
+Key things to include:
 
-Client component, Suspense wrapper for useSearchParams
+"use client"
+
+Suspense wrapper for useSearchParams
 
 Two modes: request reset (email) vs set new password (token)
 
-Liquid Glass card with layered glass effect
+Liquid glass aesthetic
 
-Motion: staggered entrance, focus glow, button press, error shake, success checkmark draw
+Motion with prefers-reduced-motion respect
 
-prefers-reduced-motion respect
+Accessibility: aria-live, labels, autocomplete, aria-invalid
 
-Accessibility: aria-live, proper labels, autocomplete
-
-Security: don't reveal whether email exists (always show success message)
+Security: don't reveal whether email exists
 
 Password strength meter
 
-Let me write clean, complete code.
+Error shake
 
-Key considerations:
+Success checkmark draw
 
-Next.js App Router — "use client" at top
+Staggered entrance
 
-useSearchParams requires Suspense boundary
+Let me write the complete file. I need to be careful with escaping double quotes as " inside the JSON string.
 
-Use Tailwind classes for layout + inline <style> for keyframes
+Let me design the component fully.
 
-Motion tokens
+The path in the prompt is src\app\(auth)\reset-password\page.tsx (Windows-style). I should use a proper absolute-ish path or the same relative. The format requirement says /abs/path in example, but for a repo-relative file the automation likely expects the repo-relative path. I'll use src/app/(auth)/reset-password/page.tsx.
 
-Let me write it now.
+Let me write the full code carefully.
 
 tsx
 "use client";
 
-import { Suspense, useCallback, useId, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
+/* Motion tokens */
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 const EASE_SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
@@ -56,51 +57,86 @@ function scorePassword(pw: string): number {
   return Math.min(score, 4);
 }
 
-const strengthLabels = ["Too short", "Weak", "Fair", "Good", "Strong"];
-const strengthColors = [
-  "bg-rose-400",
-  "bg-orange-400",
-  "bg-amber-400",
-  "bg-emerald-400",
-  "bg-emerald-400",
-];
+const STRENGTH_LABELS = ["Too short", "Weak", "Fair", "Good", "Strong"];
+const STRENGTH_COLORS = ["#f43f5e", "#fb923c", "#fbbf24", "#34d399", "#10b981"];
 
-Now the main structure.
+/* Page shell */
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordSkeleton />}>
+      <ResetPasswordView />
+    </Suspense>
+  );
+}
 
-Let me think about the two forms:
+function ResetPasswordSkeleton() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-[#050507]">
+      <div className="h-[420px] w-full max-w-[420px] animate-pulse rounded-[28px] bg-white/[0.04]" />
+    </div>
+  );
+}
 
-Request form: email input → submit → success message "If an account exists..."
+function ResetPasswordView() {
+  const params = useSearchParams();
+  const token = params.get("token") ?? "";
+  const isSetMode = token.length > 0;
 
-Set form: new password + confirm → submit → success message
+  return (
+    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#050507] px-4 py-12">
+      <style>{`...keyframes...`}</style>
+      {/* ambient orbs */}
+      ...
+      <GlassCard>{isSetMode ? <SetPasswordForm token={token} /> : <RequestResetForm />}</GlassCard>
+    </main>
+  );
+}
 
-Both in the same glass card. Staggered entrance using CSS animation delays.
+Now let me write the whole thing.
 
-I'll make the checkmark animate with an SVG stroke-dashoffset animation.
+For the request form:
 
-Error handling: inline error message with shake on the input.
+email input
 
-Let me finalize the code.
+submit button
 
-For the submit button, fixed width to prevent layout shift, with a spinner during submitting.
+after submit always show "If an account exists for that email, we've sent a link..."
 
-Let me write it out completely now.
+validate email format client-side
 
-For accessibility:
+For the set form:
 
-aria-live="polite" on status region
+new password + confirm
 
-aria-describedby for errors
+strength meter
 
-aria-invalid on error inputs
+submit → success
 
-Proper autoComplete attributes
+validation: passwords match, min length, strength
 
-Let me write the full thing:
+Let me implement error shake by toggling a key or class briefly. I'll use a state shake that resets.
+
+Actually simpler: use useState for error and add class rp-shake and reset via animationend or a timeout. I'll use a shakeKey counter to re-trigger.
+
+Let me write the full thing.
+
+I want to be careful about the checkmark SVG draw animation.
+
+Let me write out all the JSX.
+
+Full code:
 
 tsx
 "use client";
 
-import { Suspense, useCallback, useId, useMemo, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -108,8 +144,11 @@ import { useSearchParams } from "next/navigation";
 /*  Motion tokens & helpers                                           */
 /* ------------------------------------------------------------------ */
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const EASE_SPRING = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
 type Phase = "idle" | "submitting" | "sent" | "success";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function scorePassword(pw: string): number {
   let score = 0;
@@ -122,13 +161,7 @@ function scorePassword(pw: string): number {
 }
 
 const STRENGTH_LABELS = ["Too short", "Weak", "Fair", "Good", "Strong"];
-const STRENGTH_COLORS = [
-  "#f43f5e",
-  "#fb923c",
-  "#fbbf24",
-  "#34d399",
-  "#10b981",
-];
+const STRENGTH_COLORS = ["#f43f5e", "#fb923c", "#fbbf24", "#34d399", "#10b981"];
 
 /* ------------------------------------------------------------------ */
 /*  Page shell — Suspense boundary for useSearchParams                */
@@ -154,15 +187,14 @@ function ResetPasswordSkeleton() {
 /* ------------------------------------------------------------------ */
 function ResetPasswordView() {
   const params = useSearchParams();
-  const token = params.get("token");
-  const isSetMode = Boolean(token);
+  const token = params.get("token") ?? "";
+  const isSetMode = token.length > 0;
 
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#050507] px-4 py-12">
-      {/* Scoped keyframes + reduced-motion killswitch */}
       <style>{`
         @keyframes rp-rise {
-          from { opacity: 0; transform: translate3d(0, 12px, 0); }
+          from { opacity: 0; transform: translate3d(0, 14px, 0); }
           to   { opacity: 1; transform: translate3d(0, 0, 0); }
         }
         @keyframes rp-fade {
@@ -183,19 +215,21 @@ function ResetPasswordView() {
         }
         @keyframes rp-orb {
           0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-          50%      { transform: translate3d(0, -24px, 0) scale(1.06); }
+          50%      { transform: translate3d(0, -28px, 0) scale(1.08); }
+        }
+        @keyframes rp-glow {
+          0%, 100% { opacity: 0.55; }
+          50%      { opacity: 0.95; }
         }
         .rp-rise { animation: rp-rise 0.7s ${EASE_OUT} both; }
         .rp-fade { animation: rp-fade 0.5s ${EASE_OUT} both; }
         .rp-shake { animation: rp-shake 0.45s ${EASE_OUT} both; }
-        .rp-orb  { animation: rp-orb 14s ease-in-out infinite; }
-        @media (prefers-reduced-motion: reduce) {
-          .rp-rise, .rp-fade, .rp-shake, .rp-orb { animation: none !important; }
-          * { transition-duration: 0.01ms !important; }
+        .rp-orb  { animation: rp-orb 16s ease-in-out infinite; }
+        .rp-orb-slow { animation: rp-orb 22s ease-in-out infinite reverse; }
+        .rp-glow { animation: rp-glow 6s ease-in-out infinite; }
+        .rp-draw {
+          stroke-dasharray: 48;
+          stroke-dashoffset: 48;
+          animation: rp-draw 0.7s ${EASE_OUT} 0.1s forwards;
         }
-      `}</style>
-
-      {/* Ambient glass orbs */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="rp-orb absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.35),transparent_65%)] blur-2xl" />
-        <div className="rp-orb absolute -bottom-40 right-[-10%] h-[460px] w-[460px] rounded-full bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.22),transparent_65%)] blur-2xl" style={{ animationDelay: "-
+        .rp-spin { animation: rp-spin 0.8s linear infinite; }
