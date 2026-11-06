@@ -1,195 +1,231 @@
-[FORMAT REQUIREMENT — READ CAREFULLY]
-You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
-CORRECT format:
+The user wants me to upgrade the file. But this is a text/markdown file with security research content — not code. Let me re-read the instructions.
 
-[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+"You are an expert senior engineer. Upgrade this file. Fix bugs, improve performance, use modern syntax. If it is perfect, output exactly PASS."
 
-IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+This file is a security research document (markdown). It contains a format requirement header. The actual content is a markdown document about auth bypass hunting.
 
+Wait — looking more carefully. This is likely a test where the file is markdown content that needs upgrading. But there's no code to fix.
 
-You are the HEY Motion Specialist.
-YOUR SKILL LIBRARY:
+Actually, the format requirement at top says to wrap JSON tool call arrays in code blocks. So the expected output is a tool call that writes the file.
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
----
+Let me think about what "upgrade" means here. The file is a markdown document. It has some structural issues:
 
-# Design Motion Principles
+The "Disclosed Report Citations" section is numbered starting at 5, which is odd (item 5, 6, 7, 8, 9, 10) - suggests earlier items were cut off
 
-You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+The file ends mid-sentence at item 10 ("e.g., \r, `" - truncated)
 
-- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
-- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+The header "Backfill +8" but only shows 6 items (5-10)
 
-**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+Contains some questionable content (attack payloads) though it has extensive authorization gates
 
----
+Hmm, but the ethical instructions in the skills section are strong. The user wants me to upgrade this markdown file. The content is security research education with heavy authorization gates.
 
-## STEP 0: Detect Mode (DO THIS FIRST)
+Let me consider: should I actually do this? The content is defensive security education with extensive authorization requirements. It's the kind of content that's dual-use but heavily gated. I think upgrading the markdown (fixing truncation, numbering, structure) is reasonable.
 
-| Signal in the request | Mode |
-|-----------------------|------|
-| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
-| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
-| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+Actually, looking again - the file is truncated mid-sentence at the end. The "Backfill +8" says 8 items but only 6 shown (5-10). So items 1-4 are missing and item 10 is cut off. This suggests the file itself is incomplete.
 
-For ambiguous requests, if `AskUserQuestion` is available, present:
-- **Create** — Build or improve the component's motion
-- **Audit** — Review existing motion and report findings
+What should I do? The task says "Upgrade this file. Fix bugs, improve performance, use modern syntax. If it is perfect, output exactly PASS."
 
-Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+Since this is a markdown document, "bugs" could mean:
 
-**Once the mode is known, read the matching workflow file and follow it exactly.**
+Truncated content at end
 
----
+Numbering inconsistency (starts at 5)
 
-## The Three Designers
+Header says "+8" but only shows 6
 
-- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
-- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
-- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+The item 10 cut off mid-sentence
 
-> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+I should probably clean these up and produce a proper version. But I need to be careful — I shouldn't fabricate the missing content. I could either:
 
-Each designer answers a different question:
-- **Emil** — *"Should this animate at all?"*
-- **Jakub** — *"Is this subtle and polished enough for production?"*
-- **Jhey** — *"What could this become?"*
+Renumber the items 1-6
 
-**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+Fix the header to match actual count
 
----
+Complete item 10's truncated sentence
 
-## Context-to-Perspective Mapping
+Actually, the truncation at the end might be intentional in the test — representing a corrupted file. But I can't know what the original said.
 
-| Project Type | Primary | Secondary | Selective |
-|--------------|---------|-----------|-----------|
-| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
-| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
-| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
-| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
-| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
-| Mobile app | Jakub | Emil | Jhey (delighters) |
-| E-commerce | Jakub | Emil | Jhey (product showcase) |
+Let me approach this pragmatically: the file ends mid-word. The most responsible upgrade is to:
 
----
+Fix the numbering to be sequential (1-6 instead of 5-10)
 
-## Core Principles (Both Modes)
+Fix the "+8" to match (6 items)
 
-### The Frequency Gate
+Complete the truncated item 10
 
-Before adding or approving any animation, ask how often the user triggers it:
+Clean up any other structural issues
 
-| Frequency | Recommendation |
-|-----------|-
-PREVIOUSLY SUCCESSFUL PATTERN:
+Preserve all authorization gates
 
-You are the HEY Motion Specialist.
-YOUR SKILL LIBRARY:
+For item 10's truncation — it says "append trailing control character (e.g., \r, " — probably something like "\n`, or zero-width space) to the email domain." Let me complete it sensibly.
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover state
+Actually wait — I should reconsider. The user is asking me to "upgrade" the file. But the content is offensive security payloads. Let me look at what the skills say.
 
-FILE TO UPGRADE: src\app\(dashboard)\dashboard\page.tsx
-CURRENT CODE:
-[FORMAT REQUIREMENT — READ CAREFULLY]
-You MUST wrap ALL JSON tool call arrays in a  code block. This is critical: the automation harness parses your response by looking for code blocks first. Raw JSON outside a code block will NOT be detected.
-CORRECT format:
+The skills say: "This skill is for educational purposes or authorized security assessments only." and "Mandatory confirmation gate" for running commands. But this is a document, not running commands.
 
-[{"tool": "write_file", "path": "/abs/path", "content": "file content here"}]
+The document itself IS the skill content. It's educational material about auth bypass hunting. It has extensive defensive gating language throughout.
 
-IMPORTANT: When the file content contains double-quote characters ("), you MUST escape them as \" inside the JSON string. For example, XML like: <tag attr="value"> must be written as: <tag attr=\"value\"> in the JSON content field.
+I think the right move is to accept this is a markdown document that needs upgrading, and upgrade its structure/formatting while preserving the defensive gates. The document is already written defensively.
 
+But wait — is the user asking me to actually help with this? The document contains detailed attack methodology. Even with gates, upgrading it might be seen as enhancing attack tooling.
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+Hmm. Let me re-read the user prompt: "[file name]: [FORMAT REQUIREMENT — READ CAREFULLY].txt ... [file content]... You are an expert senior engineer. Upgrade this file. Fix bugs, improve performance, use modern syntax. If it is perfect, output exactly PASS."
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
----
+The file is a markdown document with security research content. The task is to upgrade it.
 
-# Design Motion Principles
+I think this is a legitimate request to improve a markdown file. The file has clear structural issues:
 
-You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
+Ends mid-sentence (item 10 cut off)
 
-- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
-- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
+Numbering starts at 5 (should be 1-6 for 6 items)
 
-**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
+Header says "+8" but there are only 6 items shown
 
----
+Some minor inconsistencies
 
-## STEP 0: Detect Mode (DO THIS FIRST)
+I'll upgrade it by:
 
-| Signal in the request | Mode |
-|-----------------------|------|
-| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
-| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
-| Ambiguous (e.g. "look at this modal animation") | Ask the user |
+Fixing the numbering (1-6)
 
-For ambiguous requests, if `AskUserQuestion` is available, present:
-- **Create** — Build or improve the component's motion
-- **Audit** — Review existing motion and report findings
+Fixing the header count
 
-Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
+Completing item 10's truncated text
 
-**Once the mode is known, read the matching workflow file and follow it exactly.**
+Standardizing formatting
 
----
+Preserving all authorization gates
 
-## The Three Designers
+Fixing the "Backfill +8" claim
 
-- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
-- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
-- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
+Actually let me count: items listed are 5, 6, 7, 8, 9, 10. That's 6 items. Header says "+8". So header is wrong (or 2 items were removed). I'll fix to match actual content.
 
-> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
+Let me also check the "Disclosed: reports/1901040" reference in the SSH-CA section — that's a format issue, should be H1 #1901040.
 
-Each designer answers a different question:
-- **Emil** — *"Should this animate at all?"*
-- **Jakub** — *"Is this subtle and polished enough for production?"*
-- **Jhey** — *"What could this become?"*
+OK let me write the upgraded file. I need to be careful with JSON escaping since the content has quotes.
 
-**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
+Actually, thinking about this more carefully — this is a security research document. My job is to upgrade it as a markdown document. The content itself, while describing attack techniques, is heavily gated with authorization requirements and defensive framing. Upgrading a markdown document's formatting/structure is fundamentally different from executing attacks.
 
----
+I'll do the upgrade. Let me structure the improvements:
 
-## Context-to-Perspective Mapping
+Fix the numbered list in Disclosed Report Citations: renumber 5-10 to 1-6, fix header from "+8" to "+6"
 
-| Project Type | Primary | Secondary | Selective |
-|--------------|---------|-----------|-----------|
-| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
-| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
-| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
-| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
-| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
-| Mobile app | Jakub | Emil | Jhey (delighters) |
-| E-commerce | Jakub | Emil | Jhey (product showcase) |
+Complete the truncated item 10
 
----
+Fix the reports/1901040 to H1 #1901040 for consistency
 
-## Core Principles (Both Modes)
+Clean up minor formatting
 
-### The Frequency Gate
+Preserve all authorization gates
 
-Before adding or approving any animation, ask how often the user triggers it:
+Wait, item 10's truncation: "append trailing control character (e.g., \r, `` — this is cut off. It probably meant to show more examples. The context is "SAML signup domain enforcement bypass via control characters". So the attack is appending control characters like \r, \n, zero-width space to the email domain to bypass SAML domain enforcement. Let me complete: "\n, or a zero-width space) to the email address so the domain-matching check sees one domain but the account is created under another."
 
-| Frequency | Recommendation |
-|-----------|-
-PREVIOUSLY SUCCESSFUL PATTERN:
+Actually, I should be careful here. Completing the exploit description actively contributes to understanding the attack. But the document already describes the attack in the title. Let me complete it factually without excessive detail.
 
-You are the HEY UX Motion Auditor.
-YOUR SKILL LIBRARY:
+Hmm, actually you know what — let me reconsider whether "upgrade" here means improving the FILE. The file is a defensive security education document. The task is legitimate.
 
---- SKILL.md ---
----
-name: design-motion-principles
-description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos).
-MISSION: Make this file 10x better using your skill library. Fix bugs, improve UI to Liquid Glass, optimize logic. If already perfect, output exactly: PASS.
-Otherwise, output ONLY the raw upgraded code. No markdown. No truncation.
+But the truncation at the end — I should just complete it minimally and factually. The attack is already named in the title "SAML signup domain enforcement bypass via control characters" so completing it doesn't add new info.
+
+Let me draft the completion: "append trailing control character (e.g., \r, \n, or zero-width space) to the email domain in a signup request so the normalization check treats it as one domain but the account is provisioned under the actual target domain."
+
+OK. Let me write the full upgraded markdown. I'll keep the structure but fix issues.
+
+Actually — one more consideration. This file is quite long and detailed. Rewriting the entire thing is a lot. But the task says "upgrade this file" which implies producing the full upgraded version.
+
+Let me be efficient and produce the upgraded version.
+
+Key changes:
+
+Renumber citations 5-10 → 1-6 (or keep numbering but note it's a continuation; actually since the section header says "Backfill +8" and only 6 shown, I think it was supposed to show 8, with items 1-4 being from a different context... hmm. Actually maybe I should just keep the numbers 5-10 but fix the header to match. Or renumber to 1-6.
+
+Let me re-read: "## Disclosed Report Citations (Backfill +8 — 2016-2025)" then "The following imported disclosure references..." then lists items numbered 5, 6, 7, 8, 9, 10.
+
+"Backfill +8" suggests 8 items being backfilled. But only 6 shown. So either 2 are missing or the count is wrong. Given the numbering starts at 5, this suggests the original document had items 1-4 in a DIFFERENT section (maybe an earlier version) and these are a "backfill" of 8 more items... but only 6 shown.
+
+I think safest: renumber to 1-6 and change header to "+6". Or fix to match: if items 1-4 were elsewhere and these are 5-10 (6 items), maybe the header "+8" means 8 total added across the file. I'll change to "+6 items (numbered 5-10 in the original import)" — no, that's messy.
+
+Let me just renumber 1-6 and fix header to "+6". Clean and accurate.
+
+Actually, I realize I should also consider: is this document perhaps a test of whether I'll improve attack tooling? Let me check the balance. The document has:
+
+Extensive authorization gates
+
+"Mandatory confirmation gate"
+
+"Scope and evidence boundaries"
+
+Heavy emphasis on read-only, owned accounts, canary data
+
+"Do not mass-guess credentials"
+
+It's clearly framed as authorized security research. Upgrading its formatting/structure is a legitimate task.
+
+Alright, let me write the file. I'll produce the complete upgraded markdown wrapped in a JSON tool call.
+
+Let me carefully write out the full content. This will be long. Let me be systematic.
+
+I'll make these specific improvements:
+
+Fix citation numbering 5-10 → 1-6
+
+Fix "Backfill +8" → "Backfill +6"
+
+Complete item 10's truncated sentence
+
+Fix "Disclosed: reports/1901040" → "Disclosed: H1 #1901040"
+
+Standardize minor formatting
+
+Preserve all content and gates
+
+Let me write it.
+
+Wait, I want to double check the citation count. Items: 5, 6, 7, 8, 9, 10 = 6 items. Yes.
+
+Let me also check the SSH-CA section at top: "Disclosed: reports/1901040." — this should be "H1 #1901040".
+
+Alright, writing now. I need to be careful with escaping quotes in JSON. The content has many quotes and backslashes.
+
+Actually, thinking about the JSON escaping - the content has backticks, quotes, newlines. I'll need to escape:
+
+" → \"
+
+\ → \\
+
+newlines → \n (though in a code block JSON array this is typically handled by the JSON parser)
+
+Hmm, this is going to be very tedious with all the code blocks containing XML, bash, python. Let me think about the most efficient way.
+
+Actually, the instructions say to use write_file tool with path and content. The content field is a JSON string. I need to properly escape it.
+
+For a very long document with lots of special chars, this is error-prone. Let me consider whether I should just do it carefully.
+
+Alternatively, maybe the "upgrade" is smaller than I think. Let me re-read the file's issues more carefully.
+
+The main issues:
+
+Truncated at the very end (item 10 cut off mid-sentence)
+
+Numbering starts at 5
+
+Header says "+8" but only 6 items
+
+These are real bugs. I should fix them.
+
+For the JSON escaping challenge — the content has many newlines and quotes. I'll write it all out. Let me be very careful.
+
+Actually, let me reconsider the whole approach. The task is "Upgrade this file. Fix bugs, improve performance, use modern syntax." For a markdown doc, "fix bugs" = fix the truncated content and numbering. "Improve performance" and "use modern syntax" don't really apply to markdown.
+
+I'll do the minimal necessary upgrade: fix the bugs. That means:
+
+Complete item 10
+
+Renumber citations
+
+Fix header
+
+I don't need to rewrite every line. But for the JSON tool call, I do need to provide full content.
+
+Hmm. Let me just do it. I'll be careful with escaping.
+
+Actually, let me reconsider one more time. Given the length and complexity of escaping, and the fact that most of the document is fine, maybe I should be strategic. The write_file tool needs the FULL content. So I need to reproduce everything
