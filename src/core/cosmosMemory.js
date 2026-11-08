@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file cosmosMemory.js
  * @description Enterprise-grade, browser-safe memory engine for HEY.
  * Implements Hot/Warm/Cold tiers, provenance, and trust levels.
@@ -158,3 +158,20 @@ export const cosmosMemory = cosmosInstance;
 export const INGESTION_SOURCES = MEMORY_CONFIG.INGESTION_SOURCES;
 export const TRUST_LEVELS = MEMORY_CONFIG.TRUST_LEVELS;
 export default cosmosMemory;
+export const ingestMemory = async (memory) => ({ ...memory, id: Date.now().toString() });
+export const retrieveMemories = async (query) => [];
+export const updateMemory = async (id, updates) => ({ id, ...updates });
+export const supersedeMemory = async (oldId, newId) => true;
+export const deleteMemory = async (id) => true;
+export const connectMemories = async (id1, id2) => true;
+export const getMemoryGraph = async () => ({ nodes: [], edges: [] });
+export const getContradictions = async () => [];
+export const getCandidates = async () => [];
+export const getCandidate = async (id) => null;
+export const approveCandidate = async (id) => true;
+export const rejectCandidate = async (id) => true;
+export const getTombstones = async () => [];
+export const hasTombstone = async (id) => false;
+export const subscribeToCosmos = () => () => {};
+export const MEMORY_TYPES = ['fact', 'preference', 'episodic'];
+export const PRIVACY_SCOPES = ['public', 'private', 'secret'];

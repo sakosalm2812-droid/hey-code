@@ -83,6 +83,9 @@ const SupportPage = lazy(() => import("./pages/Support.jsx"));
 const TeacherEntry = lazy(() => import("./pages/TeacherEntry.jsx"));
 const TeacherDashboard = lazy(() => import("./pages/TeacherDashboard.jsx"));
 const KeySettingsPage = lazy(() => import("./pages/Settings.jsx"));
+const VaultPage = lazy(() => import("./pages/VaultPage.jsx"));
+const OSWrapperPage = lazy(() => import("./pages/OSWrapperPage.jsx"));
+const PsychologicalModelPage = lazy(() => import("./pages/PsychologicalModelPage.jsx"));
 
 function DashboardDispatcher() {
   const isTeacherActive = typeof window !== "undefined" && (
@@ -178,6 +181,11 @@ function AnimatedRoutes() {
         <Route path="/dpa" element={<PublicPage><LegalPage document="dpa" /></PublicPage>} />
         <Route path="/about" element={<PublicPage><About /></PublicPage>} />
         <Route path="/support" element={<PublicPage><SupportPage /></PublicPage>} />
+        <Route path="/teacher" element={<TeacherEntry />} />
+        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+        <Route path="/vault" element={<ProtectedLayout><VaultPage /></ProtectedLayout>} />
+        <Route path="/os-wrapper" element={<ProtectedLayout><OSWrapperPage /></ProtectedLayout>} />
+        <Route path="/psychology" element={<ProtectedLayout><PsychologicalModelPage /></ProtectedLayout>} />
 
         <Route
           path="/live"
