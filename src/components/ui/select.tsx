@@ -38,7 +38,8 @@ const SelectTrigger = React.forwardRef<HTMLDivElement, SelectTriggerProps>(
   )}
         {...props}
       >
-      {children}
+        {children}
+      </div>
     );
   }
 );
@@ -182,7 +183,8 @@ const SelectContentWrapper = React.forwardRef<HTMLDivElement, SelectContentWrapp
   )}
         {...props}
       >
-      {children}
+        {children}
+      </div>
     );
   }
 );

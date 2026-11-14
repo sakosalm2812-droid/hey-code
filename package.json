@@ -34,6 +34,8 @@
     "@mediapipe/tasks-vision": "^1.0.1",
     "@supabase/supabase-js": "^2.110.7",
     "@tauri-apps/api": "^2.5.0",
+    "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.26.0",
     "path-browserify": "^1.0.1",
@@ -42,6 +44,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.18.1",
     "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.7.0",
     "uuid": "^14.0.3"
   },
   "devDependencies": {

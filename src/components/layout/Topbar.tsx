@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Command } from '@radix-ui/react-command';
+import { Command } from 'cmdk';
 import { useNavigation } from '@/context/NavigationContext';
 
 export interface TopbarProps {
