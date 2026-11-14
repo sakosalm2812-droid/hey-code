@@ -99,27 +99,27 @@
 /* VARIANTS — PRIMARY */
 .hey-button--primary {
   background: var(--accent);
-  color: var(--bg-void);
+  color: var(--on-accent);
   box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 8px 24px rgba(142, 216, 255, 0.25);
+    0 2px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 8px 24px rgba(15, 118, 133, 0.25);
 }
 
 .hey-button--primary:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: translateY(-1px);
   box-shadow:
-    0 3px 0 rgba(255, 255, 255, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4),
-    0 12px 32px rgba(142, 216, 255, 0.35);
+    0 3px 0 rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 12px 32px rgba(15, 118, 133, 0.35);
 }
 
 .hey-button--primary:active:not(:disabled) {
   transform: translateY(1px);
   box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
-    0 2px 8px rgba(142, 216, 255, 0.2);
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
+    0 2px 8px rgba(15, 118, 133, 0.2);
 }
 
 /* VARIANTS — SECONDARY */
@@ -130,7 +130,7 @@
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 var(--border-subtle),
-    0 4px 16px rgba(0, 0, 0, 0.15);
+    0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .hey-button--secondary:hover:not(:disabled) {
@@ -140,13 +140,13 @@
   box-shadow:
     inset 0 1px 0 var(--glass-highlight),
     inset 0 -1px 0 var(--border-subtle),
-    0 8px 24px rgba(0, 0, 0, 0.2);
+    0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .hey-button--secondary:active:not(:disabled) {
   transform: translateY(1px);
   box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 var(--glass-highlight);
 }
 
@@ -164,30 +164,6 @@
 
 .hey-button--ghost:active:not(:disabled) {
   background: var(--surface-pressed);
-}
-
-/* VARIANTS — DESTRUCTIVE */
-.hey-button--destructive {
-  background: var(--semantic-destructive-bg);
-  color: var(--semantic-destructive-text);
-  border: var(--semantic-destructive-border);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 122, 138, 0.15),
-    0 4px 16px rgba(255, 122, 138, 0.15);
-}
-
-.hey-button--destructive:hover:not(:disabled) {
-  background: var(--semantic-destructive);
-  color: var(--bg-void);
-  transform: translateY(-1px);
-  box-shadow:
-    0 8px 24px rgba(255, 122, 138, 0.35);
-}
-
-.hey-button--destructive:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* VARIANTS — OUTLINE */
@@ -259,6 +235,13 @@
   height: 14px;
 }
 
+.hey-icon-button--xs svg path,
+.hey-icon-button--xs svg polygon,
+.hey-icon-button--xs svg rect {
+  stroke: currentColor;
+  fill: currentColor;
+}
+
 .hey-icon-button--sm {
   width: 36px;
   height: 36px;
@@ -307,14 +290,14 @@
 
 .hey-icon-button--primary {
   background: var(--accent);
-  color: var(--bg-void);
-  box-shadow: 0 2px 8px rgba(142, 216, 255, 0.25);
+  color: var(--on-accent);
+  box-shadow: 0 2px 8px rgba(15, 118, 133, 0.15);
 }
 
 .hey-icon-button--primary:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(142, 216, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(15, 118, 133, 0.25);
 }
 
 .hey-icon-button--primary:active:not(:disabled) {
@@ -330,31 +313,6 @@
 .hey-icon-button--secondary:hover:not(:disabled) {
   background: var(--glass-bg-strong);
   border-color: var(--border-strong);
-}
-
-.hey-icon-button--destructive {
-  background: var(--semantic-destructive-bg);
-  color: var(--semantic-destructive-text);
-  border: var(--semantic-destructive-border);
-}
-
-.hey-icon-button--destructive:hover:not(:disabled) {
-  background: var(--semantic-destructive);
-  color: var(--bg-void);
-}
-
-/* LOADING */
-.hey-icon-button--loading {
-  color: transparent !important;
-}
-
-.hey-icon-button__spinner {
-  width: 1.2em;
-  height: 1.2em;
-  border: 2px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: hey-spin 0.6s linear infinite;
 }
 
 /* =========================================
@@ -470,8 +428,8 @@
   .hey-button--primary:hover:not(:disabled),
   .hey-icon-button--primary:hover:not(:disabled) {
     box-shadow:
-      0 2px 0 rgba(255, 255, 255, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 8px 24px rgba(142, 216, 255, 0.25);
+      0 2px 0 rgba(255, 255, 255, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      0 8px 24px rgba(15, 118, 133, 0.25);
   }
 }

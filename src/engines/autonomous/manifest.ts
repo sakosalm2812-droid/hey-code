@@ -1,0 +1,140 @@
+// src/engines/autonomous/manifest.ts
+// Engine 3: Autonomous Action — Manifest for Feature Registry
+
+import type { FeatureManifest } from '../../core/registry/FeatureRegistry';
+import { AutonomousEngine, createAutonomousEngine } from './AutonomousEngine';
+import type { AutonomousConfig } from './types';
+
+export const autonomousManifest: FeatureManifest = {
+  id: 'autonomous',
+  name: 'Autonomous Action',
+  description: 'OS/Browser control with Bézier mouse, Somatosensory verification, and 24-hour rollback',
+  version: '1.0.0',
+  engine: 'autonomous',
+  category: 'action',
+  enabled: true,
+  dependencies: ['cosmos', 'permissionManager', 'costGovernor'],
+  capabilities: [
+    'computer.open_url',
+    'computer.click',
+    'computer.type_text',
+    'computer.press_key',
+    'computer.scroll',
+    'computer.execute_terminal',
+    'computer.kill_process',
+    'computer.change_setting',
+    'computer.organize_files',
+    'computer.take_screenshot',
+    'browser.navigate',
+    'browser.fill_form',
+    'browser.click_element',
+    'browser.extract_text',
+    'browser.extract_table',
+    'browser.wait_for',
+    'browser.submit_form',
+    'browser.handle_dialog',
+    'phone.open_app',
+    'phone.tap',
+    'phone.swipe',
+    'phone.type',
+  ],
+  configSchema: {
+    motorCortex: {
+      bezierControlPoints: { type: 'number', min: 1, max: 10, default: 3 },
+      moveDurationRange: { type: 'array', items: { type: 'number' }, default: [300, 800] },
+      clickDelayRange: { type: 'array', items: { type: 'number' }, default: [50, 150] },
+      typeDelayRange: { type: 'array', items: { type: 'number' }, default: [80, 180] },
+      scrollSmoothness: { type: 'number', min: 0, max: 1, default: 0.8 },
+      humanLikeJitter: { type: 'boolean', default: true },
+    },
+    somatosensory: {
+      screenshotWaitMs: { type: 'number', default: 500 },
+      ocrConfidenceThreshold: { type: 'number', min: 0, max: 1, default: 0.7 },
+      domComparisonThreshold: { type: 'number', min: 0, max: 1, default: 0.85 },
+      stateCheckRetries: { type: 'number', default: 3 },
+      stateCheckIntervalMs: { type: 'number', default: 300 },
+    },
+    approvalGates: {
+      moneyThresholdUsd: { type: 'number', default: 10 },
+      destructiveActionsRequireApproval: { type: 'boolean', default: true },
+      routineActionsAutoApprove: { type: 'boolean', default: false },
+    },
+    reflexArc: {
+      enabled: { type: 'boolean', default: true },
+      patterns: { type: 'array', items: { type: 'string' }, default: [] },
+    },
+    rollback: {
+      enabled: { type: 'boolean', default: true },
+      maxHistoryLength: { type: 'number', default: 50 },
+      snapshotIntervalMs: { type: 'number', default: 5000 },
+    },
+  },
+  defaultConfig: {
+    motorCortex: {
+      bezierControlPoints: 3,
+      moveDurationRange: [300, 800],
+      clickDelayRange: [50, 150],
+      typeDelayRange: [80, 180],
+      scrollSmoothness: 0.8,
+      humanLikeJitter: true,
+    },
+    somatosensory: {
+      screenshotWaitMs: 500,
+      ocrConfidenceThreshold: 0.7,
+      domComparisonThreshold: 0.85,
+      stateCheckRetries: 3,
+      stateCheckIntervalMs: 300,
+    },
+    approvalGates: {
+      moneyThresholdUsd: 10,
+      destructiveActionsRequireApproval: true,
+      routineActionsAutoApprove: false,
+    },
+    reflexArc: {
+      enabled: true,
+      patterns: [
+        '[id*="cookie"]', '[class*="cookie"]',
+        '[id*="consent"]', '[class*="consent"]',
+        '[id*="popup"]', '[class*="popup"]',
+        '[id*="modal"]', '[class*="modal"]',
+        'button:contains("Accept")', 'button:contains("Agree")',
+      ],
+    },
+    rollback: {
+      enabled: true,
+      maxHistoryLength: 50,
+      snapshotIntervalMs: 5000,
+    },
+  },
+  createEngine: (config?: AutonomousConfig) => createAutonomousEngine(config),
+  ui: {
+    dashboard: () => import('./AutonomousDashboard').then(m => m.AutonomousDashboard),
+    settings: () => import('./AutonomousSettings').then(m => m.AutonomousSettings),
+  },
+  hcuCostPerOperation: {
+    'computer.open_url': 0.01,
+    'computer.click': 0.005,
+    'computer.type_text': 0.002,
+    'computer.press_key': 0.001,
+    'computer.scroll': 0.003,
+    'computer.execute_terminal': 0.05,
+    'computer.kill_process': 0.02,
+    'computer.change_setting': 0.01,
+    'computer.organize_files': 0.03,
+    'computer.take_screenshot': 0.005,
+    'browser.navigate': 0.01,
+    'browser.fill_form': 0.005,
+    'browser.click_element': 0.005,
+    'browser.extract_text': 0.003,
+    'browser.extract_table': 0.01,
+    'browser.wait_for': 0.002,
+    'browser.submit_form': 0.01,
+    'browser.handle_dialog': 0.002,
+    'phone.open_app': 0.01,
+    'phone.tap': 0.005,
+    'phone.swipe': 0.005,
+    'phone.type': 0.002,
+  },
+};
+
+export default autonomousManifest;

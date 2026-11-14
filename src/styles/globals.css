@@ -56,6 +56,12 @@ body {
   background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.2));
 }
 
+/* Ambient accent glows for light theme */
+html[data-hey-light="true"] .hey-app-nav::after,
+html[data-hey-light="true"] .hey-public-shell::after {
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(15,118,133,.08));
+}
+
 .hey-app-brand .hey-script,
 .hey-public-shell .hey-script {
   font-size: 1.25em;

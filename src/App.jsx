@@ -20,6 +20,9 @@ import InfinityStatusBar from "./components/InfinityStatusBar.jsx";
 import AppErrorBoundary from "./components/AppErrorBoundary";
 import BackgroundLayer from "./components/background/BackgroundLayer";
 import IslandHost from "./components/island/IslandHost.jsx";
+import { Sidebar } from './components/layout/Sidebar';
+import { Topbar } from './components/layout/Topbar';
+import { DynamicIsland } from './components/island/DynamicIsland';
 
 // Layouts
 import PublicLayout from "./components/layout/PublicLayout";

@@ -37,9 +37,9 @@ const options = [
 
 const glass = {
     background: "var(--glass-bg)",
-    border: "1px solid rgba(255,255,255,.09)",
-    backdropFilter: "blur(24px)",
-    WebkitBackdropFilter: "blur(24px)",
+    border: "1px solid var(--border-subtle)",
+    backdropFilter: "blur(28px)",
+    WebkitBackdropFilter: "blur(28px)",
   };
 
 export default function Customization() {
@@ -61,8 +61,8 @@ export default function Customization() {
   const resetTheme = () => {
     const defaultThemeId = Object.keys(themes)[0];
     setTheme(defaultThemeId);
-    setCustomAccent("#00BFFF");
-    setCustomColor("#00BFFF");
+    setCustomAccent("#0f7685");
+    setCustomColor("#0f7685");
   };
 
   return (
@@ -103,7 +103,7 @@ export default function Customization() {
                   alignItems: "center",
                   gap: 8,
                   marginBottom: 12,
-                  color: "var(--accent, #00BFFF)",
+                  color: "var(--accent, #0f7685)",
                   fontSize: 11,
                   fontWeight: 800,
                   letterSpacing: ".18em",
@@ -226,7 +226,7 @@ export default function Customization() {
                     (item.title === "Themes"
                       ? "themes"
                       : key)
-                      ? "1px solid var(--accent, #00BFFF)"
+                      ? "1px solid var(--accent, #0f7685)"
                       : glass.border,
                   boxShadow:
                     activeSection ===
@@ -240,7 +240,7 @@ export default function Customization() {
                 <Icon
                   size={22}
                   style={{
-                    color: "var(--accent, #00BFFF)",
+                    color: "var(--accent, #0f7685)",
                     marginBottom: 18,
                   }}
                 />

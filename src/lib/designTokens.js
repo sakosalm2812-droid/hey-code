@@ -11,9 +11,9 @@ export const tokens = {
       tertiary: 'rgba(245,251,255,.48)',
     },
     accent: {
-      arctic: '#8ED8FF',
-      cyan: '#00BFFF',
-      frost: '#D8F4FF',
+      deep: '#0f7685',
+      teal: '#16a094',
+      frost: '#26c6b5',
     },
     glass: {
       0: 'rgba(8,12,17,.78)',
@@ -25,7 +25,7 @@ export const tokens = {
       success: '#2E6F57',
       warning: '#F2C14E',
       destructive: '#FF7A8A',
-      info: '#8ED8FF',
+      info: '#0f7685',
       neutral: '#C9D4E0',
     },
   },
@@ -201,7 +201,7 @@ export const tokens = {
   },
 
   focus: {
-    ring: '2px solid var(--accent-arctic, #8ED8FF)',
+    ring: '2px solid var(--accent-arctic, #0f7685)',
     offset: '2px',
   },
 };

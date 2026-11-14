@@ -1,50 +1,32 @@
 import * as React from 'react';
+import { Slot } from '@radix-ui/react-slot';
 import { cn } from '@/lib/utils';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  error?: string;
-  label?: string;
-  helperText?: string;
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  asChild?: boolean;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, label, helperText, id, ...props }, ref) => {
-    const generatedId = React.useId();
-    const inputId = id ?? generatedId;
-    const errorId = `${inputId}-error`;
-    const helperId = `${inputId}-helper`;
-
+  ({ className, type, value, onChange, onFocus, onBlur, disabled, placeholder, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'input';
     return (
-      <div className="w-full">
-        {label && (
-          <label htmlFor={inputId} className="block text-sm font-medium text-foreground mb-1.5">
-            {label}
-          </label>
+      <Comp
+        ref={ref}
+        type={type}
+        className={cn(
+          'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:placeholder-color-[var(--primary-foreground)] file:text-file[&::placeholder]:text-file[&.disabled]:opacity-50',
+          'placeholder-text-color:var(--primary-foreground)',
+          className,
         )}
-        <input
-          type={type}
-          id={inputId}
-          className={cn(
-            'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-destructive focus-visible:ring-destructive',
-            className
-          )}
-          ref={ref}
-          aria-invalid={error ? 'true' : 'false'}
-          aria-describedby={error ? errorId : helperText ? helperId : undefined}
-          {...props}
-        />
-        {error && (
-          <p id={errorId} className="mt-1.5 text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        )}
-        {helperText && !error && (
-          <p id={helperId} className="mt-1.5 text-sm text-muted-foreground">
-            {helperText}
-          </p>
-        )}
-      </div>
+        value={value}
+        onChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        disabled={disabled}
+        placeholder={placeholder}
+        {...props}
+      />
     );
   }
 );

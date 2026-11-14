@@ -1,26 +1,56 @@
-'use client';
-
 import * as React from 'react';
-import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@radix-ui/react-tooltip';
 import { cn } from '@/lib/utils';
 
-const TooltipProvider = TooltipPrimitive.Provider;
-const Tooltip = TooltipPrimitive.Root;
-const TooltipTrigger = TooltipPrimitive.Trigger;
-const TooltipContent = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
->(({ className, sideOffset = 4, ...props }, ref) => (
-  <TooltipPrimitive.Content
-    ref={ref}
-    sideOffset={sideOffset}
-    className={cn(
-      'z-50 overflow-hidden rounded-md border border-border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
-      className
-    )}
-    {...props}
-  />
-));
-TooltipContent.displayName = TooltipPrimitive.Content.displayName;
+export interface TooltipProps
+  extends React.ComponentPropsWithoutRef<'div'> {
+  className?: string;
+}
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+const TooltipPrimitive = TooltipProvider;
+
+const TooltipTrigger = React.forwardRef<HTMLButtonElement, TooltipProps>({
+  forwardRef,
+})({
+  forwardRef,
+})(
+  ({ className, children, ...props }) => {
+    return (
+      <TooltipTrigger asChild>
+        <button
+          className={cn('rounded-md p-2 hover:bg-accent hover:text-accent-foreground', className)}
+          {...props}
+        >
+          {children}
+        </button>
+      </TooltipTrigger>
+    );
+  }
+);
+TooltipTrigger.displayName = 'TooltipTrigger';
+
+const TooltipContent = React.forwardRef<HTMLDivElement, TooltipProps>({
+  forwardRef,
+})({
+  forwardRef,
+})(
+  ({ className, children, ...props }) => {
+    return (
+      <TooltipContent
+        className={cn(
+          'z-50 rounded-md bg-primary p-2 text-sm shadow-sm',
+          'animate-in fade-in-0',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          'data-[state=disabled]:pointer-events-none data-[state=disabled]:opacity-50',
+          className,
+          ...props,
+        )}
+      >
+        {children}
+      </TooltipContent>
+    );
+  }
+);
+TooltipContent.displayName = 'TooltipContent';
+
+export { TooltipPrimitive, TooltipTrigger, TooltipContent };

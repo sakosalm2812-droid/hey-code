@@ -1,0 +1,24 @@
+{
+  "name": "@hey/engine-entity",
+  "version": "1.0.0",
+  "description": "Entity Engine - Powers 400+ features with generic entity management",
+  "main": "index.ts",
+  "types": "types.ts",
+  "keywords": [
+    "hey",
+    "entity",
+    "engine",
+    "crud",
+    "state-management",
+    "zustand"
+  ],
+  "author": "HEY",
+  "license": "MIT",
+  "dependencies": {
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "typescript": "^5.3.3"
+  }
+}

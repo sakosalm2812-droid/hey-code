@@ -69,7 +69,7 @@ export default function ThemePreview({ theme, material = "glass" }) {
   const reduce = useReducedMotion();
   if (!theme) return null;
 
-  const accent = theme.accent || "#00BFFF";
+  const accent = theme.accent || "#0f7685";
   const accent2 = theme.accent2 || theme.secondary || accent;
 
   const mat = MATERIALS[material] || MATERIALS.glass;
@@ -138,7 +138,7 @@ export default function ThemePreview({ theme, material = "glass" }) {
   const reduce = useReducedMotion();
   if (!theme) return null;
 
-  const accent = theme.accent || "#00BFFF";
+  const accent = theme.accent || "#0f7685";
   const accent2 = theme.accent2 || theme.secondary || accent;
   const text = theme.text || "#F5FBFF";
   const surface = theme.surface || "#091018";
@@ -276,7 +276,7 @@ export default function ThemePreview({ theme, material = "glass" }) {
 
   if (!theme) return null;
 
-  const accent = theme.accent || "#00BFFF";
+  const accent = theme.accent || "#0f7685";
   const accent2 = theme.accent2 || theme.secondary || accent;
   const text = theme.text || "#F5FBFF";
   const surface = theme.surface || "#091018";

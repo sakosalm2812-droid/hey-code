@@ -44,7 +44,7 @@
     background:
       radial-gradient(
         circle at 50% 35%,
-        var(--accent, #00BFFF) 0%,
+        var(--accent, #0f7685) 0%,
         transparent 32%
       ),
       linear-gradient(
@@ -59,7 +59,7 @@
       0 30px 100px
         color-mix(
           in srgb,
-          var(--accent, #00BFFF) 18%,
+          var(--accent, #0f7685) 18%,
           transparent
         );
   
@@ -123,19 +123,19 @@
   }
   
   .card:hover {
-    border-color: var(--accent, #00BFFF);
+    border-color: var(--accent, #0f7685);
   
     box-shadow:
       0 20px 55px
         color-mix(
           in srgb,
-          var(--accent, #00BFFF) 14%,
+          var(--accent, #0f7685) 14%,
           transparent
         );
   }
   
   .card svg {
-    color: var(--accent, #00BFFF);
+    color: var(--accent, #0f7685);
     margin-bottom: 18px;
   
     filter:
@@ -143,7 +143,7 @@
         0 0 12px
         color-mix(
           in srgb,
-          var(--accent, #00BFFF) 45%,
+          var(--accent, #0f7685) 45%,
           transparent
         )
       );

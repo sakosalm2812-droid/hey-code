@@ -3,7 +3,7 @@ import { Check, Copy, MoveRight } from "lucide-react";
 import { Panel, SmallButton, Tag } from "./primitives.jsx";
 
 const SCHEMES = [
-  { id: "ocean", name: "Ocean", background: "#061A2A", surface: "#0B2A3A", accent: "#8ED8FF", gold: "#F7C96F" },
+  { id: "ocean", name: "Ocean", background: "#061A2A", surface: "#0B2A3A", accent: "#0f7685", gold: "#F7C96F" },
   { id: "ember", name: "Ember", background: "#140A08", surface: "#24120C", accent: "#FF9E7A", gold: "#F2C14E" },
   { id: "moss", name: "Moss", background: "#0A120C", surface: "#12211A", accent: "#7CB87C", gold: "#E7C26A" },
   { id: "violet", name: "Violet", background: "#0E0A18", surface: "#1A1130", accent: "#C9D4E0", gold: "#D9B55D" },

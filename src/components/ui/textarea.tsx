@@ -1,54 +1,34 @@
-"use client"
+import * as React from 'react';
+import { Slot } from '@radix-ui/react-slot';
+import { cn } from '@/lib/utils';
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  error?: string;
-  label?: string;
-  helperText?: string;
+export interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  asChild?: boolean;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, error, label, helperText, id, ...props }, ref) => {
-    const generatedId = React.useId();
-    const textareaId = id ?? generatedId;
-    const errorId = `${textareaId}-error`;
-    const helperId = `${textareaId}-helper`;
-
+  ({ className, value, onChange, onFocus, onBlur, disabled, placeholder, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'textarea';
     return (
-      <div className="w-full">
-        {label && (
-          <label htmlFor={textareaId} className="block text-sm font-medium text-foreground mb-1.5">
-            {label}
-          </label>
+      <Comp
+        ref={ref}
+        className={cn(
+          'flex min-h-[calc(auto+4rem)] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors resize-y',
+          'placeholder-text-color:var(--primary-foreground)',
+          className,
         )}
-        <textarea
-          id={textareaId}
-          className={cn(
-            "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-            error && 'border-destructive focus-visible:ring-destructive',
-            className
-          )}
-          ref={ref}
-          aria-invalid={error ? 'true' : 'false'}
-          aria-describedby={error ? errorId : helperText ? helperId : undefined}
-          {...props}
-        />
-        {error && (
-          <p id={errorId} className="mt-1.5 text-sm text-destructive" role="alert">
-            {error}
-          </p>
-        )}
-        {helperText && !error && (
-          <p id={helperId} className="mt-1.5 text-sm text-muted-foreground">
-            {helperText}
-          </p>
-        )}
-      </div>
+        value={value}
+        onChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        disabled={disabled}
+        placeholder={placeholder}
+        {...props}
+      />
     );
   }
-)
-Textarea.displayName = "Textarea"
+);
+Textarea.displayName = 'Textarea';
 
-export { Textarea }
+export { Textarea };

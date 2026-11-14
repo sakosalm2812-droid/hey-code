@@ -100,7 +100,7 @@ import { motion } from "framer-motion";
 import { Palette, RotateCcw } from "lucide-react";
 
 const presets = [
-  { name: "Cyan", color: "#00BFFF" },
+  { name: "Cyan", color: "#0f7685" },
   { name: "Violet", color: "#A78BFA" },
   { name: "Emerald", color: "#34D399" },
   { name: "Amber", color: "#F59E0B" },
@@ -111,7 +111,7 @@ const presets = [
 ];
 
 export default function ColorCustomizer({
-  value = "#00BFFF",
+  value = "#0f7685",
   onChange,
 }) {
   const updateColor = (color) => {
@@ -119,7 +119,7 @@ export default function ColorCustomizer({
   };
 
   const reset = () => {
-    updateColor("#00BFFF");
+    updateColor("#0f7685");
   };
 
   return (

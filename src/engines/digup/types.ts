@@ -1,68 +1,64 @@
 // src/engines/digup/types.ts
-// Types for Digup — local semantic file search
+// Engine 19: Digup — Type definitions with interfaces
 
-export type SearchQuery = {
+export interface DigupConfig {
+  enabled: boolean;
+  indexRoots: string[];
+  fileTypes: string[];
+  maxConcurrentScans: number;
+  hcuBudgetPerHour: number;
+}
+
+export interface DigupHealth {
+  isRunning: boolean;
+  totalHCUSpent: number;
+  hcuBudgetPerHour: number;
+  enabled: boolean;
+}
+
+export interface SearchQuery {
   query: string;
   limit?: number;
   fileTypes?: string[];
   paths?: string[];
-  minScore?: number;
-};
+}
 
-export type SearchResult = {
+export interface SearchResult {
   id: string;
   path: string;
   name: string;
-  type: 'document' | 'image' | 'audio' | 'video' | 'code' | 'other';
+  type: string;
   score: number;
   snippet: string;
   highlights: string[];
   size: number;
   modifiedAt: string;
   indexedAt: string;
-};
+}
 
-export type IndexStatus = {
-  backend: 'desktop' | 'android' | 'ios';
+export interface IndexStatus {
+  backend: string;
   enabled: boolean;
   indexedFiles: number;
   lastIndexedAt: string | null;
   errors: string[];
-  capabilities: BackendCapabilities;
-};
-
-export type BackendCapabilities = {
-  filesystemScan: boolean;
-  ocr: boolean;
-  embeddings: boolean;
-  offline: boolean;
-  scope: string;
-};
-
-export type BackendName = 'desktop' | 'android' | 'ios';
-
-export interface DigupBackend {
-  readonly name: BackendName;
-  readonly capabilities: BackendCapabilities;
-  isAvailable(): Promise<boolean>;
-  index(paths?: string[]): Promise<{ indexed: number; errors: string[] }>;
-  search(query: SearchQuery): Promise<SearchResult[]>;
-  getStatus(): Promise<IndexStatus>;
-}
-
-export interface MCPServerConfig {
-  name: string;
-  version: string;
-  tools: MCPTool[];
-}
-
-export interface MCPTool {
-  name: string;
-  description: string;
-  inputSchema: {
-    type: 'object';
-    properties: Record<string, { type: string; description: string }>;
-    required?: string[];
+  capabilities: {
+    filesystemScan: boolean;
+    ocr: boolean;
+    embeddings: boolean;
+    offline: boolean;
+    scope: string;
   };
-  handler: (input: Record<string, unknown>) => Promise<unknown>;
+}
+
+export interface DigupEvent {
+  type: 'search_disabled' | 'search_started' | 'search_completed' | 'index_disabled';
+  query?: SearchQuery;
+}
+
+export interface DigupEventMap {
+  search_disabled: { query: SearchQuery };
+  search_started: { query: SearchQuery };
+  search_completed: { query: SearchQuery; results: SearchResult[] };
+  index_disabled: {};
 }

@@ -15,17 +15,16 @@ export default function HEYButton({
 }) {
   const variants = {
     primary: {
-      background:
-        "var(--accent)",
+      background: "var(--accent)",
       color: "var(--on-accent)",
       border: "1px solid var(--border)",
     },
 
     secondary: {
-      background: "rgba(255,255,255,.06)",
+      background: "rgba(255,255,255,.04)",
       color: "var(--text-primary)",
       border: "1px solid var(--border)",
-      backdropFilter: "blur(18px)",
+      backdropFilter: "blur(20px)",
     },
 
     ghost: {
@@ -34,11 +33,10 @@ export default function HEYButton({
       border: "1px solid var(--border)",
     },
 
-    gold: {
-      background:
-        "linear-gradient(135deg,#F7C96F,#D8AA4F)",
-      color: "#111",
-      border: "none",
+    outline: {
+      background: "transparent",
+      color: "var(--accent)",
+      border: "1px solid var(--accent)",
     },
   };
 

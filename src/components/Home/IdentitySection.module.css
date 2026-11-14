@@ -126,7 +126,7 @@ CURRENT CODE:
     linear-gradient(
     90deg,
     #D8F4FF,
-    #8ED8FF
+    #0f7685
     );
     
     -webkit-background-clip:text;
@@ -195,7 +195,7 @@ CURRENT CODE:
     background:#D8F4FF;
     
     box-shadow:
-    0 0 30px #8ED8FF;
+    0 0 30px #0f7685;
     
     animation:
     float 5s infinite;
