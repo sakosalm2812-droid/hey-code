@@ -36,7 +36,7 @@ import ResetPasswordPage from "./ResetPasswordPage";
 import AuthCallbackPage from "./pages/AuthCallback.jsx";
 
 // Public Pages
-const Home = lazy(() => import("./pages/Home.jsx"));
+const Home = lazy(() => import("./LandingPage.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Features = lazy(() => import("./pages/Features.jsx"));
 const Customization = lazy(() => import("./pages/Customization.jsx"));

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import allAgents from "../agents/agents.js";
-import LandingPage3D from "./LandingPage3D";
+import PipCanvas from "./components/Pip3D";
 
 
 const features = [
@@ -55,7 +55,7 @@ export default function LandingPage() {
         position: "relative",
       }}
     >
-      <LandingPage3D reducedMotion={false} />
+      <PipCanvas position={[6, -2, -5]} />
 
       {/* Ambient light */}
       <motion.div
@@ -370,11 +370,7 @@ export default function LandingPage() {
               </motion.div>
 
             )
-
-
-          }))
-
-
+          })}
         </div>
 
       </section>

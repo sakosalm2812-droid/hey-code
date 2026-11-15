@@ -8,7 +8,7 @@ export const PLAN_CATALOG = Object.freeze({
     tagline: "A complete introduction to HEY.",
     highlights: [
       "Chat + Voice",
-      "229-role agent orchestration",
+      "5,000+ specialist roles",
       "Core memory",
       "Core Dynamic Island",
       "Basic computer + gesture control where supported",

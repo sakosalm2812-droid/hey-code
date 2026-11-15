@@ -8,11 +8,35 @@ import { setMissionAccount } from './core/infinity/missionEngine.js'
 
 const AuthContext = createContext(null)
 
+const DEV_MODE = import.meta.env.VITE_DEV_MODE === 'true'
+
 export function AuthProvider({ children }) {
-  const [state, setState] = useState({ session: null, identity: null, profile: null, loading: true, error: null })
+  const [state, setState] = useState({
+    session: null,
+    identity: null,
+    profile: null,
+    loading: !DEV_MODE,
+    error: null
+  })
   const lifecycle = useRef(null)
 
   useEffect(() => {
+    // Dev mode bypass - mock a user instantly
+    if (DEV_MODE) {
+      const devUser = { id: 'dev-owner', email: 'sako@hey.app', role: 'owner', user_metadata: { display_name: 'Owner' } }
+      const devSession = { user: devUser, access_token: 'dev-token', refresh_token: 'dev-token' }
+      const devProfile = { id: 'dev-owner', display_name: 'Owner', plan: 'owner', entitlements: ['all'] }
+
+      setState({
+        session: devSession,
+        identity: devUser,
+        profile: devProfile,
+        loading: false,
+        error: null
+      })
+      return
+    }
+
     const account = createAuthLifecycle({
       client: supabase,
       onState: (changes) => setState((previous) => ({ ...previous, ...changes })),
