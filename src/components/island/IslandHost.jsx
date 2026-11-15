@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { dynamicIslandEngine, subscribeToDynamicIsland, getDefaultDynamicIsland, getVisibleIslandActivities, ISLAND_STATES } from '../../core/dynamicIsland.js';
 import { IslandSurface } from './IslandSurface.jsx';
 import { createIslandUpdateCoalescer } from './islandCoalescer.js';
+import { subscribe } from '../../core/eventBus.js';
 
 let hostInstanceCount = 0;
 
@@ -82,7 +83,6 @@ export function IslandHost() {
     });
 
     // Also listen for direct activity changes via eventBus
-    const { subscribe } = require('../../core/eventBus.js');
     const unsubscribeActivity = subscribe('island.activity_added', (payload) => {
       if (payload?.islandId === currentIsland?.id) {
         coalescerRef.current?.push({ event: 'activity_added', data: payload });
