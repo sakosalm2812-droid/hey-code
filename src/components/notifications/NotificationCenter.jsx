@@ -47,7 +47,7 @@ export function NotificationCenter({ isOpen, onClose }) {
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all'); // all, unread, critical, important
   const [selectedDay, setSelectedDay] = useState(null);
-  const [touchStart, setTouchStart] = useRef(null);
+  const touchStartRef = useRef(null);
   const [swipeDirection, setSwipeDirection] = useState(null);
 
   // Subscribe to notification center
@@ -104,14 +104,14 @@ export function NotificationCenter({ isOpen, onClose }) {
   }, []);
 
   const handleSwipeStart = useCallback((e) => {
-    setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     setSwipeDirection(null);
   }, []);
 
   const handleSwipeMove = useCallback((e) => {
-    if (!touchStart.current) return;
-    const deltaX = e.touches[0].clientX - touchStart.current.x;
-    const deltaY = e.touches[0].clientY - touchStart.current.y;
+    if (!touchStartRef.current) return;
+    const deltaX = e.touches[0].clientX - touchStartRef.current.x;
+    const deltaY = e.touches[0].clientY - touchStartRef.current.y;
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 30) {
       setSwipeDirection(deltaX > 0 ? 'right' : 'left');
     }
@@ -123,7 +123,7 @@ export function NotificationCenter({ isOpen, onClose }) {
     } else if (swipeDirection === 'left') {
       // Could show actions on left swipe
     }
-    setTouchStart(null);
+    touchStartRef.current = null;
     setSwipeDirection(null);
   }, [swipeDirection, handleDismiss]);
 
