@@ -2,21 +2,12 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageSquare,
-  Terminal,
+  Code,
   FolderOpen,
   Plus,
-  Search,
-  X,
   ChevronDown,
   ChevronRight,
   Settings,
-  Copy,
-  Check,
-  Sparkles,
-  Menu,
-  LayoutDashboard,
-  Code2,
-  GitBranch,
   FileText,
   Clock,
   Zap,
@@ -24,6 +15,9 @@ import {
   MoreHorizontal,
   Minimize,
   Maximize,
+  ArrowUp,
+  Hand,
+  Globe,
 } from "lucide-react";
 
 const mockSessions = [
@@ -34,19 +28,10 @@ const mockSessions = [
   { id: "5", title: "Optimize database queries", updatedAt: "Last week", messages: 22, status: "active" },
 ];
 
-const mockMessages = [
-  { role: "user", content: "Help me refactor the authentication module to use the new token format", timestamp: "2 hours ago" },
-  { role: "assistant", content: "I'll help you refactor the auth module. Let me first examine the current implementation.", timestamp: "2 hours ago" },
-  { role: "assistant", content: "```typescript\n// Current auth.ts\ninterface TokenPayload {\n  userId: string;\n  email: string;\n  roles: string[];\n  exp: number;\n}\n\nfunction generateToken(payload: TokenPayload): string {\n  return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '1h' });\n}\n```", timestamp: "2 hours ago" },
-  { role: "user", content: "Now update it to use the new format with refresh tokens", timestamp: "2 hours ago" },
-  { role: "assistant", content: "```typescript\n// Updated auth.ts with refresh tokens\ninterface TokenPayload {\n  userId: string;\n  email: string;\n  roles: string[];\n  sessionId: string;\n  exp: number;\n}\n\ninterface RefreshTokenPayload {\n  sessionId: string;\n  userId: string;\n  exp: number;\n}\n\nfunction generateAccessToken(payload: TokenPayload): string {\n  return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '15m' });\n}\n\nfunction generateRefreshToken(payload: RefreshTokenPayload): string {\n  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, { expiresIn: '7d' });\n}\n```", timestamp: "2 hours ago" },
-];
-
 function QCodePage() {
-  const [activeTab, setActiveTab] = useState("chat");
+  const [activeTab, setActiveTab] = useState("code");
   const [sessions, setSessions] = useState(mockSessions);
   const [activeSessionId, setActiveSessionId] = useState("1");
-  const [messages, setMessages] = useState(mockMessages);
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -64,24 +49,12 @@ console.log(greet("World"));`);
   const messagesEndRef = useRef(null);
   const sidebarRef = useRef(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (!inputValue.trim() || isSending) return;
-
-    const userMessage = {
-      role: "user",
-      content: inputValue,
-      timestamp: "Just now"
-    };
-
+    const userMessage = { role: "user", content: inputValue, timestamp: "Just now" };
     setMessages(prev => [...prev, userMessage]);
     setInputValue("");
     setIsSending(true);
-
-    // Simulate AI response
     setTimeout(() => {
       const assistantMessage = {
         role: "assistant",
@@ -109,7 +82,6 @@ console.log(greet("World"));`);
 
   const handleFolderSelect = () => {
     setShowFolderPicker(true);
-    // In real app: window.electronAPI.selectFolder()
   };
 
   return (
@@ -117,9 +89,9 @@ console.log(greet("World"));`);
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      background: 'var(--bg-primary)',
-      color: 'var(--text-primary)',
-      fontFamily: 'var(--font-body)',
+      background: '#efece6',
+      color: '#141414',
+      fontFamily: 'Inter, sans-serif',
     }}>
       {/* Top Bar */}
       <header style={{
@@ -128,9 +100,8 @@ console.log(greet("World"));`);
         justifyContent: 'space-between',
         height: '56px',
         padding: '0 16px',
-        borderBottom: '1px solid var(--border)',
-        background: 'var(--glass-1)',
-        backdropFilter: 'blur(var(--glass-blur-strong)) saturate(var(--glass-saturate-strong))',
+        borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
+        background: '#efece6',
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -146,9 +117,9 @@ console.log(greet("World"));`);
               width: '36px',
               height: '36px',
               border: 'none',
-              borderRadius: 'var(--radius-control)',
-              background: 'var(--glass-bg)',
-              color: 'var(--text-secondary)',
+              borderRadius: '8px',
+              background: 'rgba(20, 20, 20, 0.05)',
+              color: '#666666',
               cursor: 'pointer',
             }}
             aria-label={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
@@ -161,19 +132,19 @@ console.log(greet("World"));`);
               width: '28px',
               height: '28px',
               borderRadius: '8px',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+              background: '#0f7685',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-              <Terminal size={14} style={{ color: 'var(--on-accent)' }} />
+              <Code size={14} style={{ color: '#efece6' }} />
             </div>
             <span style={{
-              fontFamily: 'var(--font-heading)',
+              fontFamily: 'Georgia, serif',
               fontSize: '20px',
               fontWeight: '400',
               letterSpacing: '-0.02em',
-              color: 'var(--text-primary)',
+              color: '#141414',
             }}>QCode</span>
           </div>
 
@@ -182,8 +153,8 @@ console.log(greet("World"));`);
             display: 'flex',
             padding: '3px',
             borderRadius: '10px',
-            background: 'rgba(255,255,255,.06)',
-            border: '1px solid rgba(255,255,255,.08)',
+            background: 'rgba(20, 20, 20, 0.05)',
+            border: '1px solid rgba(20, 20, 20, 0.08)',
             gap: '2px',
             marginLeft: '8px',
           }}>
@@ -196,12 +167,13 @@ console.log(greet("World"));`);
                 padding: '6px 14px',
                 borderRadius: '8px',
                 border: 'none',
-                background: activeTab === "chat" ? 'rgba(255,255,255,.12)' : 'transparent',
-                color: activeTab === "chat" ? 'var(--text-primary)' : 'var(--text-secondary)',
+                background: activeTab === "chat" ? '#ffffff' : 'transparent',
+                color: activeTab === "chat" ? '#141414' : '#666666',
                 fontSize: '13px',
                 fontWeight: '500',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
+                boxShadow: activeTab === "chat" ? '0 2px 8px rgba(0,0,0,0.03)' : 'none',
               }}
             >
               <MessageSquare size={14} />
@@ -216,15 +188,16 @@ console.log(greet("World"));`);
                 padding: '6px 14px',
                 borderRadius: '8px',
                 border: 'none',
-                background: activeTab === "code" ? 'rgba(255,255,255,.12)' : 'transparent',
-                color: activeTab === "code" ? 'var(--text-primary)' : 'var(--text-secondary)',
+                background: activeTab === "code" ? '#ffffff' : 'transparent',
+                color: activeTab === "code" ? '#141414' : '#666666',
                 fontSize: '13px',
                 fontWeight: '500',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
+                boxShadow: activeTab === "code" ? '0 2px 8px rgba(0,0,0,0.03)' : 'none',
               }}
             >
-              <Code2 size={14} />
+              <Code size={14} />
               Code
             </button>
           </div>
@@ -239,14 +212,15 @@ console.log(greet("World"));`);
               alignItems: 'center',
               gap: '8px',
               padding: '8px 16px',
-              borderRadius: 'var(--radius-control)',
-              border: '1px solid var(--border)',
-              background: 'var(--glass-bg)',
-              color: 'var(--text-secondary)',
+              borderRadius: '8px',
+              border: '1px solid rgba(20, 20, 20, 0.08)',
+              background: '#ffffff',
+              color: '#666666',
               fontSize: '13px',
               fontWeight: '500',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
             }}
           >
             <FolderOpen size={14} />
@@ -259,14 +233,14 @@ console.log(greet("World"));`);
             alignItems: 'center',
             gap: '8px',
             padding: '6px 12px',
-            borderRadius: '999px',
-            background: 'var(--accent-glow-soft)',
-            border: '1px solid var(--accent-glow)',
-            color: 'var(--accent)',
+            borderRadius: '9999px',
+            background: 'rgba(15, 118, 133, 0.1)',
+            border: '1px solid rgba(15, 118, 133, 0.2)',
+            color: '#0f7685',
             fontSize: '11px',
             fontWeight: '500',
           }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--green-accent)', boxShadow: '0 0 8px var(--green-accent)' }} />
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6db58a', boxShadow: '0 0 8px #6db58a' }} />
             No folder selected
           </div>
         </div>
@@ -280,14 +254,14 @@ console.log(greet("World"));`);
               alignItems: 'center',
               gap: '6px',
               padding: '8px 14px',
-              borderRadius: 'var(--radius-button)',
+              borderRadius: '9999px',
               border: 'none',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
-              color: 'var(--on-accent)',
+              background: '#0f7685',
+              color: '#efece6',
               fontSize: '13px',
               fontWeight: '600',
               cursor: 'pointer',
-              boxShadow: '0 4px 14px var(--accent-glow-soft)',
+              boxShadow: '0 4px 14px rgba(15, 118, 133, 0.3)',
             }}
           >
             <Plus size={14} />
@@ -300,10 +274,10 @@ console.log(greet("World"));`);
               justifyContent: 'center',
               width: '36px',
               height: '36px',
-              borderRadius: 'var(--radius-control)',
-              border: '1px solid var(--border)',
-              background: 'var(--glass-bg)',
-              color: 'var(--text-secondary)',
+              borderRadius: '8px',
+              border: '1px solid rgba(20, 20, 20, 0.08)',
+              background: '#ffffff',
+              color: '#666666',
               cursor: 'pointer',
             }}
           >
@@ -316,10 +290,10 @@ console.log(greet("World"));`);
               justifyContent: 'center',
               width: '36px',
               height: '36px',
-              borderRadius: 'var(--radius-control)',
-              border: '1px solid var(--border)',
-              background: 'var(--glass-bg)',
-              color: 'var(--text-secondary)',
+              borderRadius: '8px',
+              border: '1px solid rgba(20, 20, 20, 0.08)',
+              background: '#ffffff',
+              color: '#666666',
               cursor: 'pointer',
             }}
           >
@@ -342,9 +316,8 @@ console.log(greet("World"));`);
               style={{
                 width: 280,
                 flexShrink: 0,
-                borderRight: '1px solid var(--border)',
-                background: 'linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg))',
-                backdropFilter: 'blur(28px) saturate(140%)',
+                borderRight: '1px solid rgba(20, 20, 20, 0.08)',
+                background: '#efece6',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
@@ -352,7 +325,7 @@ console.log(greet("World"));`);
             >
               <div style={{
                 padding: '16px',
-                borderBottom: '1px solid var(--border)',
+                borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{
@@ -360,14 +333,15 @@ console.log(greet("World"));`);
                     fontWeight: '600',
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
-                    color: 'var(--text-tertiary)',
+                    color: '#666666',
                   }}>Sessions</span>
                   <span style={{
                     fontSize: '11px',
-                    color: 'var(--text-muted)',
-                    background: 'var(--glass-bg)',
+                    color: '#666666',
+                    background: '#ffffff',
                     padding: '2px 8px',
-                    borderRadius: '999px',
+                    borderRadius: '9999px',
+                    border: '1px solid rgba(20, 20, 20, 0.08)',
                   }}>
                     {sessions.length}
                   </span>
@@ -382,18 +356,19 @@ console.log(greet("World"));`);
                 {sessions.map((session) => (
                   <button
                     key={session.id}
-                    onClick={() => { setActiveSessionId(session.id); setMessages(mockMessages); }}
+                    onClick={() => { setActiveSessionId(session.id); setMessages([]); }}
                     style={{
                       width: '100%',
                       padding: '12px',
-                      borderRadius: 'var(--radius-control)',
-                      border: `1px solid ${activeSessionId === session.id ? 'var(--accent)' : 'transparent'}`,
-                      background: activeSessionId === session.id ? 'var(--accent-glow-soft)' : 'transparent',
-                      color: activeSessionId === session.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      borderRadius: '8px',
+                      border: `1px solid ${activeSessionId === session.id ? '#0f7685' : 'transparent'}`,
+                      background: activeSessionId === session.id ? '#ffffff' : 'transparent',
+                      color: activeSessionId === session.id ? '#141414' : '#666666',
                       textAlign: 'left',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
                       marginBottom: '4px',
+                      boxShadow: activeSessionId === session.id ? '0 2px 8px rgba(0,0,0,0.03)' : 'none',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
@@ -411,17 +386,17 @@ console.log(greet("World"));`);
                         fontSize: '9px',
                         fontWeight: '600',
                         padding: '2px 6px',
-                        borderRadius: '999px',
-                        background: session.status === 'active' ? 'rgba(109,181,138,.2)' :
-                                   session.status === 'completed' ? 'rgba(15,118,133,.2)' : 'rgba(212,168,83,.2)',
-                        color: session.status === 'active' ? 'var(--green-accent)' :
-                               session.status === 'completed' ? 'var(--accent)' : 'var(--gold)',
+                        borderRadius: '9999px',
+                        background: session.status === 'active' ? 'rgba(109,181,138,.1)' :
+                                   session.status === 'completed' ? 'rgba(15,118,133,.1)' : 'rgba(212,168,83,.1)',
+                        color: session.status === 'active' ? '#6db58a' :
+                               session.status === 'completed' ? '#0f7685' : '#d4a853',
                         whiteSpace: 'nowrap',
                       }}>
                         {session.status}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--text-tertiary)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: '#666666' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <MessageSquare size={10} />
                         {session.messages}
@@ -437,7 +412,7 @@ console.log(greet("World"));`);
 
               <div style={{
                 padding: '12px 16px',
-                borderTop: '1px solid var(--border)',
+                borderTop: '1px solid rgba(20, 20, 20, 0.08)',
               }}>
                 <button
                   onClick={handleNewSession}
@@ -448,10 +423,10 @@ console.log(greet("World"));`);
                     justifyContent: 'center',
                     gap: '8px',
                     padding: '10px',
-                    borderRadius: 'var(--radius-button)',
-                    border: '1px solid var(--border)',
-                    background: 'var(--glass-bg)',
-                    color: 'var(--text-secondary)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(20, 20, 20, 0.08)',
+                    background: '#ffffff',
+                    color: '#666666',
                     fontSize: '13px',
                     fontWeight: '500',
                     cursor: 'pointer',
@@ -466,305 +441,53 @@ console.log(greet("World"));`);
           )}
         </AnimatePresence>
 
-        {/* Main Panel */}
+        {/* Main Panel - Code View (default) */}
         <main style={{
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
-          background: 'linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01))',
+          background: '#ffffff',
         }}>
           {activeTab === "chat" ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', padding: '32px' }}>
               <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                padding: '32px clamp(20px, 5vw, 80px) 24px',
+                textAlign: 'center',
+                padding: '60px 20px',
+                color: '#666666',
               }}>
-                <div style={{ width: 'min(100%, 800px)', margin: '0 auto' }}>
-                  {messages.length === 0 ? (
-                    <div style={{
-                      textAlign: 'center',
-                      padding: '60px 20px',
-                      color: 'var(--text-tertiary)',
-                    }}>
-                      <div style={{
-                        width: '80px',
-                        height: '80px',
-                        borderRadius: '50%',
-                        margin: '0 auto 24px',
-                        background: 'var(--accent-glow-soft)',
-                        border: '1px solid var(--accent-glow)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <Terminal size={32} style={{ color: 'var(--accent)' }} />
-                      </div>
-                      <h2 style={{
-                        fontFamily: 'var(--font-heading)',
-                        fontSize: '28px',
-                        fontWeight: '400',
-                        marginBottom: '12px',
-                        color: 'var(--text-primary)',
-                      }}>Start a coding session</h2>
-                      <p style={{ fontSize: '15px', lineHeight: '1.6', maxWidth: '400px', margin: '0 auto' }}>
-                        Select a folder, choose Chat or Code mode, and start building with AI assistance.
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      {messages.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          style={{
-                            display: 'flex',
-                            gap: '12px',
-                            marginBottom: '32px',
-                            flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                          }}
-                        >
-                          <div style={{
-                            flex: '0 0 32px',
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            justifyContent: 'center',
-                          }}>
-                            <div style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '10px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              background: msg.role === 'user' ? 'rgba(255,255,255,.1)' : 'var(--accent-glow-soft)',
-                              color: msg.role === 'user' ? 'var(--text-primary)' : 'var(--accent)',
-                            }}>
-                              {msg.role === 'user' ? (
-                                <span style={{ fontSize: '11px', fontWeight: '700' }}>U</span>
-                              ) : (
-                                <Terminal size={16} />
-                              )}
-                            </div>
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{
-                              maxWidth: '700px',
-                              padding: msg.role === 'user' ? '14px 18px' : 0,
-                              borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : 0,
-                              background: msg.role === 'user' ? 'linear-gradient(135deg, var(--accent-glow-soft), rgba(255,255,255,.04))' : 'transparent',
-                              border: msg.role === 'user' ? '1px solid var(--border)' : 'none',
-                            }}>
-                              {typeof msg.content === 'string' && msg.content.includes('```') ? (
-                                msg.content.split('```').map((part, i) => {
-                                  if (i % 2 === 0) {
-                                    return part.trim() ? (
-                                      <p key={i} style={{
-                                        color: 'var(--text-primary)',
-                                        fontSize: '14px',
-                                        lineHeight: '1.75',
-                                        whiteSpace: 'pre-wrap',
-                                        margin: '0 0 12px',
-                                      }}>{part.trim()}</p>
-                                    ) : null;
-                                  }
-                                  return (
-                                    <div key={i} style={{ marginBottom: '12px' }}>
-                                      <pre style={{
-                                        margin: 0,
-                                        padding: '16px',
-                                        borderRadius: '12px',
-                                        background: 'rgba(0,0,0,.4)',
-                                        border: '1px solid var(--border)',
-                                        overflowX: 'auto',
-                                      }}>
-                                        <code style={{
-                                          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                                          fontSize: '13px',
-                                          lineHeight: '1.7',
-                                          color: 'var(--text-primary)',
-                                        }}>{part.trim()}</code>
-                                      </pre>
-                                    </div>
-                                  );
-                                })
-                              ) : (
-                                <p style={{
-                                  color: 'var(--text-primary)',
-                                  fontSize: '14px',
-                                  lineHeight: '1.75',
-                                  whiteSpace: 'pre-wrap',
-                                  margin: 0,
-                                }}>
-                                  {msg.content}
-                                </p>
-                              )}
-                            </div>
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              marginTop: '8px',
-                              opacity: 0,
-                              transition: 'opacity 0.2s ease',
-                            }}>
-                              <span style={{
-                                fontSize: '10px',
-                                color: 'var(--text-tertiary)',
-                                letterSpacing: '0.05em',
-                              }}>
-                                {msg.timestamp}
-                              </span>
-                              <button style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                width: '28px',
-                                height: '28px',
-                                borderRadius: '8px',
-                                border: 'none',
-                                background: 'transparent',
-                                color: 'var(--text-muted)',
-                                cursor: 'pointer',
-                              }}>
-                                <Copy size={12} />
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {isSending && (
-                        <div style={{
-                          display: 'flex',
-                          gap: '12px',
-                          marginBottom: '32px',
-                        }}>
-                          <div style={{
-                            flex: '0 0 32px',
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            justifyContent: 'center',
-                          }}>
-                            <div style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '10px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              background: 'var(--accent-glow-soft)',
-                              color: 'var(--accent)',
-                            }}>
-                              <Terminal size={16} />
-                            </div>
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{
-                              maxWidth: '700px',
-                              padding: '16px 20px',
-                              borderRadius: '18px 18px 4px 18px',
-                              background: 'linear-gradient(135deg, var(--accent-glow-soft), rgba(255,255,255,.04))',
-                              border: '1px solid var(--border)',
-                            }}>
-                              <div style={{ display: 'flex', gap: '4px' }}>
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1s ease-in-out infinite' }} />
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1s ease-in-out infinite', animationDelay: '0.15s' }} />
-                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', animation: 'pulse 1s ease-in-out infinite', animationDelay: '0.3s' }} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                      <div ref={messagesEndRef} />
-                    </>
-                  )}
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  margin: '0 auto 24px',
+                  background: 'rgba(15, 118, 133, 0.1)',
+                  border: '1px solid rgba(15, 118, 133, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <MessageSquare size={32} style={{ color: '#0f7685' }} />
                 </div>
-              </div>
-
-              {/* Input Area */}
-              <div style={{
-                padding: '16px clamp(20px, 5vw, 80px) 24px',
-                borderTop: '1px solid var(--border)',
-                background: 'rgba(255,255,255,.02)',
-              }}>
-                <div style={{ width: 'min(100%, 800px)', margin: '0 auto' }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    gap: '12px',
-                    padding: '12px 16px',
-                    borderRadius: 'var(--radius-card)',
-                    border: '1px solid rgba(255,255,255,.18)',
-                    background: 'linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.03))',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,.15), 0 12px 35px rgba(0,0,0,.15)',
-                    backdropFilter: 'blur(24px) saturate(150%)',
-                  }}>
-                    <textarea
-                      value={inputValue}
-                      onChange={(e) => setInputValue(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }}}
-                      placeholder="Ask QCode to write, refactor, debug, or explain code..."
-                      disabled={isSending}
-                      rows={1}
-                      style={{
-                        flex: 1,
-                        minHeight: '44px',
-                        maxHeight: '160px',
-                        resize: 'none',
-                        border: 'none',
-                        outline: 'none',
-                        background: 'transparent',
-                        color: 'var(--text-primary)',
-                        fontFamily: 'inherit',
-                        fontSize: '14px',
-                        lineHeight: '1.5',
-                      }}
-                    />
-                    <button
-                      onClick={handleSendMessage}
-                      disabled={!inputValue.trim() || isSending}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: 'var(--radius-button)',
-                        border: 'none',
-                        background: inputValue.trim() && !isSending ? 'linear-gradient(135deg, var(--accent), var(--accent-2))' : 'rgba(255,255,255,.05)',
-                        color: inputValue.trim() && !isSending ? 'var(--on-accent)' : 'var(--text-muted)',
-                        cursor: inputValue.trim() && !isSending ? 'pointer' : 'not-allowed',
-                        transition: 'all 0.2s ease',
-                        boxShadow: inputValue.trim() && !isSending ? '0 4px 14px var(--accent-glow-soft)' : 'none',
-                      }}
-                    >
-                      <Sparkles size={18} />
-                    </button>
-                  </div>
-                  <p style={{
-                    margin: '10px 0 0',
-                    textAlign: 'center',
-                    fontSize: '11px',
-                    color: 'var(--text-muted)',
-                  }}>
-                    Press Enter to send · Shift+Enter for new line · QCode can make mistakes
-                  </p>
-                </div>
+                <h2 style={{
+                  fontFamily: 'Georgia, serif',
+                  fontSize: '28px',
+                  fontWeight: '400',
+                  marginBottom: '12px',
+                  color: '#141414',
+                }}>Chat mode coming soon</h2>
+                <p style={{ fontSize: '15px', lineHeight: '1.6', maxWidth: '400px', margin: '0 auto' }}>
+                  Select a folder, choose Chat or Code mode, and start building with AI assistance.
+                </p>
               </div>
             </div>
           ) : (
-            <motion.div
-              style={{ flex: 1, display: 'flex', overflow: 'hidden' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              {/* File Explorer */}
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
               <aside style={{
                 width: '280px',
                 flexShrink: 0,
-                borderRight: '1px solid var(--border)',
-                background: 'var(--glass-1)',
-                backdropFilter: 'blur(var(--glass-blur-strong)) saturate(var(--glass-saturate-strong))',
+                borderRight: '1px solid rgba(20, 20, 20, 0.08)',
+                background: '#efece6',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
@@ -774,14 +497,14 @@ console.log(greet("World"));`);
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '12px 16px',
-                  borderBottom: '1px solid var(--border)',
+                  borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
                 }}>
                   <span style={{
                     fontSize: '11px',
                     fontWeight: '600',
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
-                    color: 'var(--text-tertiary)',
+                    color: '#666666',
                   }}>Project</span>
                   <button style={{
                     display: 'flex',
@@ -792,7 +515,7 @@ console.log(greet("World"));`);
                     borderRadius: '8px',
                     border: 'none',
                     background: 'transparent',
-                    color: 'var(--text-tertiary)',
+                    color: '#666666',
                     cursor: 'pointer',
                   }}>
                     <MoreHorizontal size={12} />
@@ -809,7 +532,7 @@ console.log(greet("World"));`);
                     fontWeight: '600',
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
-                    color: 'var(--text-tertiary)',
+                    color: '#666666',
                   }}>SRC</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                     {[
@@ -830,14 +553,14 @@ console.log(greet("World"));`);
                       }}>
                         {item.type === 'folder' ? (
                           <>
-                            <ChevronRight size={12} style={{ color: 'var(--text-tertiary)', marginRight: '6px' }} />
-                            <FolderOpen size={14} style={{ color: 'var(--gold)', marginRight: '8px' }} />
-                            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.name}</span>
+                            <ChevronRight size={12} style={{ color: '#666666', marginRight: '6px' }} />
+                            <FolderOpen size={14} style={{ color: '#d4a853', marginRight: '8px' }} />
+                            <span style={{ fontSize: '13px', color: '#666666' }}>{item.name}</span>
                           </>
                         ) : (
                           <>
-                            <FileText size={14} style={{ color: 'var(--text-tertiary)', marginRight: '8px' }} />
-                            <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{item.name}</span>
+                            <FileText size={14} style={{ color: '#666666', marginRight: '8px' }} />
+                            <span style={{ fontSize: '13px', color: '#666666' }}>{item.name}</span>
                           </>
                         )}
                       </div>
@@ -853,8 +576,8 @@ console.log(greet("World"));`);
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '8px 16px',
-                  borderBottom: '1px solid var(--border)',
-                  background: 'var(--glass-1)',
+                  borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
+                  background: '#efece6',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{
@@ -863,15 +586,15 @@ console.log(greet("World"));`);
                       gap: '6px',
                       padding: '4px 10px',
                       borderRadius: '6px',
-                      background: 'var(--glass-bg)',
-                      border: '1px solid var(--border)',
+                      background: '#ffffff',
+                      border: '1px solid rgba(20, 20, 20, 0.08)',
                       fontSize: '12px',
-                      color: 'var(--text-secondary)',
+                      color: '#666666',
                     }}>
                       <FileText size={12} />
                       main.tsx
                     </span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>TypeScript</span>
+                    <span style={{ fontSize: '11px', color: '#666666' }}>TypeScript</span>
                   </div>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button style={{
@@ -882,8 +605,8 @@ console.log(greet("World"));`);
                       height: '32px',
                       borderRadius: '8px',
                       border: 'none',
-                      background: 'var(--glass-bg)',
-                      color: 'var(--text-secondary)',
+                      background: 'rgba(20, 20, 20, 0.05)',
+                      color: '#666666',
                       cursor: 'pointer',
                     }}>
                       <Minimize size={14} />
@@ -896,8 +619,8 @@ console.log(greet("World"));`);
                       height: '32px',
                       borderRadius: '8px',
                       border: 'none',
-                      background: 'var(--glass-bg)',
-                      color: 'var(--text-secondary)',
+                      background: 'rgba(20, 20, 20, 0.05)',
+                      color: '#666666',
                       cursor: 'pointer',
                     }}>
                       <Maximize size={14} />
@@ -912,15 +635,15 @@ console.log(greet("World"));`);
                   fontSize: '13px',
                   lineHeight: '1.7',
                 }}>
-                  <pre style={{ margin: 0, color: 'var(--text-primary)' }}>
+                  <pre style={{ margin: 0, color: '#141414' }}>
                     <code>{codeContent}</code>
                   </pre>
                 </div>
                 {/* Inline AI Prompt Box */}
                 <div style={{
                   padding: '16px',
-                  borderTop: '1px solid var(--border)',
-                  background: 'rgba(255,255,255,.02)',
+                  borderTop: '1px solid rgba(20, 20, 20, 0.08)',
+                  background: 'rgba(20, 20, 20, 0.02)',
                 }}>
                   <div style={{
                     display: 'flex',
@@ -941,14 +664,13 @@ console.log(greet("World"));`);
                         minHeight: '44px',
                         maxHeight: '120px',
                         resize: 'none',
-                        borderRadius: 'var(--radius-card)',
-                        border: '1px solid rgba(255,255,255,.18)',
-                        background: 'linear-gradient(145deg, rgba(255,255,255,.1), rgba(255,255,255,.03))',
-                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.15), 0 12px 35px rgba(0,0,0,.15)',
-                        backdropFilter: 'blur(24px) saturate(150%)',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(20, 20, 20, 0.08)',
+                        background: '#ffffff',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                         padding: '12px 16px',
-                        color: 'var(--text-primary)',
-                        fontFamily: 'inherit',
+                        color: '#141414',
+                        fontFamily: 'Inter, sans-serif',
                         fontSize: '14px',
                         lineHeight: '1.5',
                       }}
@@ -962,17 +684,17 @@ console.log(greet("World"));`);
                         justifyContent: 'center',
                         width: '44px',
                         height: '44px',
-                        borderRadius: 'var(--radius-button)',
+                        borderRadius: '9999px',
                         border: 'none',
-                        background: inputValue.trim() && !isSending ? 'linear-gradient(135deg, var(--accent), var(--accent-2))' : 'rgba(255,255,255,.05)',
-                        color: inputValue.trim() && !isSending ? 'var(--on-accent)' : 'var(--text-muted)',
+                        background: inputValue.trim() && !isSending ? '#0f7685' : 'rgba(20, 20, 20, 0.05)',
+                        color: inputValue.trim() && !isSending ? '#efece6' : '#666666',
                         cursor: inputValue.trim() && !isSending ? 'pointer' : 'not-allowed',
                         transition: 'all 0.2s ease',
-                        boxShadow: inputValue.trim() && !isSending ? '0 4px 14px var(--accent-glow-soft)' : 'none',
+                        boxShadow: inputValue.trim() && !isSending ? '0 4px 14px rgba(15, 118, 133, 0.3)' : 'none',
                         flexShrink: 0,
                       }}
                     >
-                      <Sparkles size={20} />
+                      <ArrowUp size={20} />
                     </button>
                   </div>
                 </div>
@@ -982,9 +704,8 @@ console.log(greet("World"));`);
               <aside style={{
                 width: '360px',
                 flexShrink: 0,
-                borderLeft: '1px solid var(--border)',
-                background: 'var(--glass-1)',
-                backdropFilter: 'blur(var(--glass-blur-strong)) saturate(var(--glass-saturate-strong))',
+                borderLeft: '1px solid rgba(20, 20, 20, 0.08)',
+                background: '#efece6',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
@@ -994,22 +715,22 @@ console.log(greet("World"));`);
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '16px',
-                  borderBottom: '1px solid var(--border)',
+                  borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{
                       width: '28px',
                       height: '28px',
                       borderRadius: '8px',
-                      background: 'var(--accent-glow-soft)',
-                      border: '1px solid var(--accent-glow)',
+                      background: 'rgba(15, 118, 133, 0.1)',
+                      border: '1px solid rgba(15, 118, 133, 0.2)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}>
-                      <Zap size={14} style={{ color: 'var(--accent)' }} />
+                      <Zap size={14} style={{ color: '#0f7685' }} />
                     </div>
-                    <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-primary)' }}>QCode AI</span>
+                    <span style={{ fontWeight: '600', fontSize: '14px', color: '#141414' }}>QCode AI</span>
                   </div>
                   <button style={{
                     display: 'flex',
@@ -1020,60 +741,61 @@ console.log(greet("World"));`);
                     borderRadius: '8px',
                     border: 'none',
                     background: 'transparent',
-                    color: 'var(--text-tertiary)',
+                    color: '#666666',
                     cursor: 'pointer',
                   }}>
-                    <X size={14} />
+                    <ChevronRight size={14} />
                   </button>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
                   <div style={{
-                    color: 'var(--text-secondary)',
+                    color: '#666666',
                     fontSize: '13px',
                     lineHeight: '1.6',
                     marginBottom: '16px',
                   }}>
-                    <strong style={{ color: 'var(--text-primary)' }}>Ready to help.</strong> I can write, refactor, debug, and explain code in your project. What would you like to do?
+                    <strong style={{ color: '#141414' }}>Ready to help.</strong> I can write, refactor, debug, and explain code in your project. What would you like to do?
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {[
                       { icon: Zap, label: "Generate component", desc: "Create a new React component" },
                       { icon: Shield, label: "Add error handling", desc: "Wrap functions with try/catch" },
                       { icon: GitBranch, label: "Refactor to hooks", desc: "Convert class components" },
-                      { icon: Code2, label: "Write tests", desc: "Generate unit tests for selection" },
-                      { icon: Sparkles, label: "Explain this code", desc: "Get a detailed explanation" },
+                      { icon: Code, label: "Write tests", desc: "Generate unit tests for selection" },
+                      { icon: Hand, label: "Explain this code", desc: "Get a detailed explanation" },
                     ].map((item, i) => (
                       <button key={i} style={{
                         display: 'flex',
                         alignItems: 'flex-start',
                         gap: '10px',
                         padding: '12px',
-                        borderRadius: 'var(--radius-control)',
-                        border: '1px solid var(--border)',
-                        background: 'var(--glass-bg)',
-                        color: 'var(--text-secondary)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(20, 20, 20, 0.08)',
+                        background: '#ffffff',
+                        color: '#666666',
                         textAlign: 'left',
                         cursor: 'pointer',
                         transition: 'all 0.15s ease',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                       }}>
                         <div style={{
                           width: '28px',
                           height: '28px',
                           borderRadius: '8px',
-                          background: 'var(--accent-glow-soft)',
-                          border: '1px solid var(--accent-glow)',
+                          background: 'rgba(15, 118, 133, 0.1)',
+                          border: '1px solid rgba(15, 118, 133, 0.2)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           flexShrink: 0,
                         }}>
-                          <item.icon size={14} style={{ color: 'var(--accent)' }} />
+                          <item.icon size={14} style={{ color: '#0f7685' }} />
                         </div>
                         <div>
-                          <div style={{ fontWeight: '500', fontSize: '13px', color: 'var(--text-primary)' }}>
+                          <div style={{ fontWeight: '500', fontSize: '13px', color: '#141414' }}>
                             {item.label}
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '2px' }}>
+                          <div style={{ fontSize: '11px', color: '#666666', marginTop: '2px' }}>
                             {item.desc}
                           </div>
                         </div>
@@ -1082,7 +804,7 @@ console.log(greet("World"));`);
                   </div>
                 </div>
               </aside>
-            </motion.div>
+            </div>
           )}
         </main>
       </div>
@@ -1114,11 +836,11 @@ console.log(greet("World"));`);
               style={{
                 width: 'min(90vw, 560px)',
                 maxHeight: '80vh',
-                borderRadius: 'var(--radius-card)',
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border)',
+                borderRadius: '16px',
+                background: '#efece6',
+                border: '1px solid rgba(20, 20, 20, 0.08)',
                 overflow: 'hidden',
-                boxShadow: 'var(--elevation-4)',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -1127,25 +849,25 @@ console.log(greet("World"));`);
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '16px 20px',
-                borderBottom: '1px solid var(--border)',
+                borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{
                     width: '36px',
                     height: '36px',
                     borderRadius: '10px',
-                    background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+                    background: '#0f7685',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                    <FolderOpen size={18} style={{ color: 'var(--on-accent)' }} />
+                    <FolderOpen size={18} style={{ color: '#efece6' }} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#141414' }}>
                       Select project folder
                     </h3>
-                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-tertiary)' }}>
+                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#666666' }}>
                       QCode will index this folder for context
                     </p>
                   </div>
@@ -1158,23 +880,23 @@ console.log(greet("World"));`);
                     justifyContent: 'center',
                     width: '36px',
                     height: '36px',
-                    borderRadius: 'var(--radius-control)',
+                    borderRadius: '8px',
                     border: 'none',
                     background: 'transparent',
-                    color: 'var(--text-tertiary)',
+                    color: '#666666',
                     cursor: 'pointer',
                   }}
                 >
-                  <X size={18} />
+                  <ChevronRight size={18} />
                 </button>
               </div>
               <div style={{ padding: '20px', overflowY: 'auto', maxHeight: '400px' }}>
                 <div style={{
                   marginBottom: '16px',
                   padding: '16px',
-                  borderRadius: 'var(--radius-control)',
-                  border: '1px solid var(--accent-glow)',
-                  background: 'var(--accent-glow-soft)',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(15, 118, 133, 0.2)',
+                  background: 'rgba(15, 118, 133, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
@@ -1183,23 +905,23 @@ console.log(greet("World"));`);
                     width: '44px',
                     height: '44px',
                     borderRadius: '10px',
-                    background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+                    background: '#0f7685',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}>
-                    <FolderOpen size={20} style={{ color: 'var(--on-accent)' }} />
+                    <FolderOpen size={20} style={{ color: '#efece6' }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>Hey Project</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>C:\Users\DELL\Documents\hey</div>
+                    <div style={{ fontWeight: '600', color: '#141414' }}>Hey Project</div>
+                    <div style={{ fontSize: '12px', color: '#666666' }}>C:\Users\DELL\Documents\hey</div>
                   </div>
                   <button style={{
                     padding: '8px 16px',
-                    borderRadius: 'var(--radius-button)',
+                    borderRadius: '9999px',
                     border: 'none',
-                    background: 'var(--accent)',
-                    color: 'var(--on-accent)',
+                    background: '#0f7685',
+                    color: '#efece6',
                     fontSize: '13px',
                     fontWeight: '600',
                     cursor: 'pointer',
@@ -1207,7 +929,7 @@ console.log(greet("World"));`);
                     Select
                   </button>
                 </div>
-                <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginBottom: '12px' }}>Recent folders</p>
+                <p style={{ fontSize: '12px', color: '#666666', marginBottom: '12px' }}>Recent folders</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {[
                     { name: 'hey', path: 'C:\Users\DELL\Documents\hey' },
@@ -1219,18 +941,19 @@ console.log(greet("World"));`);
                       alignItems: 'center',
                       gap: '12px',
                       padding: '12px 16px',
-                      borderRadius: 'var(--radius-control)',
-                      border: '1px solid var(--border)',
-                      background: 'var(--glass-bg)',
-                      color: 'var(--text-secondary)',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(20, 20, 20, 0.08)',
+                      background: '#ffffff',
+                      color: '#666666',
                       textAlign: 'left',
                       cursor: 'pointer',
                       transition: 'all 0.15s ease',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
                     }}>
-                      <FolderOpen size={20} style={{ color: 'var(--gold)' }} />
+                      <FolderOpen size={20} style={{ color: '#d4a853' }} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '500', color: 'var(--text-primary)' }}>{folder.name}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>{folder.path}</div>
+                        <div style={{ fontWeight: '500', color: '#141414' }}>{folder.name}</div>
+                        <div style={{ fontSize: '11px', color: '#666666' }}>{folder.path}</div>
                       </div>
                     </button>
                   ))}
@@ -1241,16 +964,16 @@ console.log(greet("World"));`);
                 justifyContent: 'flex-end',
                 gap: '12px',
                 padding: '16px 20px',
-                borderTop: '1px solid var(--border)',
+                borderTop: '1px solid rgba(20, 20, 20, 0.08)',
               }}>
                 <button
                   onClick={() => setShowFolderPicker(false)}
                   style={{
                     padding: '10px 20px',
-                    borderRadius: 'var(--radius-button)',
-                    border: '1px solid var(--border)',
-                    background: 'var(--glass-bg)',
-                    color: 'var(--text-secondary)',
+                    borderRadius: '9999px',
+                    border: '1px solid rgba(20, 20, 20, 0.08)',
+                    background: '#ffffff',
+                    color: '#666666',
                     fontSize: '13px',
                     fontWeight: '500',
                     cursor: 'pointer',

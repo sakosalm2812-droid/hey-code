@@ -37,18 +37,12 @@ import {
   createBrowserSpeechSynthesisProvider,
   createVoiceSession,
 } from "./lib/voiceProviders.js";
+import PixelPet from "./components/pet/PixelPet";
 
 const welcomeMessage = {
   role: "hey",
   text: "I am HEY.\n\nYour second brain, creation engine, and intelligence layer.\n\nWhat are we building today?",
 };
-
-const suggestions = [
-  "Help me plan my day",
-  "Analyze my project",
-  "Create a business strategy",
-  "Explain something difficult",
-];
 
 function ChatWorkspace() {
   const navigate = useNavigate();
@@ -271,7 +265,7 @@ function ChatWorkspace() {
 
   async function copyMessage(text) {
     try {
-      if (!navigator.clipboard) throw new Error('Clipclipboard unavailable');
+      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
       await navigator.clipboard.writeText(text);
       setCopiedMessage(text);
     } catch { setChatError('Could not copy. Select the message text to copy it manually.'); return; }
@@ -306,7 +300,7 @@ function ChatWorkspace() {
         display: 'flex',
         flexDirection: 'column',
         minHeight: '100vh',
-        background: 'var(--bg-primary)',
+        background: '#efece6',
       }}
     >
       <div className="hey-chat-container" style={{
@@ -320,9 +314,8 @@ function ChatWorkspace() {
           style={{
             width: '320px',
             flexShrink: 0,
-            borderRight: '1px solid var(--border)',
-            background: 'linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg))',
-            backdropFilter: 'blur(28px) saturate(140%)',
+            borderRight: '1px solid rgba(20, 20, 20, 0.08)',
+            background: '#efece6',
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
@@ -333,7 +326,7 @@ function ChatWorkspace() {
             bottom: 0,
             zIndex: 200,
             transform: historyOpen ? 'translateX(0)' : 'translateX(-100%)',
-            transition: 'transform 0.28s var(--ease)',
+            transition: 'transform 0.28s ease',
           }}
         >
           <div className="hey-chat-sidebar-top" style={{
@@ -341,11 +334,11 @@ function ChatWorkspace() {
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '24px 20px 16px',
-            borderBottom: '1px solid var(--border)',
+            borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
           }}>
             <div>
               <span className="hey-chat-kicker" style={{
-                color: 'var(--text-muted)',
+                color: '#666666',
                 fontSize: '10px',
                 letterSpacing: '0.11em',
                 textTransform: 'uppercase',
@@ -354,8 +347,8 @@ function ChatWorkspace() {
               }}>Your intelligence layer</span>
               <h1 style={{
                 margin: 0,
-                color: 'var(--text-primary)',
-                fontFamily: 'var(--font-heading)',
+                color: '#141414',
+                fontFamily: 'Georgia, serif',
                 fontSize: '34px',
                 fontWeight: '400',
                 letterSpacing: '-0.06em'
@@ -372,10 +365,10 @@ function ChatWorkspace() {
                 width: '36px',
                 height: '36px',
                 padding: 0,
-                border: '1px solid var(--border)',
+                border: '1px solid rgba(20, 20, 20, 0.08)',
                 borderRadius: '11px',
-                background: 'var(--glass-bg)',
-                color: 'var(--text-secondary)',
+                background: '#ffffff',
+                color: '#666666',
                 cursor: 'pointer',
               }}
             >
@@ -395,14 +388,14 @@ function ChatWorkspace() {
               minHeight: '44px',
               margin: '20px',
               padding: '0 13px',
-              border: '1px solid rgba(255,255,255,.18)',
+              border: '1px solid rgba(20, 20, 20, 0.08)',
               borderRadius: '13px',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
-              color: 'var(--on-accent)',
+              background: '#ffffff',
+              color: '#141414',
               fontSize: '12px',
               fontWeight: '700',
               cursor: 'pointer',
-              boxShadow: '0 10px 26px var(--accent-glow-soft), inset 0 1px 0 rgba(255,255,255,.38)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
             }}
           >
             <MessageSquarePlus size={17} />
@@ -417,10 +410,10 @@ function ChatWorkspace() {
             minHeight: '40px',
             margin: '0 20px 12px',
             padding: '0 12px',
-            border: '1px solid var(--border)',
+            border: '1px solid rgba(20, 20, 20, 0.08)',
             borderRadius: '12px',
-            color: 'var(--text-muted)',
-            background: 'rgba(0,0,0,.12)',
+            color: '#666666',
+            background: '#ffffff',
           }}>
             <Search size={15} />
             <input
@@ -434,7 +427,7 @@ function ChatWorkspace() {
                 border: 0,
                 outline: 0,
                 background: 'transparent',
-                color: 'var(--text-primary)',
+                color: '#141414',
                 fontSize: '12px',
               }}
             />
@@ -445,8 +438,8 @@ function ChatWorkspace() {
             justifyContent: 'space-between',
             margin: '24px 20px 9px',
           }}>
-            <span style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.11em', textTransform: 'uppercase' }}>Recent</span>
-            <span style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.11em', textTransform: 'uppercase' }}>{conversations.length || "—"}</span>
+            <span style={{ color: '#666666', fontSize: '10px', letterSpacing: '0.11em', textTransform: 'uppercase' }}>Recent</span>
+            <span style={{ color: '#666666', fontSize: '10px', letterSpacing: '0.11em', textTransform: 'uppercase' }}>{conversations.length || "—"}</span>
           </div>
 
           <div className="hey-chat-history-list" style={{
@@ -457,7 +450,7 @@ function ChatWorkspace() {
             padding: '0 20px 20px',
           }}>
             {conversationsLoading ? (
-              <p className="hey-chat-history-empty" style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5', margin: '8px 4px' }}>Loading conversations...</p>
+              <p className="hey-chat-history-empty" style={{ color: '#666666', fontSize: '12px', lineHeight: '1.5', margin: '8px 4px' }}>Loading conversations...</p>
             ) : (
               visibleConversations.map((item) => (
                 <button
@@ -473,9 +466,9 @@ function ChatWorkspace() {
                     padding: '11px 10px',
                     border: '1px solid transparent',
                     borderRadius: '11px',
-                    background: item.id === conversationId ? 'var(--glass-bg)' : 'transparent',
-                    borderColor: item.id === conversationId ? 'var(--border)' : 'transparent',
-                    color: item.id === conversationId ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    background: item.id === conversationId ? '#ffffff' : 'transparent',
+                    borderColor: item.id === conversationId ? 'rgba(20, 20, 20, 0.08)' : 'transparent',
+                    color: item.id === conversationId ? '#141414' : '#666666',
                     textAlign: 'left',
                     cursor: 'pointer',
                     width: '100%',
@@ -489,7 +482,7 @@ function ChatWorkspace() {
               ))
             )}
             {!conversationsLoading && !visibleConversations.length && (
-              <p className="hey-chat-history-empty" style={{ margin: '8px 4px', color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
+              <p className="hey-chat-history-empty" style={{ margin: '8px 4px', color: '#666666', fontSize: '12px', lineHeight: '1.5' }}>
                 Your conversations will appear here.
               </p>
             )}
@@ -501,7 +494,7 @@ function ChatWorkspace() {
             gap: '10px',
             marginTop: 'auto',
             padding: '18px 20px 20px',
-            borderTop: '1px solid var(--border)',
+            borderTop: '1px solid rgba(20, 20, 20, 0.08)',
           }}>
             <div className="hey-chat-core-mark" style={{
               display: 'grid',
@@ -510,22 +503,22 @@ function ChatWorkspace() {
               width: '32px',
               height: '32px',
               borderRadius: '11px',
-              color: 'var(--accent-hover)',
-              background: 'var(--accent-glow-soft)',
+              color: '#0f7685',
+              background: 'rgba(15, 118, 133, 0.1)',
             }}>
               <Bot size={17} />
             </div>
             <div style={{ display: 'grid', gap: '3px', minWidth: 0, flex: 1 }}>
-              <strong style={{ color: 'var(--text-primary)', fontSize: '12px' }}>HEY Core</strong>
-              <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Conversation available here</span>
+              <strong style={{ color: '#141414', fontSize: '12px' }}>HEY Core</strong>
+              <span style={{ color: '#666666', fontSize: '10px' }}>Conversation available here</span>
             </div>
             <span className="hey-chat-live-dot" style={{
               width: '7px',
               height: '7px',
               marginLeft: 'auto',
               borderRadius: '50%',
-              background: 'var(--green-accent)',
-              boxShadow: '0 0 13px var(--green-accent)',
+              background: '#6db58a',
+              boxShadow: '0 0 13px #6db58a',
             }} />
           </div>
         </aside>
@@ -555,16 +548,17 @@ function ChatWorkspace() {
           flexDirection: 'column',
           minWidth: 0,
           overflow: 'hidden',
-          background: 'linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018))',
+          background: '#efece6',
           marginLeft: historyOpen ? '320px' : 0,
-          transition: 'margin-left 0.28s var(--ease)',
+          transition: 'margin-left 0.28s ease',
           height: '100vh',
         }}>
           <header className="hey-chat-header" style={{
             minHeight: '70px',
             padding: '12px 18px',
-            borderBottom: '1px solid var(--border)',
-            background: 'rgba(255,255,255,.025)',
+            borderBottom: '1px solid rgba(20, 20, 20, 0.08)',
+            background: 'rgba(255,255,255,0.5)',
+            backdropFilter: 'blur(10px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -584,10 +578,10 @@ function ChatWorkspace() {
                 width: '36px',
                 height: '36px',
                 padding: 0,
-                border: '1px solid var(--border)',
+                border: '1px solid rgba(20, 20, 20, 0.08)',
                 borderRadius: '11px',
-                background: 'var(--glass-bg)',
-                color: 'var(--text-secondary)',
+                background: '#ffffff',
+                color: '#666666',
                 cursor: 'pointer',
               }}
             >
@@ -610,10 +604,10 @@ function ChatWorkspace() {
                 width: '36px',
                 height: '36px',
                 padding: 0,
-                border: '1px solid var(--border)',
+                border: '1px solid rgba(20, 20, 20, 0.08)',
                 borderRadius: '11px',
-                background: 'var(--glass-bg)',
-                color: 'var(--text-secondary)',
+                background: '#ffffff',
+                color: '#666666',
                 cursor: 'pointer',
               }}
             >
@@ -624,8 +618,8 @@ function ChatWorkspace() {
               display: 'flex',
               padding: '3px',
               borderRadius: '10px',
-              background: 'rgba(255,255,255,.06)',
-              border: '1px solid rgba(255,255,255,.08)',
+              background: 'rgba(20, 20, 20, 0.05)',
+              border: '1px solid rgba(20, 20, 20, 0.08)',
               gap: '2px',
               flexShrink: 0,
             }}>
@@ -642,8 +636,8 @@ function ChatWorkspace() {
                   padding: '6px 13px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: mode === "text" ? 'rgba(255,255,255,.12)' : 'transparent',
-                  color: mode === "text" ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  background: mode === "text" ? 'rgba(20, 20, 20, 0.08)' : 'transparent',
+                  color: mode === "text" ? '#141414' : '#666666',
                   fontSize: '12.5px',
                   fontWeight: '500',
                   cursor: 'pointer',
@@ -666,8 +660,8 @@ function ChatWorkspace() {
                   padding: '6px 13px',
                   borderRadius: '8px',
                   border: 'none',
-                  background: mode === "voice" ? 'rgba(255,255,255,.12)' : 'transparent',
-                  color: mode === "voice" ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  background: mode === "voice" ? 'rgba(20, 20, 20, 0.08)' : 'transparent',
+                  color: mode === "voice" ? '#141414' : '#666666',
                   fontSize: '12.5px',
                   fontWeight: '500',
                   cursor: 'pointer',
@@ -688,7 +682,7 @@ function ChatWorkspace() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
-                color: 'var(--text-secondary)',
+                color: '#666666',
                 fontSize: '11px',
                 letterSpacing: '0.08em',
               }}>
@@ -696,14 +690,14 @@ function ChatWorkspace() {
                   width: '6px',
                   height: '6px',
                   borderRadius: '50%',
-                  background: 'var(--green-accent)',
-                  boxShadow: '0 0 10px var(--green-accent)',
+                  background: '#6db58a',
+                  boxShadow: '0 0 10px #6db58a',
                 }} />
                 {isSending ? "Thinking" : "Ready"}
               </div>
               <h2 style={{
                 margin: 0,
-                color: 'var(--text-primary)',
+                color: '#141414',
                 fontSize: '14px',
                 fontWeight: '700'
               }}>
@@ -728,10 +722,10 @@ function ChatWorkspace() {
                   width: '36px',
                   height: '36px',
                   padding: 0,
-                  border: '1px solid var(--border)',
+                  border: '1px solid rgba(20, 20, 20, 0.08)',
                   borderRadius: '11px',
-                  background: 'var(--glass-bg)',
-                  color: 'var(--text-secondary)',
+                  background: '#ffffff',
+                  color: '#666666',
                   cursor: 'pointer',
                 }}
               >
@@ -742,9 +736,9 @@ function ChatWorkspace() {
                 alignItems: 'center',
                 gap: '6px',
                 padding: '7px 10px',
-                border: '1px solid var(--border)',
+                border: '1px solid rgba(20, 20, 20, 0.08)',
                 borderRadius: '999px',
-                color: 'var(--text-secondary)',
+                color: '#666666',
                 fontSize: '11px',
               }}>
                 <Brain size={14} />
@@ -761,10 +755,10 @@ function ChatWorkspace() {
                   width: '36px',
                   height: '36px',
                   padding: 0,
-                  border: '1px solid var(--border)',
+                  border: '1px solid rgba(20, 20, 20, 0.08)',
                   borderRadius: '11px',
-                  background: 'var(--glass-bg)',
-                  color: 'var(--text-secondary)',
+                  background: '#ffffff',
+                  color: '#666666',
                   cursor: 'pointer',
                 }}
               >
@@ -795,17 +789,17 @@ function ChatWorkspace() {
                   display: 'grid',
                   placeItems: 'center',
                   background: `
-                    radial-gradient(circle at 40% 35%, var(--accent-glow), transparent 50%),
+                    radial-gradient(circle at 40% 35%, rgba(15, 118, 133, 0.15), transparent 50%),
                     rgba(255,255,255,.07)
                   `,
-                  border: '1px solid rgba(255,255,255,.14)',
+                  border: '1px solid rgba(20, 20, 20, 0.08)',
                   backdropFilter: 'blur(24px) saturate(150%)',
                   WebkitBackdropFilter: 'blur(24px) saturate(150%)',
                   boxShadow: `
                     inset 0 1px 0 rgba(255,255,255,.18),
                     inset 0 -1px 0 rgba(0,0,0,.14),
-                    0 0 50px var(--accent-glow-soft),
-                    0 40px 100px rgba(0,0,0,.25)
+                    0 0 50px rgba(15, 118, 133, 0.1),
+                    0 40px 100px rgba(0,0,0,.15)
                   `,
                 }}
               >
@@ -819,7 +813,7 @@ function ChatWorkspace() {
                     borderRadius: '50%',
                     border: 'none',
                     background: 'transparent',
-                    color: 'var(--accent)',
+                    color: '#0f7685',
                     cursor: 'pointer',
                     display: 'grid',
                     placeItems: 'center',
@@ -835,13 +829,13 @@ function ChatWorkspace() {
                   alignItems: 'center',
                   gap: '8px',
                   fontSize: '12px',
-                  color: 'var(--text-secondary)',
+                  color: '#666666',
                 }}>
                   <span className={`hey-voice-dot ${voiceState}`} style={{
                     width: '8px',
                     height: '8px',
                     borderRadius: '50%',
-                    background: voiceState === "listening" ? '#6DB58A' : 'var(--text-secondary)',
+                    background: voiceState === "listening" ? '#6DB58A' : '#666666',
                     boxShadow: voiceState === "listening" ? '0 0 10px rgba(109,181,138,.5)' : 'none',
                     animation: voiceState === "listening" ? 'voice-pulse 1.4s infinite ease-in-out' : 'none',
                     transition: '.3s',
@@ -852,12 +846,12 @@ function ChatWorkspace() {
                   fontSize: '22px',
                   fontWeight: '600',
                   margin: '8px 0 0',
-                  color: 'var(--text-primary)',
+                  color: '#141414',
                 }}>
                   {voiceState === "listening" ? "Listening..." : "Call HEY by voice"}
                 </h2>
                 <p style={{
-                  color: 'var(--text-secondary)',
+                  color: '#666666',
                   fontSize: '13.5px',
                   maxWidth: '440px',
                   lineHeight: '1.6',
@@ -873,14 +867,14 @@ function ChatWorkspace() {
                   maxWidth: '520px',
                   padding: '18px 22px',
                   borderRadius: '16px',
-                  background: 'rgba(255,255,255,.05)',
-                  border: '1px solid rgba(255,255,255,.08)',
+                  background: 'rgba(20, 20, 20, 0.03)',
+                  border: '1px solid rgba(20, 20, 20, 0.08)',
                   textAlign: 'left',
                 }}>
                   {voiceTranscript && (
                     <p className="hey-voice-question" style={{
                       fontStyle: 'italic',
-                      color: 'var(--text-secondary)',
+                      color: '#666666',
                       fontSize: '14px',
                       marginBottom: '10px',
                     }}>
@@ -890,7 +884,7 @@ function ChatWorkspace() {
                   {voiceResponse && (
                     <p className="hey-voice-answer" style={{
                       fontSize: '14.5px',
-                      color: 'var(--text-primary)',
+                      color: '#141414',
                       lineHeight: '1.7',
                     }}>
                       {voiceResponse}
@@ -907,7 +901,7 @@ function ChatWorkspace() {
               }} style={{
                 flex: 1,
                 overflowY: 'auto',
-                padding: '34px clamp(18px, 5vw, 76px) 24px',
+                padding: '32px clamp(18px, 5vw, 76px) 0',
               }}>
                 {chatError && (
                   <div className="hey-chat-error" role="alert" style={{
@@ -916,7 +910,7 @@ function ChatWorkspace() {
                     padding: '11px 13px',
                     border: '1px solid rgba(255,158,122,.3)',
                     borderRadius: '12px',
-                    color: 'var(--coral)',
+                    color: '#ff6b6b',
                     background: 'rgba(255,158,122,.08)',
                     fontSize: '12px',
                   }}>
@@ -947,12 +941,12 @@ function ChatWorkspace() {
                       alignItems: 'center',
                       gap: '5px',
                       marginLeft: '44px',
-                      color: 'var(--text-muted)',
+                      color: '#666666',
                       fontSize: '11px',
                     }}>
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--accent-hover)', animation: 'hey-chat-pulse 1s ease-in-out infinite' }} />
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--accent-hover)', animation: 'hey-chat-pulse 1s ease-in-out infinite', animationDelay: '.15s' }} />
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--accent-hover)', animation: 'hey-chat-pulse 1s ease-in-out infinite', animationDelay: '.3s' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#0f7685', animation: 'hey-chat-pulse 1s ease-in-out infinite' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#0f7685', animation: 'hey-chat-pulse 1s ease-in-out infinite', animationDelay: '.15s' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#0f7685', animation: 'hey-chat-pulse 1s ease-in-out infinite', animationDelay: '.3s' }} />
                       {t("chat.thinking")}
                     </div>
                   )}
@@ -961,107 +955,14 @@ function ChatWorkspace() {
               </div>
 
               <footer className="hey-chat-composer-area" style={{
-                width: 'min(100%, 790px)',
+                width: '100%',
+                maxWidth: '800px',
                 margin: '0 auto',
-                padding: '0 clamp(18px, 5vw, 76px) 24px',
+                padding: '0 24px 32px',
               }}>
-                <div className="hey-chat-suggestions" style={{
-                  display: 'flex',
-                  gap: '8px',
-                  marginBottom: '16px',
-                  overflowX: 'auto',
-                  scrollbarWidth: 'none',
-                  paddingBottom: '8px',
-                }}>
-                  {suggestions.map((item) => (
-                    <button
-                      type="button"
-                      key={item}
-                      onClick={() => setMessage(item)}
-                      style={{
-                        display: 'inline-flex',
-                        flex: '0 0 auto',
-                        alignItems: 'center',
-                        gap: '6px',
-                        minHeight: '36px',
-                        padding: '0 14px',
-                        border: '1px solid var(--border)',
-                        borderRadius: '999px',
-                        background: 'var(--glass-bg)',
-                        color: 'var(--text-secondary)',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        transition: 'border-color 0.2s, color 0.2s',
-                      }}
-                    >
-                      <Sparkles size={13} />
-                      {item}
-                    </button>
-                  ))}
-                </div>
-                {executionStatus && (
-                  <p className="hey-chat-execution-status" aria-live="polite" style={{
-                    color: 'var(--text-tertiary)',
-                    fontSize: '11px',
-                    marginBottom: '8px',
-                    padding: '0 4px',
-                  }}>
-                    {executionStatus}
-                  </p>
-                )}
-                {pendingExecution && (
-                  <div className="hey-execution-approval" role="group" aria-label="Review action approval" style={{
-                    padding: '16px',
-                    border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-card)',
-                    background: 'var(--glass-bg)',
-                    marginBottom: '16px',
-                  }}>
-                    <p style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>
-                      Approve {pendingExecution.approvalRequest.binding.action.id}
-                      {pendingExecution.approvalRequest.binding.target ? ` for ${String(pendingExecution.approvalRequest.binding.target).slice(0, 180)}` : ""}?
-                    </p>
-                    <p style={{ margin: '0 0 12px', color: 'var(--text-secondary)', fontSize: '13px' }}>
-                      Permission: {pendingExecution.approvalRequest.binding.permission} · Risk: {pendingExecution.approvalRequest.binding.riskLevel} · Scope: {pendingExecution.approvalRequest.binding.scope}
-                    </p>
-                    <details open style={{ marginBottom: '12px' }}>
-                      <summary style={{ cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '12px' }}>Exact action parameters</summary>
-                      <pre style={{
-                        margin: '8px 0 0',
-                        padding: '12px',
-                        border: '1px solid var(--border)',
-                        borderRadius: '8px',
-                        background: 'var(--bg-secondary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '11px',
-                        overflow: 'auto'
-                      }}>
-                        {JSON.stringify(pendingExecution.approvalRequest.binding.parameters, null, 2)}
-                      </pre>
-                    </details>
-                    <button
-                      type="button"
-                      className="hey-btn-primary"
-                      onClick={confirmPendingExecution}
-                      disabled={isSending}
-                      style={{
-                        width: '100%',
-                        padding: '12px 20px',
-                        borderRadius: 'var(--radius-button)',
-                        border: 'none',
-                        background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
-                        color: 'var(--on-accent)',
-                        fontSize: '13px',
-                        fontWeight: '600',
-                        cursor: isSending ? 'not-allowed' : 'pointer',
-                        opacity: isSending ? 0.5 : 1,
-                        boxShadow: isSending ? 'none' : '0 7px 18px var(--accent-glow-soft)',
-                      }}
-                    >
-                      Review and approve this action
-                    </button>
-                  </div>
-                )}
+                {/* 2D Pixel Pet - Pip */}
+                <PixelPet inputText={message} style={{ marginBottom: '16px' }} />
+
                 <ChatInput
                   value={message}
                   setValue={setMessage}
@@ -1075,7 +976,7 @@ function ChatWorkspace() {
                   textAlign: 'center',
                   fontSize: '10px',
                   letterSpacing: '0.04em',
-                  color: 'var(--text-muted)'
+                  color: '#666666'
                 }}>
                   HEY can make mistakes. Check important information.
                 </p>

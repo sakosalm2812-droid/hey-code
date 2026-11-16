@@ -34,9 +34,9 @@ describe('Design System — Contrast Ratio', () => {
 });
 
 describe('Design System — Theme Definitions', () => {
-  it('defines exactly 4 themes: dusk, dawn, night, paper', () => {
+  it('defines exactly 5 themes: dusk, dawn, night, paper, cream', () => {
     const themeNames = Object.keys(THEMES).sort();
-    assert.deepEqual(themeNames, ['dawn', 'dusk', 'night', 'paper']);
+    assert.deepEqual(themeNames, ['cream', 'dawn', 'dusk', 'night', 'paper']);
   });
 
   it('every theme has all semantic tokens defined', () => {
@@ -88,9 +88,9 @@ describe('Design System — Contrast Assertion (WCAG 2.2 AA)', () => {
     assert.ok(result.pass, `Paper theme failed contrast: ${JSON.stringify(result.failures, null, 2)}`);
   });
 
-  it('all 4 themes pass (getPassingThemes returns all 4)', () => {
+  it('all 5 themes pass (getPassingThemes returns all 5)', () => {
     const passing = getPassingThemes();
-    assert.deepEqual(passing.sort(), ['dawn', 'dusk', 'night', 'paper']);
+    assert.deepEqual(passing.sort(), ['cream', 'dawn', 'dusk', 'night', 'paper']);
   });
 });
 

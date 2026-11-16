@@ -126,6 +126,31 @@ export const THEMES = {
       '--hey-focus': '#0f7685',
     },
   },
+  cream: {
+    name: 'Cream',
+    description: 'Warm cream background, deep teal accent, pure white cards — premium light theme.',
+    light: true,
+    tokens: {
+      '--hey-bg': '#efece6',
+      '--hey-surface': '#ffffff',
+      '--hey-surface-2': '#f5f0e8',
+      '--hey-border': 'rgba(20, 20, 20, 0.08)',
+      '--hey-text-primary': '#141414',
+      '--hey-text-secondary': '#666666',
+      '--hey-text-tertiary': 'rgba(20, 20, 20, 0.4)',
+      '--hey-accent': '#0f7685',
+      '--hey-accent-text': '#ffffff',
+      '--hey-success': '#1e7a3a',
+      '--hey-success-text': '#ffffff',
+      '--hey-warning': '#8a6d00',
+      '--hey-warning-text': '#ffffff',
+      '--hey-danger': '#c0392b',
+      '--hey-danger-text': '#ffffff',
+      '--hey-info': '#2a5caa',
+      '--hey-info-text': '#ffffff',
+      '--hey-focus': '#0f7685',
+    },
+  },
 };
 
 /**

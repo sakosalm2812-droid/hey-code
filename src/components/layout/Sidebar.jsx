@@ -1,170 +1,229 @@
 import { NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import {
-  LayoutDashboard,
-  MessageCircle,
-  Globe2,
-  Hammer,
-  Sparkles,
+  MessageSquare,
+  Code,
+  PenTool,
+  Globe,
+  Search,
   Settings,
-  Brain,
-  CheckSquare,
-  CalendarDays,
-  BarChart3,
-  LockKeyhole,
-  FolderGit2,
-  Moon,
-  BookOpen,
-  CreditCard,
-  Target,
-  Activity,
-  FileText,
-  Bot,
-  Zap,
-  HardDrive,
-  Terminal,
-  HelpCircle,
-  SlidersHorizontal,
-  Mic2,
-  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { buzz } from "../../lib/heyFeedback";
 
-const navSections = [
-  {
-    label: "Core",
-    items: [
-      { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-      { label: "HEY Chat", path: "/chat", icon: MessageCircle },
-      { label: "Voice Live", path: "/voice/live", icon: Mic2 },
-      { label: "Cosmos", path: "/cosmos", icon: Globe2 },
-      { label: "Forge", path: "/forge", icon: Hammer },
-      { label: "Memory", path: "/memory", icon: Brain },
-      { label: "Tasks", path: "/tasks", icon: CheckSquare },
-      { label: "Calendar", path: "/calendar", icon: CalendarDays },
-      { label: "Projects", path: "/projects", icon: FolderGit2 },
-      { label: "Studio", path: "/studio", icon: Sparkles },
-    ],
-  },
-  {
-    label: "Productivity",
-    items: [
-      { label: "Analytics", path: "/analytics", icon: BarChart3 },
-      { label: "Deen", path: "/deen", icon: Moon },
-      { label: "Learn", path: "/learn", icon: BookOpen },
-      { label: "Finance", path: "/finance", icon: CreditCard },
-      { label: "Goals", path: "/goals", icon: Target },
-      { label: "Habits", path: "/habits", icon: CheckSquare },
-      { label: "Health", path: "/health", icon: Activity },
-      { label: "Journal", path: "/journal", icon: FileText },
-      { label: "Notes", path: "/notes", icon: FileText },
-      { label: "Modes", path: "/modes", icon: SlidersHorizontal },
-    ],
-  },
-  {
-    label: "Advanced",
-    items: [
-      { label: "Agents", path: "/agents", icon: Bot },
-      { label: "Capabilities", path: "/capabilities", icon: Zap },
-      { label: "Devices", path: "/device", icon: HardDrive },
-      { label: "Permissions", path: "/permissions", icon: LockKeyhole },
-      { label: "Debug", path: "/debug", icon: Terminal },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { label: "Settings", path: "/settings", icon: Settings },
-      { label: "Help", path: "/support", icon: HelpCircle },
-    ],
-  },
+const navItems = [
+  { label: "Chat", path: "/chat", icon: MessageSquare },
+  { label: "QCode", path: "/qcode", icon: Code },
+  { label: "Blueprint", path: "/blueprint", icon: PenTool },
+  { label: "Atlas", path: "/atlas", icon: Globe },
+  { label: "Digup", path: "/digup", icon: Search },
+  { label: "Settings", path: "/settings", icon: Settings },
 ];
 
-export function Sidebar({ collapsed = false, onToggle, className = '' }) {
+export function Sidebar({ className = '' }) {
   const location = useLocation();
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <aside
-      className={`hey-sidebar ${collapsed ? 'hey-sidebar--collapsed' : ''} ${className}`}
-      style={{ width: collapsed ? 68 : 244 }}
+    <motion.aside
+      className={`hey-sidebar ${className}`}
+      style={{
+        width: expanded ? 220 : 64,
+        background: '#efece6',
+        borderRight: '1px solid rgba(20, 20, 20, 0.05)',
+      }}
+      initial={{ width: 64 }}
+      animate={{ width: expanded ? 220 : 64 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
       aria-label="Main navigation"
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
     >
-      <div className="hey-sidebar__header">
+      <div className="hey-sidebar__header" style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: '64px',
+        padding: '0 12px',
+      }}>
         <NavLink
-          to="/dashboard"
+          to="/chat"
           className="hey-sidebar__brand"
-          aria-label="HEY Dashboard"
+          aria-label="HEY Chat"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            color: '#141414',
+            textDecoration: 'none',
+            whiteSpace: 'nowrap',
+          }}
         >
-          <span className="hey-sidebar__logo">H</span>
-          {!collapsed && <span className="hey-script hey-sidebar__title">HEY</span>}
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: '#0f7685',
+            color: '#efece6',
+            fontFamily: 'Georgia, serif',
+            fontSize: '18px',
+            fontWeight: '700',
+            flexShrink: 0,
+          }}>H</span>
+          <AnimatePresence mode="wait">
+            {expanded && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  fontFamily: 'Georgia, serif',
+                  fontSize: '20px',
+                  fontWeight: '500',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                HEY
+              </motion.span>
+            )}
+          </AnimatePresence>
         </NavLink>
-        {!collapsed && (
-          <button
-            type="button"
-            className="hey-sidebar__toggle"
-            onClick={onToggle}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-expanded={!collapsed}
-          >
-            <ChevronLeft size={16} />
-          </button>
-        )}
       </div>
 
-      <nav className="hey-sidebar__nav" aria-label="Main navigation">
-        {navSections.map((section) => (
-          <div key={section.label} className="hey-sidebar__section">
-            {!collapsed && (
-              <li className="hey-sidebar__divider">
-                <span>{section.label}</span>
+      <nav className="hey-sidebar__nav" aria-label="Main navigation" style={{
+        flex: 1,
+        overflowY: 'auto',
+        padding: '8px 4px',
+      }}>
+        <ul className="hey-sidebar__list" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '4px',
+          listStyle: 'none',
+          margin: 0,
+          padding: 0
+        }}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+            return (
+              <li key={item.path} className="hey-sidebar__item">
+                <NavLink
+                  to={item.path}
+                  onPointerDown={() => buzz("light")}
+                  className={({ isActive: active }) =>
+                    `hey-sidebar__link ${active ? 'hey-sidebar__link--active' : ''} ${isActive ? 'hey-sidebar__link--current' : ''}`
+                  }
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    minHeight: '44px',
+                    padding: '0 12px',
+                    borderRadius: '12px',
+                    color: isActive ? '#0f7685' : '#141414',
+                    textDecoration: 'none',
+                    transition: 'background 0.15s ease, color 0.15s ease',
+                    position: 'relative',
+                  }}
+                >
+                  <Icon size={20} style={{
+                    flexShrink: 0,
+                    strokeWidth: 1.5,
+                    color: isActive ? '#0f7685' : '#141414',
+                  }} aria-hidden="true" />
+                  <AnimatePresence mode="wait">
+                    {expanded && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -10, width: 0 }}
+                        animate={{ opacity: 1, x: 0, width: 'auto' }}
+                        exit={{ opacity: 0, x: -10, width: 0 }}
+                        transition={{ duration: 0.15 }}
+                        style={{
+                          fontFamily: 'Inter, sans-serif',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {isActive && (
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: 3 }}
+                      exit={{ width: 0 }}
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        height: '24px',
+                        borderRadius: '0 3px 3px 0',
+                        background: '#0f7685',
+                      }}
+                    />
+                  )}
+                </NavLink>
               </li>
-            )}
-            <ul className="hey-sidebar__list" role="list">
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-                return (
-                  <li key={item.path} className="hey-sidebar__item">
-                    <NavLink
-                      to={item.path}
-                      onPointerDown={() => buzz("light")}
-                      className={({ isActive: active }) =>
-                        `hey-sidebar__link ${active ? 'hey-sidebar__link--active' : ''}`
-                      }
-                    >
-                      <Icon size={20} className="hey-sidebar__icon" aria-hidden="true" />
-                      {!collapsed && <span className="hey-sidebar__label">{item.label}</span>}
-                      {isActive && !collapsed && <span className="hey-sidebar__indicator" aria-hidden="true" />}
-                    </NavLink>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+            );
+          })}
+        </ul>
       </nav>
 
-      <div className="hey-sidebar__footer">
-        {!collapsed && (
-          <div className="hey-sidebar__user">
-            <div className="hey-sidebar__user-info">
-              <div className="hey-sidebar__avatar" aria-hidden="true">U</div>
-              <div className="hey-sidebar__user-details">
-                <span className="hey-sidebar__user-name">User</span>
-                <span className="hey-sidebar__user-plan">Pro</span>
-              </div>
-            </div>
-          </div>
-        )}
+      <div className="hey-sidebar__footer" style={{
+        padding: '12px',
+        borderTop: '1px solid rgba(20, 20, 20, 0.05)'
+      }}>
         <NavLink
           to="/settings"
           className="hey-sidebar__settings"
           aria-label="Settings"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            borderRadius: '12px',
+            background: 'transparent',
+            color: '#666666',
+            textDecoration: 'none',
+            transition: 'background 0.15s ease, color 0.15s ease',
+          }}
         >
-          <Settings size={20} />
+          <Settings size={20} style={{ strokeWidth: 1.5 }} />
+          <AnimatePresence mode="wait">
+            {expanded && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  marginLeft: '12px',
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#141414',
+                }}
+              >
+                Settings
+              </motion.span>
+            )}
+          </AnimatePresence>
         </NavLink>
       </div>
-    </aside>
+    </motion.aside>
   );
 }
 
