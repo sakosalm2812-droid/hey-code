@@ -271,7 +271,7 @@ function ChatWorkspace() {
 
   async function copyMessage(text) {
     try {
-      if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+      if (!navigator.clipboard) throw new Error('Clipclipboard unavailable');
       await navigator.clipboard.writeText(text);
       setCopiedMessage(text);
     } catch { setChatError('Could not copy. Select the message text to copy it manually.'); return; }
@@ -302,246 +302,803 @@ function ChatWorkspace() {
       className="hey-chat-page"
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
+        background: 'var(--bg-primary)',
+      }}
     >
-      <aside className={`hey-chat-sidebar ${historyOpen ? "open" : ""}`}>
-        <div className="hey-chat-sidebar-top">
-          <div>
-            <span className="hey-chat-kicker">Your intelligence layer</span>
-            <h1>HEY</h1>
-          </div>
-          <button
-            type="button"
-            className="hey-chat-icon-button hey-chat-mobile-close"
-            onClick={() => setHistoryOpen(false)}
-            aria-label="Close conversation history"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <button type="button" className="hey-chat-new" onClick={startNewConversation}>
-          <MessageSquarePlus size={17} />
-          New conversation
-          <span>⌘ K</span>
-        </button>
-
-        <label className="hey-chat-search">
-          <Search size={15} />
-          <input
-            value={conversationSearch}
-            onChange={(event) => setConversationSearch(event.target.value)}
-            placeholder="Search conversations"
-            aria-label="Search conversations"
-          />
-        </label>
-
-        <div className="hey-chat-history-heading">
-          <span>Recent</span>
-          <span>{conversations.length || "—"}</span>
-        </div>
-
-        <div className="hey-chat-history-list">
-          {conversationsLoading ? (
-            <p className="hey-chat-history-empty">Loading conversations...</p>
-          ) : (
-            visibleConversations.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                className={`hey-chat-history-item ${item.id === conversationId ? "active" : ""}`}
-                onClick={() => openConversation(item.id)}
-              >
-                <MessageSquarePlus size={15} />
-                <span>{item.title || "Untitled conversation"}</span>
-              </button>
-            ))
-          )}
-          {!conversationsLoading && !visibleConversations.length && (
-            <p className="hey-chat-history-empty">Your conversations will appear here.</p>
-          )}
-        </div>
-
-        <div className="hey-chat-sidebar-footer">
-          <div className="hey-chat-core-mark"><Bot size={17} /></div>
-          <div>
-            <strong>HEY Core</strong>
-            <span>Conversation available here</span>
-          </div>
-          <span className="hey-chat-live-dot" />
-        </div>
-      </aside>
-
-      {historyOpen && (
-        <button
-          type="button"
-          className="hey-chat-drawer-backdrop"
-          onClick={() => setHistoryOpen(false)}
-          aria-label="Close conversation history"
-        />
-      )}
-
-      <section className="hey-chat-panel">
-        <header className="hey-chat-header">
-          <button
-            type="button"
-            className="hey-chat-icon-button hey-chat-mobile-menu"
-            onClick={() => {
-              setHistoryOpen(true);
-              try { window.localStorage.setItem("hey_chat_history_visible", "1"); } catch { /* persisted best-effort */ }
-            }}
-            aria-label="Open conversation history"
-          >
-            <Menu size={19} />
-          </button>
-
-          <button
-            type="button"
-            className="hey-chat-icon-button hey-chat-desktop-collapse"
-            title={historyOpen ? "Hide conversation history" : "Show conversation history"}
-            aria-label={historyOpen ? "Hide conversation history" : "Show conversation history"}
-            onClick={() => {
-              const next = !historyOpen;
-              setHistoryOpen(next);
-              try { window.localStorage.setItem("hey_chat_history_visible", next ? "1" : "0"); } catch { /* persisted best-effort */ }
-            }}
-          >
-            {historyOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
-          </button>
-
-          <div className="hey-chat-mode-switch" role="tablist" aria-label="HEY mode">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "text"}
-              className={mode === "text" ? "active" : ""}
-              onClick={switchToText}
-            >
-              <MessageSquareText size={14} />
-              Text
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === "voice"}
-              className={mode === "voice" ? "active" : ""}
-              onClick={toggleVoiceCall}
-            >
-              <Mic size={14} />
-              Voice
-            </button>
-          </div>
-
-          <div className="hey-chat-title">
-            <span className="hey-chat-status"><span /> {isSending ? "Thinking" : "Ready"}</span>
-            <h2>{mode === "voice" ? "Voice conversation" : "Personal intelligence"}</h2>
-          </div>
-
-          <div className="hey-chat-header-actions">
-            <button type="button" className="hey-chat-icon-button" onClick={exportConversation} aria-label="Export conversation" title="Export conversation"><Download size={17} /></button>
-            <span className="hey-chat-adaptive"><Brain size={14} /> Adaptive</span>
-            <button type="button" className="hey-chat-icon-button" onClick={startNewConversation} aria-label="Start new conversation">
-              <Plus size={18} />
-            </button>
-          </div>
-        </header>
-
-        {mode === "voice" ? (
-          <div className="hey-voice-duo">
-            <motion.div
-              className="hey-voice-orb"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.96 }}
-            >
-              <button
-                type="button"
-                onClick={toggleVoiceCall}
-                aria-label={voiceState === "listening" ? "Stop listening" : "Start voice conversation"}
-              >
-                {voiceState === "listening" ? <MicOff size={64} /> : <Mic size={64} />}
-              </button>
-            </motion.div>
-
-            <div className="hey-voice-copy">
-              <span className="hey-voice-kicker">
-                <span className={`hey-voice-dot ${voiceState}`} />
-                {voiceStatus}
-              </span>
-              <h2>{voiceState === "listening" ? "Listening..." : "Call HEY by voice"}</h2>
-              <p>Talk to your intelligence the same way you talk to a person. Your transcript is sent to HEY to generate a reply. Speech processing depends on your browser.</p>
+      <div className="hey-chat-container" style={{
+        display: 'flex',
+        flex: 1,
+        overflow: 'hidden',
+        position: 'relative',
+      }}>
+        <aside
+          className={`hey-chat-sidebar ${historyOpen ? "open" : ""}`}
+          style={{
+            width: '320px',
+            flexShrink: 0,
+            borderRight: '1px solid var(--border)',
+            background: 'linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg))',
+            backdropFilter: 'blur(28px) saturate(140%)',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            overflow: 'hidden',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            zIndex: 200,
+            transform: historyOpen ? 'translateX(0)' : 'translateX(-100%)',
+            transition: 'transform 0.28s var(--ease)',
+          }}
+        >
+          <div className="hey-chat-sidebar-top" style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '24px 20px 16px',
+            borderBottom: '1px solid var(--border)',
+          }}>
+            <div>
+              <span className="hey-chat-kicker" style={{
+                color: 'var(--text-muted)',
+                fontSize: '10px',
+                letterSpacing: '0.11em',
+                textTransform: 'uppercase',
+                display: 'block',
+                marginBottom: '8px'
+              }}>Your intelligence layer</span>
+              <h1 style={{
+                margin: 0,
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-heading)',
+                fontSize: '34px',
+                fontWeight: '400',
+                letterSpacing: '-0.06em'
+              }}>HEY</h1>
             </div>
+            <button
+              type="button"
+              className="hey-chat-icon-button hey-chat-mobile-close"
+              onClick={() => setHistoryOpen(false)}
+              aria-label="Close conversation history"
+              style={{
+                display: 'grid',
+                placeItems: 'center',
+                width: '36px',
+                height: '36px',
+                padding: 0,
+                border: '1px solid var(--border)',
+                borderRadius: '11px',
+                background: 'var(--glass-bg)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
 
-            {(voiceTranscript || voiceResponse) && (
-              <div className="hey-voice-transcript">
-                {voiceTranscript && <p className="hey-voice-question">“{voiceTranscript}”</p>}
-                {voiceResponse && <p className="hey-voice-answer">{voiceResponse}</p>}
-              </div>
+          <button
+            type="button"
+            className="hey-chat-new"
+            onClick={startNewConversation}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '9px',
+              width: '100%',
+              minHeight: '44px',
+              margin: '20px',
+              padding: '0 13px',
+              border: '1px solid rgba(255,255,255,.18)',
+              borderRadius: '13px',
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+              color: 'var(--on-accent)',
+              fontSize: '12px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              boxShadow: '0 10px 26px var(--accent-glow-soft), inset 0 1px 0 rgba(255,255,255,.38)',
+            }}
+          >
+            <MessageSquarePlus size={17} />
+            New conversation
+            <span style={{ marginLeft: 'auto', opacity: '.65', fontSize: '10px' }}>⌘ K</span>
+          </button>
+
+          <label className="hey-chat-search" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '9px',
+            minHeight: '40px',
+            margin: '0 20px 12px',
+            padding: '0 12px',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            color: 'var(--text-muted)',
+            background: 'rgba(0,0,0,.12)',
+          }}>
+            <Search size={15} />
+            <input
+              value={conversationSearch}
+              onChange={(event) => setConversationSearch(event.target.value)}
+              placeholder="Search conversations"
+              aria-label="Search conversations"
+              style={{
+                width: '100%',
+                minWidth: 0,
+                border: 0,
+                outline: 0,
+                background: 'transparent',
+                color: 'var(--text-primary)',
+                fontSize: '12px',
+              }}
+            />
+          </label>
+
+          <div className="hey-chat-history-heading" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            margin: '24px 20px 9px',
+          }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.11em', textTransform: 'uppercase' }}>Recent</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.11em', textTransform: 'uppercase' }}>{conversations.length || "—"}</span>
+          </div>
+
+          <div className="hey-chat-history-list" style={{
+            display: 'grid',
+            gap: '3px',
+            overflowY: 'auto',
+            flex: 1,
+            padding: '0 20px 20px',
+          }}>
+            {conversationsLoading ? (
+              <p className="hey-chat-history-empty" style={{ color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5', margin: '8px 4px' }}>Loading conversations...</p>
+            ) : (
+              visibleConversations.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={`hey-chat-history-item ${item.id === conversationId ? "active" : ""}`}
+                  onClick={() => openConversation(item.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '9px',
+                    minWidth: 0,
+                    padding: '11px 10px',
+                    border: '1px solid transparent',
+                    borderRadius: '11px',
+                    background: item.id === conversationId ? 'var(--glass-bg)' : 'transparent',
+                    borderColor: item.id === conversationId ? 'var(--border)' : 'transparent',
+                    color: item.id === conversationId ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    width: '100%',
+                  }}
+                >
+                  <MessageSquarePlus size={15} />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '12px' }}>
+                    {item.title || "Untitled conversation"}
+                  </span>
+                </button>
+              ))
+            )}
+            {!conversationsLoading && !visibleConversations.length && (
+              <p className="hey-chat-history-empty" style={{ margin: '8px 4px', color: 'var(--text-muted)', fontSize: '12px', lineHeight: '1.5' }}>
+                Your conversations will appear here.
+              </p>
             )}
           </div>
-        ) : (
-          <>
-            <div className="hey-chat-feed" ref={feedRef} onScroll={() => { const feed = feedRef.current; followingRef.current = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 100; }}>
-              {chatError && <div className="hey-chat-error" role="alert">{chatError}</div>}
 
-              <div className="hey-chat-messages">
-                {messages.map((item, index) => (
-                  <ChatMessage
-                    key={`${item.role}-${item.text}-${index}`}
-                    role={item.role}
-                    onCopy={() => copyMessage(item.text)}
-                    onRetry={() => retryMessage(index)}
-                    onPin={() => pinMessage(item.text)}
-                    pinned={pinnedMessages.includes(item.text)}
-                    copied={copiedMessage === item.text}
-                  >
-                    {item.text}
-                  </ChatMessage>
-                ))}
-                {isSending && (
-                  <div className="hey-chat-thinking"><span /><span /><span /> {t("chat.thinking")}</div>
-                )}
-                <div ref={feedEndRef} />
-              </div>
+          <div className="hey-chat-sidebar-footer" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginTop: 'auto',
+            padding: '18px 20px 20px',
+            borderTop: '1px solid var(--border)',
+          }}>
+            <div className="hey-chat-core-mark" style={{
+              display: 'grid',
+              flex: '0 0 32px',
+              placeItems: 'center',
+              width: '32px',
+              height: '32px',
+              borderRadius: '11px',
+              color: 'var(--accent-hover)',
+              background: 'var(--accent-glow-soft)',
+            }}>
+              <Bot size={17} />
+            </div>
+            <div style={{ display: 'grid', gap: '3px', minWidth: 0, flex: 1 }}>
+              <strong style={{ color: 'var(--text-primary)', fontSize: '12px' }}>HEY Core</strong>
+              <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>Conversation available here</span>
+            </div>
+            <span className="hey-chat-live-dot" style={{
+              width: '7px',
+              height: '7px',
+              marginLeft: 'auto',
+              borderRadius: '50%',
+              background: 'var(--green-accent)',
+              boxShadow: '0 0 13px var(--green-accent)',
+            }} />
+          </div>
+        </aside>
+
+        {historyOpen && (
+          <button
+            type="button"
+            className="hey-chat-drawer-backdrop"
+            onClick={() => setHistoryOpen(false)}
+            aria-label="Close conversation history"
+            style={{
+              display: historyOpen ? 'block' : 'none',
+              position: 'fixed',
+              inset: 0,
+              zIndex: 199,
+              border: 0,
+              background: 'rgba(3,4,9,.55)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+            }}
+          />
+        )}
+
+        <section className="hey-chat-panel" style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
+          overflow: 'hidden',
+          background: 'linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.018))',
+          marginLeft: historyOpen ? '320px' : 0,
+          transition: 'margin-left 0.28s var(--ease)',
+          height: '100vh',
+        }}>
+          <header className="hey-chat-header" style={{
+            minHeight: '70px',
+            padding: '12px 18px',
+            borderBottom: '1px solid var(--border)',
+            background: 'rgba(255,255,255,.025)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '16px',
+          }}>
+            <button
+              type="button"
+              className="hey-chat-icon-button hey-chat-mobile-menu"
+              onClick={() => {
+                setHistoryOpen(true);
+                try { window.localStorage.setItem("hey_chat_history_visible", "1"); } catch { /* persisted best-effort */ }
+              }}
+              aria-label="Open conversation history"
+              style={{
+                display: 'grid',
+                placeItems: 'center',
+                width: '36px',
+                height: '36px',
+                padding: 0,
+                border: '1px solid var(--border)',
+                borderRadius: '11px',
+                background: 'var(--glass-bg)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              <Menu size={19} />
+            </button>
+
+            <button
+              type="button"
+              className="hey-chat-icon-button hey-chat-desktop-collapse"
+              title={historyOpen ? "Hide conversation history" : "Show conversation history"}
+              aria-label={historyOpen ? "Hide conversation history" : "Show conversation history"}
+              onClick={() => {
+                const next = !historyOpen;
+                setHistoryOpen(next);
+                try { window.localStorage.setItem("hey_chat_history_visible", next ? "1" : "0"); } catch { /* persisted best-effort */ }
+              }}
+              style={{
+                display: 'grid',
+                placeItems: 'center',
+                width: '36px',
+                height: '36px',
+                padding: 0,
+                border: '1px solid var(--border)',
+                borderRadius: '11px',
+                background: 'var(--glass-bg)',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer',
+              }}
+            >
+              {historyOpen ? <PanelLeftClose size={17} /> : <PanelLeftOpen size={17} />}
+            </button>
+
+            <div className="hey-chat-mode-switch" role="tablist" aria-label="HEY mode" style={{
+              display: 'flex',
+              padding: '3px',
+              borderRadius: '10px',
+              background: 'rgba(255,255,255,.06)',
+              border: '1px solid rgba(255,255,255,.08)',
+              gap: '2px',
+              flexShrink: 0,
+            }}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "text"}
+                className={mode === "text" ? "active" : ""}
+                onClick={switchToText}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '6px 13px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: mode === "text" ? 'rgba(255,255,255,.12)' : 'transparent',
+                  color: mode === "text" ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  fontSize: '12.5px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: '.2s',
+                }}
+              >
+                <MessageSquareText size={14} />
+                Text
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === "voice"}
+                className={mode === "voice" ? "active" : ""}
+                onClick={toggleVoiceCall}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  padding: '6px 13px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: mode === "voice" ? 'rgba(255,255,255,.12)' : 'transparent',
+                  color: mode === "voice" ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  fontSize: '12.5px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: '.2s',
+                }}
+              >
+                <Mic size={14} />
+                Voice
+              </button>
             </div>
 
-            <footer className="hey-chat-composer-area">
-              <div className="hey-chat-suggestions">
-                {suggestions.map((item) => (
-                  <button type="button" key={item} onClick={() => setMessage(item)}>
-                    <Sparkles size={13} />
-                    {item}
-                  </button>
-                ))}
+            <div className="hey-chat-title" style={{
+              display: 'grid',
+              gap: '5px',
+              flex: 1,
+            }}>
+              <div className="hey-chat-status" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--text-secondary)',
+                fontSize: '11px',
+                letterSpacing: '0.08em',
+              }}>
+                <span style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: 'var(--green-accent)',
+                  boxShadow: '0 0 10px var(--green-accent)',
+                }} />
+                {isSending ? "Thinking" : "Ready"}
               </div>
-              {executionStatus && <p className="hey-chat-execution-status" aria-live="polite">{executionStatus}</p>}
-              {pendingExecution && (
-                <div className="hey-execution-approval" role="group" aria-label="Review action approval">
-                  <p>
-                    Approve {pendingExecution.approvalRequest.binding.action.id}
-                    {pendingExecution.approvalRequest.binding.target ? ` for ${String(pendingExecution.approvalRequest.binding.target).slice(0, 180)}` : ""}?
-                  </p>
-                  <p>Permission: {pendingExecution.approvalRequest.binding.permission} · Risk: {pendingExecution.approvalRequest.binding.riskLevel} · Scope: {pendingExecution.approvalRequest.binding.scope}</p>
-                  <details open>
-                    <summary>Exact action parameters</summary>
-                    <pre>{JSON.stringify(pendingExecution.approvalRequest.binding.parameters, null, 2)}</pre>
-                  </details>
-                  <button type="button" className="hey-btn-primary" onClick={confirmPendingExecution} disabled={isSending}>
-                    Review and approve this action
-                  </button>
+              <h2 style={{
+                margin: 0,
+                color: 'var(--text-primary)',
+                fontSize: '14px',
+                fontWeight: '700'
+              }}>
+                {mode === "voice" ? "Voice conversation" : "Personal intelligence"}
+              </h2>
+            </div>
+
+            <div className="hey-chat-header-actions" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '9px',
+            }}>
+              <button
+                type="button"
+                className="hey-chat-icon-button"
+                onClick={exportConversation}
+                aria-label="Export conversation"
+                title="Export conversation"
+                style={{
+                  display: 'grid',
+                  placeItems: 'center',
+                  width: '36px',
+                  height: '36px',
+                  padding: 0,
+                  border: '1px solid var(--border)',
+                  borderRadius: '11px',
+                  background: 'var(--glass-bg)',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                }}
+              >
+                <Download size={17} />
+              </button>
+              <span className="hey-chat-adaptive" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '7px 10px',
+                border: '1px solid var(--border)',
+                borderRadius: '999px',
+                color: 'var(--text-secondary)',
+                fontSize: '11px',
+              }}>
+                <Brain size={14} />
+                Adaptive
+              </span>
+              <button
+                type="button"
+                className="hey-chat-icon-button"
+                onClick={startNewConversation}
+                aria-label="Start new conversation"
+                style={{
+                  display: 'grid',
+                  placeItems: 'center',
+                  width: '36px',
+                  height: '36px',
+                  padding: 0,
+                  border: '1px solid var(--border)',
+                  borderRadius: '11px',
+                  background: 'var(--glass-bg)',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                }}
+              >
+                <Plus size={18} />
+              </button>
+            </div>
+          </header>
+
+          {mode === "voice" ? (
+            <div className="hey-voice-duo" style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '28px',
+              padding: '40px 20px 60px',
+              textAlign: 'center',
+            }}>
+              <motion.div
+                className="hey-voice-orb"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
+                style={{
+                  width: '180px',
+                  height: '180px',
+                  borderRadius: '50%',
+                  display: 'grid',
+                  placeItems: 'center',
+                  background: `
+                    radial-gradient(circle at 40% 35%, var(--accent-glow), transparent 50%),
+                    rgba(255,255,255,.07)
+                  `,
+                  border: '1px solid rgba(255,255,255,.14)',
+                  backdropFilter: 'blur(24px) saturate(150%)',
+                  WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+                  boxShadow: `
+                    inset 0 1px 0 rgba(255,255,255,.18),
+                    inset 0 -1px 0 rgba(0,0,0,.14),
+                    0 0 50px var(--accent-glow-soft),
+                    0 40px 100px rgba(0,0,0,.25)
+                  `,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={toggleVoiceCall}
+                  aria-label={voiceState === "listening" ? "Stop listening" : "Start voice conversation"}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--accent)',
+                    cursor: 'pointer',
+                    display: 'grid',
+                    placeItems: 'center',
+                  }}
+                >
+                  {voiceState === "listening" ? <MicOff size={64} /> : <Mic size={64} />}
+                </button>
+              </motion.div>
+
+              <div className="hey-voice-copy">
+                <span className="hey-voice-kicker" style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '12px',
+                  color: 'var(--text-secondary)',
+                }}>
+                  <span className={`hey-voice-dot ${voiceState}`} style={{
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: voiceState === "listening" ? '#6DB58A' : 'var(--text-secondary)',
+                    boxShadow: voiceState === "listening" ? '0 0 10px rgba(109,181,138,.5)' : 'none',
+                    animation: voiceState === "listening" ? 'voice-pulse 1.4s infinite ease-in-out' : 'none',
+                    transition: '.3s',
+                  }} />
+                  {voiceStatus}
+                </span>
+                <h2 style={{
+                  fontSize: '22px',
+                  fontWeight: '600',
+                  margin: '8px 0 0',
+                  color: 'var(--text-primary)',
+                }}>
+                  {voiceState === "listening" ? "Listening..." : "Call HEY by voice"}
+                </h2>
+                <p style={{
+                  color: 'var(--text-secondary)',
+                  fontSize: '13.5px',
+                  maxWidth: '440px',
+                  lineHeight: '1.6',
+                  margin: '8px 0 0',
+                }}>
+                  Talk to your intelligence the same way you talk to a person. Your transcript is sent to HEY to generate a reply. Speech processing depends on your browser.
+                </p>
+              </div>
+
+              {(voiceTranscript || voiceResponse) && (
+                <div className="hey-voice-transcript" style={{
+                  width: '100%',
+                  maxWidth: '520px',
+                  padding: '18px 22px',
+                  borderRadius: '16px',
+                  background: 'rgba(255,255,255,.05)',
+                  border: '1px solid rgba(255,255,255,.08)',
+                  textAlign: 'left',
+                }}>
+                  {voiceTranscript && (
+                    <p className="hey-voice-question" style={{
+                      fontStyle: 'italic',
+                      color: 'var(--text-secondary)',
+                      fontSize: '14px',
+                      marginBottom: '10px',
+                    }}>
+                      “{voiceTranscript}”
+                    </p>
+                  )}
+                  {voiceResponse && (
+                    <p className="hey-voice-answer" style={{
+                      fontSize: '14.5px',
+                      color: 'var(--text-primary)',
+                      lineHeight: '1.7',
+                    }}>
+                      {voiceResponse}
+                    </p>
+                  )}
                 </div>
               )}
-              <ChatInput
-                value={message}
-                setValue={setMessage}
-                onSend={() => sendUserMessage(message)}
-                disabled={isSending}
-                conversationId={conversationId}
-                onVoiceCall={toggleVoiceCall}
-              />
-              <p className="hey-chat-disclaimer">HEY can make mistakes. Check important information.</p>
-            </footer>
-          </>
-        )}
-      </section>
+            </div>
+          ) : (
+            <>
+              <div className="hey-chat-feed" ref={feedRef} onScroll={() => {
+                const feed = feedRef.current;
+                followingRef.current = feed.scrollHeight - feed.scrollTop - feed.clientHeight < 100;
+              }} style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '34px clamp(18px, 5vw, 76px) 24px',
+              }}>
+                {chatError && (
+                  <div className="hey-chat-error" role="alert" style={{
+                    width: 'min(100%, 790px)',
+                    margin: '0 auto 18px',
+                    padding: '11px 13px',
+                    border: '1px solid rgba(255,158,122,.3)',
+                    borderRadius: '12px',
+                    color: 'var(--coral)',
+                    background: 'rgba(255,158,122,.08)',
+                    fontSize: '12px',
+                  }}>
+                    {chatError}
+                  </div>
+                )}
+
+                <div className="hey-chat-messages" style={{
+                  width: 'min(100%, 790px)',
+                  margin: '0 auto',
+                }}>
+                  {messages.map((item, index) => (
+                    <ChatMessage
+                      key={`${item.role}-${item.text}-${index}`}
+                      role={item.role}
+                      onCopy={() => copyMessage(item.text)}
+                      onRetry={() => retryMessage(index)}
+                      onPin={() => pinMessage(item.text)}
+                      pinned={pinnedMessages.includes(item.text)}
+                      copied={copiedMessage === item.text}
+                    >
+                      {item.text}
+                    </ChatMessage>
+                  ))}
+                  {isSending && (
+                    <div className="hey-chat-thinking" style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      marginLeft: '44px',
+                      color: 'var(--text-muted)',
+                      fontSize: '11px',
+                    }}>
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--accent-hover)', animation: 'hey-chat-pulse 1s ease-in-out infinite' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--accent-hover)', animation: 'hey-chat-pulse 1s ease-in-out infinite', animationDelay: '.15s' }} />
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--accent-hover)', animation: 'hey-chat-pulse 1s ease-in-out infinite', animationDelay: '.3s' }} />
+                      {t("chat.thinking")}
+                    </div>
+                  )}
+                  <div ref={feedEndRef} />
+                </div>
+              </div>
+
+              <footer className="hey-chat-composer-area" style={{
+                width: 'min(100%, 790px)',
+                margin: '0 auto',
+                padding: '0 clamp(18px, 5vw, 76px) 24px',
+              }}>
+                <div className="hey-chat-suggestions" style={{
+                  display: 'flex',
+                  gap: '8px',
+                  marginBottom: '16px',
+                  overflowX: 'auto',
+                  scrollbarWidth: 'none',
+                  paddingBottom: '8px',
+                }}>
+                  {suggestions.map((item) => (
+                    <button
+                      type="button"
+                      key={item}
+                      onClick={() => setMessage(item)}
+                      style={{
+                        display: 'inline-flex',
+                        flex: '0 0 auto',
+                        alignItems: 'center',
+                        gap: '6px',
+                        minHeight: '36px',
+                        padding: '0 14px',
+                        border: '1px solid var(--border)',
+                        borderRadius: '999px',
+                        background: 'var(--glass-bg)',
+                        color: 'var(--text-secondary)',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        transition: 'border-color 0.2s, color 0.2s',
+                      }}
+                    >
+                      <Sparkles size={13} />
+                      {item}
+                    </button>
+                  ))}
+                </div>
+                {executionStatus && (
+                  <p className="hey-chat-execution-status" aria-live="polite" style={{
+                    color: 'var(--text-tertiary)',
+                    fontSize: '11px',
+                    marginBottom: '8px',
+                    padding: '0 4px',
+                  }}>
+                    {executionStatus}
+                  </p>
+                )}
+                {pendingExecution && (
+                  <div className="hey-execution-approval" role="group" aria-label="Review action approval" style={{
+                    padding: '16px',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-card)',
+                    background: 'var(--glass-bg)',
+                    marginBottom: '16px',
+                  }}>
+                    <p style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>
+                      Approve {pendingExecution.approvalRequest.binding.action.id}
+                      {pendingExecution.approvalRequest.binding.target ? ` for ${String(pendingExecution.approvalRequest.binding.target).slice(0, 180)}` : ""}?
+                    </p>
+                    <p style={{ margin: '0 0 12px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                      Permission: {pendingExecution.approvalRequest.binding.permission} · Risk: {pendingExecution.approvalRequest.binding.riskLevel} · Scope: {pendingExecution.approvalRequest.binding.scope}
+                    </p>
+                    <details open style={{ marginBottom: '12px' }}>
+                      <summary style={{ cursor: 'pointer', color: 'var(--text-secondary)', fontSize: '12px' }}>Exact action parameters</summary>
+                      <pre style={{
+                        margin: '8px 0 0',
+                        padding: '12px',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        background: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '11px',
+                        overflow: 'auto'
+                      }}>
+                        {JSON.stringify(pendingExecution.approvalRequest.binding.parameters, null, 2)}
+                      </pre>
+                    </details>
+                    <button
+                      type="button"
+                      className="hey-btn-primary"
+                      onClick={confirmPendingExecution}
+                      disabled={isSending}
+                      style={{
+                        width: '100%',
+                        padding: '12px 20px',
+                        borderRadius: 'var(--radius-button)',
+                        border: 'none',
+                        background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+                        color: 'var(--on-accent)',
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        cursor: isSending ? 'not-allowed' : 'pointer',
+                        opacity: isSending ? 0.5 : 1,
+                        boxShadow: isSending ? 'none' : '0 7px 18px var(--accent-glow-soft)',
+                      }}
+                    >
+                      Review and approve this action
+                    </button>
+                  </div>
+                )}
+                <ChatInput
+                  value={message}
+                  setValue={setMessage}
+                  onSend={() => sendUserMessage(message)}
+                  disabled={isSending}
+                  conversationId={conversationId}
+                  onVoiceCall={toggleVoiceCall}
+                />
+                <p className="hey-chat-disclaimer" style={{
+                  margin: '12px 0 0',
+                  textAlign: 'center',
+                  fontSize: '10px',
+                  letterSpacing: '0.04em',
+                  color: 'var(--text-muted)'
+                }}>
+                  HEY can make mistakes. Check important information.
+                </p>
+              </footer>
+            </>
+          )}
+        </section>
+      </div>
+      <style jsx>{`
+        @keyframes hey-chat-pulse {
+          0%, 100% { opacity: .3; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-3px); }
+        }
+        @keyframes voice-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: .6; transform: scale(1.4); }
+        }
+        @media (max-width: 900px) {
+          .hey-chat-panel {
+            margin-left: 0 !important;
+          }
+        }
+      `}</style>
     </motion.div>
   );
 }

@@ -2,6 +2,7 @@
 export const HEY_PAGES = [
   ['HEY', '/chat', 'hey', 'chat conversation voice'],
   ['Voice', '/voice', 'hey', 'talk speech voice conversation'],
+  ['QCode', '/qcode', 'forge', 'code programming ai editor'],
   ['Create', '/media', 'create', 'edit video audio media'],
   ['Projects', '/projects', 'projects', 'files workspaces research'],
   ['Cosmos', '/cosmos', 'cosmos', 'knowledge context intelligence'],
@@ -34,7 +35,7 @@ export const HEY_PAGES = [
   ['Crisis', '/crisis', 'more', 'support'],
   ['Settings', '/settings', 'account', 'account providers preferences'],
   ['Help', '/support', 'account', 'support help'],
-].map(([title, path, group, keywords], index) => ({ id: path, title, path, group, keywords, primary: index < 7, type: 'page', text: `${title} ${keywords}` }));
+].map(([title, path, group, keywords], index) => ({ id: path, title, path, group, keywords, primary: index < 8, type: 'page', text: `${title} ${keywords}` }));
 
 export function resolvePageCommand(text) {
   const match = String(text || '').trim().match(/^(?:open|show|go to|take me to)(?:\s+my|\s+the)?\s+(.+?)[.!?]?$/i);

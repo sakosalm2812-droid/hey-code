@@ -70,6 +70,7 @@ const ProjectsPage = lazy(() => import("./ProjectsPage.jsx"));
 const MorningMode = lazy(() => import("./MorningMode.jsx"));
 const CrisisMode = lazy(() => import("./CrisisMode.jsx"));
 const ModesPage = lazy(() => import("./pages/ModesPage.jsx"));
+const QCodePage = lazy(() => import("./pages/QCodePage.jsx"));
 const SettingsPage = lazy(() => import("./SettingsPage.jsx"));
 const PermissionsPage = lazy(() => import("./PermissionsPage.jsx"));
 const CapabilitiesPage = lazy(() => import("./CapabilitiesPage.jsx"));
@@ -271,6 +272,15 @@ function AnimatedRoutes() {
           element={
             <ProtectedLayout>
               <ForgePage />
+            </ProtectedLayout>
+          }
+        />
+
+        <Route
+          path="/qcode"
+          element={
+            <ProtectedLayout>
+              <QCodePage />
             </ProtectedLayout>
           }
         />

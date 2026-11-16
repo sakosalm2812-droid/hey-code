@@ -20,27 +20,6 @@
         "minHeight": 640,
         "resizable": true,
         "backgroundThrottling": "disabled"
-      },
-      {
-        "label": "island",
-        "title": "HEY Island",
-        "url": "index.html?surface=island",
-        "width": 390,
-        "height": 58,
-        "minWidth": 320,
-        "minHeight": 48,
-        "maxWidth": 560,
-        "maxHeight": 520,
-        "resizable": false,
-        "decorations": false,
-        "transparent": true,
-        "alwaysOnTop": true,
-        "skipTaskbar": true,
-        "shadow": false,
-        "focus": false,
-        "visible": true,
-        "backgroundThrottling": "disabled",
-        "visibleOnAllWorkspaces": true
       }
     ],
     "security": {

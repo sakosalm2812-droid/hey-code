@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useHEYTheme } from "../../context/ThemeContext";
 import { buzz, confirmSound } from "../../lib/heyFeedback";
 import { springs } from "../../lib/heyMotion";
-import DynamicIsland from "./DynamicIsland";
+import { DynamicIsland } from "../island/DynamicIsland";
 import BlockBackground from "../BlockBackground";
 import { HEY_PAGES } from "../../core/navigationCatalog.js";
 import { useAuth } from "../../AuthContext.jsx";
