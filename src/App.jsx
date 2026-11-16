@@ -19,13 +19,11 @@ import { ToastHost, NotificationCenter } from "./components/notifications/index.
 import InfinityStatusBar from "./components/InfinityStatusBar.jsx";
 import AppErrorBoundary from "./components/AppErrorBoundary";
 import BackgroundLayer from "./components/background/BackgroundLayer";
-import IslandHost from "./components/island/IslandHost.jsx";
 import { Sidebar } from './components/layout/Sidebar';
 import { Topbar } from './components/layout/Topbar';
 import { DynamicIsland } from './components/island/DynamicIsland';
 
 // Layouts
-import PublicLayout from "./components/layout/PublicLayout";
 import AppLayout from "./components/layout/AppLayout";
 
 // Auth
@@ -36,7 +34,7 @@ import ResetPasswordPage from "./ResetPasswordPage";
 import AuthCallbackPage from "./pages/AuthCallback.jsx";
 
 // Public Pages
-const Home = lazy(() => import("./LandingPage.jsx"));
+const Home = lazy(() => import("./pages/LandingPage.jsx"));
 const About = lazy(() => import("./pages/About.jsx"));
 const Features = lazy(() => import("./pages/Features.jsx"));
 const Customization = lazy(() => import("./pages/Customization.jsx"));
@@ -120,9 +118,14 @@ function ProtectedLayout({ children }) {
 
 function PublicPage({ children }) {
   return (
-    <PublicLayout>
+    <div style={{
+      minHeight: '100vh',
+      background: '#efece6',
+      color: '#141414',
+      fontFamily: 'Inter, sans-serif',
+    }}>
       {children}
-    </PublicLayout>
+    </div>
   );
 }
 
@@ -136,11 +139,7 @@ function AnimatedRoutes() {
         {/* PUBLIC */}
         <Route
           path="/"
-          element={
-            <PublicPage>
-              <Home />
-            </PublicPage>
-          }
+          element={<Home />}
         />
 
         <Route
@@ -450,7 +449,6 @@ export default function App() {
             <TutorialOverlay />
             <IdleScreensaver />
           </BrowserRouter>
-          <IslandHost />
         </PaletteProvider>
       </MotionConfig>
     </AppErrorBoundary>

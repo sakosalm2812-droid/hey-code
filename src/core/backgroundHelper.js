@@ -17,7 +17,6 @@ const HELPER_STATES = Object.freeze({
 const BACKGROUND_CAPABILITIES = Object.freeze({
   WAKE_WORD: "wake_word",
   GLOBAL_SHORTCUTS: "global_shortcuts",
-  DYNAMIC_ISLAND: "dynamic_island",
   NOTIFICATIONS: "notifications",
   REMINDERS: "reminders",
   TIMERS: "timers",
@@ -196,9 +195,6 @@ class BackgroundHelperEngine {
       case BACKGROUND_CAPABILITIES.GLOBAL_SHORTCUTS:
         await this.startGlobalShortcuts();
         break;
-      case BACKGROUND_CAPABILITIES.DYNAMIC_ISLAND:
-        await this.startDynamicIsland();
-        break;
       case BACKGROUND_CAPABILITIES.NOTIFICATIONS:
         await this.startNotifications();
         break;
@@ -248,9 +244,6 @@ class BackgroundHelperEngine {
         break;
       case BACKGROUND_CAPABILITIES.GLOBAL_SHORTCUTS:
         await this.stopGlobalShortcuts();
-        break;
-      case BACKGROUND_CAPABILITIES.DYNAMIC_ISLAND:
-        await this.stopDynamicIsland();
         break;
       case BACKGROUND_CAPABILITIES.NOTIFICATIONS:
         await this.stopNotifications();
@@ -509,8 +502,7 @@ class BackgroundHelperEngine {
   async stopWakeWord() {}
   async startGlobalShortcuts() {}
   async stopGlobalShortcuts() {}
-  async startDynamicIsland() {}
-  async stopDynamicIsland() {}
+  async startMediaControl() {}
   async startNotifications() {}
   async stopNotifications() {}
   async startReminders() {}

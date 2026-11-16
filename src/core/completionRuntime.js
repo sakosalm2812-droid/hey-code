@@ -382,7 +382,6 @@ function installBackgroundRuntime() {
         scope: "system",
         shortcuts: [
           { keys: "Ctrl+Alt+H", action: "show_hey" },
-          { keys: "Ctrl+Alt+Space", action: "toggle_island" },
         ],
       });
     }
@@ -461,15 +460,6 @@ function installBackgroundRuntime() {
   backgroundHelperEngine.startDeviceHandoff = async () => deviceFabricEngine.startTransport?.() || unavailable("No device transport is configured.");
   backgroundHelperEngine.stopDeviceHandoff = async () => deviceFabricEngine.stopTransport?.() || verified();
 
-  backgroundHelperEngine.startDynamicIsland = async () => {
-    if (!isTauriRuntime()) return unavailable("Dynamic Island requires the native HEY desktop runtime.");
-    await invokeNativeCommand("island_set_visible", { visible: true });
-    return verified({ scope: "desktop" });
-  };
-  backgroundHelperEngine.stopDynamicIsland = async () => {
-    if (isTauriRuntime()) await invokeNativeCommand("island_set_visible", { visible: false });
-    return verified();
-  };
   backgroundHelperEngine.startMediaControl = async () => isTauriRuntime()
     ? verified({ provider: "native-media-keys" })
     : unavailable("Media control requires the native HEY desktop runtime.");

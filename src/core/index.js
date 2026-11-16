@@ -133,7 +133,6 @@ import {
 } from "./cosmosMemory.js";
 import { chatTransportEngine, createConversation, getConversation, getAllConversations, getConversationsByProject, updateConversation, deleteConversation, archiveConversation, unarchiveConversation, createMessage, saveDraft, getDraft, clearDraft, sendMessage, streamMessage, branchConversation, addAttachment, uploadAttachment, exportConversation, importConversation, subscribeToChat, CONVERSATION_STATES, MESSAGE_STATES, ATTACHMENT_STATES } from "./chatTransport.js";
 import { createLiveSession, startLiveSession, addLiveSource, switchLiveSource, removeLiveSource, processLiveInput, executeLiveAction, setLiveMode, updateLiveOverlay, addLiveHighlight, removeLiveHighlight, addLiveLabel, addLiveArrow, addLiveStepMarker, dimLiveArea, pauseLiveSession, resumeLiveSession, stopLiveSession, getLiveSession, getActiveLiveSession, listLiveSessions, grantLivePermission, revokeLivePermission, getLiveSessionMetrics, reconnectLiveSession, LIVE_STATES, LIVE_MODES, SOURCE_TYPES } from "./heyLive.js";
-import { createDynamicIsland, getDynamicIsland, getDefaultDynamicIsland, listDynamicIslands, updateDynamicIslandSettings, addIslandActivity, updateIslandActivity, removeIslandActivity, dismissIslandActivity, pinIslandActivity, unpinIslandActivity, setIslandState, toggleIslandExpanded, handleIslandInteraction, addIslandModule, removeIslandModule, updateIslandModule, enableIslandModule, disableIslandModule, getVisibleIslandActivities, cleanupExpiredIslandActivities, completeIslandActivity, errorIslandActivity, destroyDynamicIsland, ISLAND_STATES, ACTIVITY_TYPES } from "./dynamicIsland.js";
 import { startBackgroundHelper, stopBackgroundHelper, pauseBackgroundHelper, resumeBackgroundHelper, getBackgroundHelperState, isBackgroundCapabilityEnabled, enableBackgroundCapability, disableBackgroundCapability, runBackgroundTask, cancelBackgroundTask, handleBackgroundCloseBehavior, HELPER_STATES, BACKGROUND_CAPABILITIES } from "./backgroundHelper.js";
 import { validateForgeArtifact, createForgePreview } from "./forgeEngine.js";
 import { createProactiveSuggestion, evaluateProactiveSignals, explainSuggestion } from "./proactiveEngine.js";
@@ -294,7 +293,6 @@ import * as healthApi from "./healthEngine.js";
 import * as religiousApi from "./religiousEngine.js";
 import * as capabilityExpansionApi from "./capabilityExpansionEngine.js";
 import * as completionApi from "./completionRuntime.js";
-import * as islandBridgeApi from "./desktopIslandBridge.js";
 import * as loggerApi from "./heyLogger.js";
 import * as voiceSettingsApi from "./heyVoiceSettings.js";
 import * as systemGestureApi from "./systemGestureRuntime.js";
@@ -923,35 +921,6 @@ import * as externalBridgeApi from "./externalControlBridge.js";
       sourceTypes: SOURCE_TYPES,
     },
 
-    island: {
-      create: createDynamicIsland,
-      get: getDynamicIsland,
-      getDefault: getDefaultDynamicIsland,
-      list: listDynamicIslands,
-      updateSettings: updateDynamicIslandSettings,
-      addActivity: addIslandActivity,
-      updateActivity: updateIslandActivity,
-      removeActivity: removeIslandActivity,
-      dismissActivity: dismissIslandActivity,
-      pinActivity: pinIslandActivity,
-      unpinActivity: unpinIslandActivity,
-      setState: setIslandState,
-      toggleExpanded: toggleIslandExpanded,
-      handleInteraction: handleIslandInteraction,
-      addModule: addIslandModule,
-      removeModule: removeIslandModule,
-      updateModule: updateIslandModule,
-      enableModule: enableIslandModule,
-      disableModule: disableIslandModule,
-      getVisibleActivities: getVisibleIslandActivities,
-      cleanupExpired: cleanupExpiredIslandActivities,
-      completeActivity: completeIslandActivity,
-      errorActivity: errorIslandActivity,
-      destroy: destroyDynamicIsland,
-      states: ISLAND_STATES,
-      activityTypes: ACTIVITY_TYPES,
-    },
-
     background: {
       start: startBackgroundHelper,
       stop: stopBackgroundHelper,
@@ -1191,11 +1160,6 @@ chat: {
       getStatus: completionApi.getCompletionRuntimeStatus,
       install: completionApi.installCompletionRuntime,
       uninstall: completionApi.uninstallCompletionRuntime,
-    },
-
-    islandBridge: {
-      initialize: islandBridgeApi.initializeDesktopIslandBridge,
-      dispose: islandBridgeApi.disposeDesktopIslandBridge,
     },
 
     logger: {

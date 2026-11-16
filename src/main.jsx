@@ -14,7 +14,6 @@ import "@fontsource/rajdhani/400.css";
 import "@fontsource/rajdhani/500.css";
 import "@fontsource/rajdhani/600.css";
 import App from "./App.jsx";
-import DesktopIslandSurface from "./components/desktop/DesktopIslandSurface.jsx";
 import WorkspaceWindows from "./components/workspace/WorkspaceWindows.jsx";
 import PWAUpdatePrompt from "./components/PWAUpdatePrompt.jsx";
 import { AuthProvider } from "./AuthContext.jsx";
@@ -22,7 +21,6 @@ import { ThemeProvider } from "./context/ThemeContext.jsx";
 import { LocaleProvider } from "./i18n/LocaleContext.jsx";
 import { bootLogger } from "./core/heyLogger.js";
 import { installCompletionRuntime } from "./core/completionRuntime.js";
-import { initializeDesktopIslandBridge } from "./core/desktopIslandBridge.js";
 import { keepDesktopRuntimeAlive } from "./core/backgroundRuntimeKeepAlive.js";
 import { installInfinityRuntime } from "./core/infinity/infinityRuntime.js";
 import { initWorldStyleEngine } from "./core/infinity/worldStyleEngine.js";
@@ -39,70 +37,54 @@ import "./styles/liquid.css";
 import "./styles/modes.css";
 import "./styles/states.css";
 import "./styles/compliance.css";
-import "./styles/desktopIsland.css";
 import "./styles/v1Premium.css";
 import "./styles/pwa.css";
 import "./styles/infinity.css";
 
-const surface = new URLSearchParams(window.location.search).get("surface");
-const islandSurface = surface === "island";
 initWorldStyleEngine().catch((error) => console.warn("HEY World style failed:", error));
-if (!islandSurface) {
-  try {
-    keepDesktopRuntimeAlive();
-  } catch (err) {
-    console.warn("Desktop runtime keepalive failed:", err);
-  }
-  try {
-    installCompletionRuntime();
-  } catch (err) {
-    console.warn("Completion runtime failed:", err);
-  }
-  try {
-    installInfinityRuntime().catch((error) => console.warn("HEY Infinity runtime failed:", error));
-  } catch (err) {
-    console.warn("Infinity runtime failed:", err);
-  }
-  try {
-    initializeDesktopIslandBridge().catch((error) => console.warn("HEY Island bridge failed:", error));
-  } catch (err) {
-    console.warn("Desktop island bridge failed:", err);
-  }
-  try {
-    installWindowControlsOverlay();
-    initBadgeSync();
-    installGestureRuntimeBridge();
-  } catch (err) {
-    console.warn("Window or gesture bridges failed:", err);
-  }
+try {
+  keepDesktopRuntimeAlive();
+} catch (err) {
+  console.warn("Desktop runtime keepalive failed:", err);
+}
+try {
+  installCompletionRuntime();
+} catch (err) {
+  console.warn("Completion runtime failed:", err);
+}
+try {
+  installInfinityRuntime().catch((error) => console.warn("HEY Infinity runtime failed:", error));
+} catch (err) {
+  console.warn("Infinity runtime failed:", err);
+}
+try {
+  installWindowControlsOverlay();
+  initBadgeSync();
+  installGestureRuntimeBridge();
+} catch (err) {
+  console.warn("Window or gesture bridges failed:", err);
 }
 try {
   ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-      {islandSurface ? (
-        <DesktopIslandSurface />
-      ) : (
-        <AuthProvider>
-          <ThemeProvider>
-            <LocaleProvider>
-              <App />
-              <WorkspaceWindows />
-              <PWAUpdatePrompt />
-            </LocaleProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      )}
+      <AuthProvider>
+        <ThemeProvider>
+          <LocaleProvider>
+            <App />
+            <WorkspaceWindows />
+            <PWAUpdatePrompt />
+          </LocaleProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </React.StrictMode>
   );
 } catch (renderError) {
   console.error("Critical root render failure:", renderError);
 }
 
-if (!islandSurface) {
-  try {
-    bootLogger();
-  } catch (err) {
-    console.warn("[AuditLogger] Boot logger initialization warning:", err);
-  }
+try {
+  bootLogger();
+} catch (err) {
+  console.warn("[AuditLogger] Boot logger initialization warning:", err);
 }
-if (!islandSurface && "serviceWorker" in navigator && import.meta.env.PROD) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch((error) => console.error("HEY service worker registration failed:", error)));
+if ("serviceWorker" in navigator && import.meta.env.PROD) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch((error) => console.error("HEY service worker registration failed:", error)));

@@ -5,12 +5,12 @@ import { recordAudit } from "./auditLog.js";
 
 const STORAGE_KEY = "hey_gesture_settings";
 let remoteListener = null;
-function isMainDesktop() { return typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__) && new URLSearchParams(window.location.search).get('surface') !== 'island'; }
+function isMainDesktop() { return typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__); }
 async function remoteCommand(action, options = {}) {
   const { emitTo, listen } = await import('@tauri-apps/api/event');
   if (!remoteListener) remoteListener = listen('hey:gestures:status', event => emit(event.payload)).catch(error => { remoteListener = null; throw error; });
   await remoteListener;
-  await emitTo('island', 'hey:gestures:command', { action, options });
+  await emitTo('main', 'hey:gestures:command', { action, options });
   return { success: true, pending: true };
 }
 const envValue = (key, fallback) => {
@@ -435,8 +435,7 @@ async function maybeMotionGestures(points, cannedName, settings, now) {
       await invoke("main_window_show");
       emit({ state: "active", gesture: "swipe_down", message: "HEY opened" });
     } else {
-      window.dispatchEvent(new CustomEvent("hey:gesture-expand-island", { detail: { source: "gesture" } }));
-      emit({ state: "active", gesture: "swipe_up", message: "Island expand gesture" });
+      emit({ state: "active", gesture: "swipe_up", message: "HEY gesture" });
     }
   }
 }
